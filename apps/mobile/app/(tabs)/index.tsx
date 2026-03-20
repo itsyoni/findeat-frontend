@@ -5,8 +5,29 @@ import ParallaxScrollView from "@/components/parallax-scroll-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { Link } from "expo-router";
+import { useEffect, useState } from "react";
+
+type User = {
+  id: string;
+  name: string | null;
+};
 
 export default function HomeScreen() {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("http://10.0.2.2:3000/users/first");
+        const data = await response.json();
+        setUser(data);
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+      }
+    };
+
+    fetchUser();
+  }, []);
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -18,7 +39,7 @@ export default function HomeScreen() {
       }
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">{user?.name || "Welcome!"}</ThemedText>
         <HelloWave />
       </ThemedView>
       <View className="flex-1 items-center justify-center bg-white">
