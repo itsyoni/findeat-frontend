@@ -3,11 +3,15 @@ import { prisma } from '@repo/db';
 
 @Injectable()
 export class UsersService {
-  findAll() {
-    return prisma.user.findMany();
-  }
-
-  findOne() {
-    return prisma.user.findFirst();
+  async findAll() {
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        name: true,
+        createdAt: true,
+      },
+    });
   }
 }
