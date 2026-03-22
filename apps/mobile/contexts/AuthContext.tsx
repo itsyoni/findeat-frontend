@@ -1,50 +1,76 @@
-// contexts/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api } from "@/lib/api";
 
 type User = {
   id: string;
   email: string;
+  username?: string;
+  name?: string;
 };
 
 type AuthContextType = {
   user: User | null;
+  token: string | null;
   loading: boolean;
-  signIn: (user: User) => void;
-  signOut: () => void;
+  signIn: (data: { user: User; token: string }) => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const TOKEN_KEY = "accessToken";
+const USER_KEY = "currentUser";
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadUser = async () => {
+    const loadAuth = async () => {
       try {
-        // here later you can load token/user from AsyncStorage
-        // const token = await AsyncStorage.getItem("token");
-        // if (token) fetch current user or decode token
+        const token = await AsyncStorage.getItem("accessToken");
 
-        setUser(null); // temporary
+        if (!token) return;
+
+        setToken(token);
+
+        const response = await api.get("/auth/me");
+
+        setUser(response.data);
+      } catch (error) {
+        console.log("Auth restore failed:", error);
+
+        await AsyncStorage.removeItem("accessToken");
+        setUser(null);
+        setToken(null);
       } finally {
         setLoading(false);
       }
     };
 
-    loadUser();
+    loadAuth();
   }, []);
 
-  const signIn = (userData: User) => {
-    setUser(userData);
+  const signIn = async ({ user, token }: { user: User; token: string }) => {
+    await AsyncStorage.setItem(TOKEN_KEY, token);
+    await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+
+    setUser(user);
+    setToken(token);
   };
 
-  const signOut = () => {
+  const signOut = async () => {
+    await AsyncStorage.removeItem(TOKEN_KEY);
+    await AsyncStorage.removeItem(USER_KEY);
+
     setUser(null);
+    setToken(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, token, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

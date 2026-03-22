@@ -30,7 +30,6 @@ export class AuthService {
       data: {
         email: dto.email,
         username: dto.username,
-        name: dto.name,
         password: hashedPassword,
       },
     });
@@ -42,7 +41,6 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
-        name: user.name,
         createdAt: user.createdAt,
       },
       accessToken: token,
@@ -71,7 +69,6 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
-        name: user.name,
         createdAt: user.createdAt,
       },
       accessToken: token,
