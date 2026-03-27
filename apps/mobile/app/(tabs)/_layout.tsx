@@ -6,7 +6,11 @@ import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { Icon } from "@/components/Icon";
-import Home from "@/assets/icons/Home.svg";
+import Home from "@/assets/icons/HomeSolid.svg";
+import Chat from "@/assets/icons/ChatBubbleLeftSolid.svg";
+import Map from "@/assets/icons/MapSolid.svg";
+import AddPost from "@/assets/icons/Plus.svg";
+import Profile from "@/assets/icons/UserSolid.svg";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -41,19 +45,41 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
           tabBarIcon: ({ color, size, focused }) => (
             <Icon Icon={Home} size={focused ? size + 2 : size} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="chat"
         options={{
-          title: "Explore",
-          // tabBarIcon: ({ color }) => (
-          //   <IconSymbol size={28} name="paperplane.fill" color={color} />
-          // ),
+          tabBarIcon: ({ color, size, focused }) => (
+            <Icon Icon={Chat} size={focused ? size + 2 : size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="add-post"
+        options={{
+          tabBarIcon: ({ color, size, focused }) => (
+            <Icon Icon={AddPost} size={focused ? size + 2 : size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          tabBarIcon: ({ color, size, focused }) => (
+            <Icon Icon={Map} size={focused ? size + 2 : size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          tabBarIcon: ({ color, size, focused }) => (
+            <Icon Icon={Profile} size={focused ? size + 2 : size} color={color} />
+          ),
         }}
       />
     </Tabs>
