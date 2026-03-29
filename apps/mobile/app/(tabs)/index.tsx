@@ -1,15 +1,10 @@
-import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useAuth } from "@/contexts/AuthContext";
+import MainFeed from "@/components/feed/mainFeed";
+import { View } from "react-native";
 
 export default function HomeScreen() {
-  const { user } = useAuth();
-
   return (
-    <SafeAreaView>
-      <View className="px-10">
-        <Text className="text-black">Hello {user?.username}</Text>
-      </View>
-    </SafeAreaView>
+    <View className="flex-1">
+      <MainFeed />
+    </View>
   );
 }

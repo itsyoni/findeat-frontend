@@ -16,6 +16,7 @@ import { Icon } from "@/components/Icon";
 import ArrowLongLeft from "@/assets/icons/ArrowLongLeft.svg";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { ThemedInput } from "@/components/ThemedInput";
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -76,45 +77,41 @@ export default function LoginScreen() {
               className="bg-transparent p-0 min-h-0"
               onPress={() => router.back()}
             >
-              <Icon Icon={ArrowLongLeft} size={34} color="black" />
+              <Icon Icon={ArrowLongLeft} size={34} color="[#212121]" />
             </ThemedButton>
           </View>
 
           <View className="flex-1 justify-center">
             <View className="mb-10 items-center">
-              <Text className="text-black text-6xl font-bold">FINDEAT</Text>
-              <Text className="mt-3 text-base text-black/70">Welcome back</Text>
+              <Text className="text-[#212121] text-6xl font-bold">FINDEAT</Text>
+              <Text className="mt-3 text-base text-[#212121]/70">
+                Welcome back
+              </Text>
             </View>
 
             <View className="gap-4">
-              <View className="w-full rounded-full bg-white px-5 py-4">
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Email"
-                  placeholderTextColor="#888"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className="text-base text-black"
-                />
-              </View>
-
-              <View className="w-full rounded-full bg-white px-5 py-4">
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Password"
-                  placeholderTextColor="#888"
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className="text-base text-black"
-                />
-              </View>
-
+              <ThemedInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Email"
+                placeholderTextColor="#888"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                className="text-base text-[#212121]"
+              />
+              <ThemedInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Password"
+                placeholderTextColor="#888"
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                className="text-base text-[#212121]"
+              />
               <ThemedButton
-                className="w-full rounded-full bg-black py-4"
+                className="w-full rounded-full bg-[#212121] py-4"
                 onPress={handleLogin}
                 disabled={loading}
               >
@@ -125,12 +122,12 @@ export default function LoginScreen() {
             </View>
 
             <View className="mt-6 flex-row items-center justify-center">
-              <Text className="text-black/70">Don’t have an account? </Text>
+              <Text className="text-[#212121]/70">Don’t have an account? </Text>
               <ThemedButton
                 className="bg-transparent p-0 min-h-0"
                 onPress={() => router.push("/auth/register")}
               >
-                <Text className="text-black font-semibold">Sign Up</Text>
+                <Text className="text-[#212121] font-semibold">Sign Up</Text>
               </ThemedButton>
             </View>
           </View>

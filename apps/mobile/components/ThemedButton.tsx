@@ -13,7 +13,7 @@ export function ThemedButton({
 }: ThemedButtonProps) {
   return (
     <Pressable
-      className={`items-center justify-center rounded-2xl active:opacity-70 disabled:opacity-50 ${className}`}
+      className={`items-center justify-center rounded-2xl active:opacity-70 disabled:opacity-50 font-cabinet ${className}`}
       {...props}
     >
       {children}

@@ -6,11 +6,15 @@ import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuth } from "@/contexts/AuthContext";
 import { Icon } from "@/components/Icon";
-import Home from "@/assets/icons/HomeSolid.svg";
-import Chat from "@/assets/icons/ChatBubbleLeftSolid.svg";
-import Map from "@/assets/icons/MapSolid.svg";
+import HomeSolid from "@/assets/icons/HomeSolid.svg";
+import HomeOutline from "@/assets/icons/HomeOutline.svg";
+import ChatSolid from "@/assets/icons/ChatBubbleLeftSolid.svg";
+import ChatOutline from "@/assets/icons/ChatBubbleLeftOutline.svg";
+import MapSolid from "@/assets/icons/MapSolid.svg";
+import MapOutline from "@/assets/icons/MapOutline.svg";
 import AddPost from "@/assets/icons/Plus.svg";
-import Profile from "@/assets/icons/UserSolid.svg";
+import ProfileSolid from "@/assets/icons/UserSolid.svg";
+import ProfileOutline from "@/assets/icons/UserOutline.svg";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -31,13 +35,14 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        tabBarShowLabel: false,
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        tabBarInactiveTintColor: "#999",
+        tabBarInactiveTintColor: "#000",
         tabBarLabelStyle: { fontSize: 12 },
         tabBarStyle: {
           borderTopWidth: 0,
           elevation: 0,
-          backgroundColor: "#fff",
+          backgroundColor: "#F7D786",
         },
         headerShown: false,
       }}
@@ -45,40 +50,41 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
-            <Icon Icon={Home} size={focused ? size + 2 : size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Icon Icon={focused ? HomeSolid : HomeOutline} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="chat"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
-            <Icon Icon={Chat} size={focused ? size + 2 : size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Icon Icon={focused ? ChatSolid : ChatOutline} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="add-post"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
-            <Icon Icon={AddPost} size={focused ? size + 2 : size} color={color} />
-          ),
+          tabBarIcon: ({ color }) => <Icon Icon={AddPost} color={color} />,
         }}
       />
       <Tabs.Screen
         name="map"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
-            <Icon Icon={Map} size={focused ? size + 2 : size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Icon Icon={focused ? MapSolid : MapOutline} color={color} />
           ),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          tabBarIcon: ({ color, size, focused }) => (
-            <Icon Icon={Profile} size={focused ? size + 2 : size} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Icon
+              Icon={focused ? ProfileSolid : ProfileOutline}
+              color={color}
+            />
           ),
         }}
       />
