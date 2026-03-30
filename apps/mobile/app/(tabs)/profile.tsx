@@ -9,11 +9,11 @@ export default function HomeScreen() {
   const { user } = useAuth();
 
   return (
-    <SafeAreaView>
-      <View className="px-10">
-        <Text className="text-black">Hello {user?.username}</Text>
+    <SafeAreaView style={{ flex: 1 }}>
+      <View className="px-5 flex-1 flex flex-col items-start justify-between">
+        <Text className="text-black text-7xl">Hello {user?.username}</Text>
         <ThemedButton
-          className="mt-6 rounded-full bg-black px-6 py-3"
+          className="mt-6 rounded-full bg-black px-6 py-3 w-full"
           onPress={() => router.push("/settings")}
         >
           <Text className="text-white">Open Settings</Text>

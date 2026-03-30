@@ -13,16 +13,18 @@ export default function MainFeed() {
   const { height } = useWindowDimensions();
 
   const usableHeight = height - tabBarHeight;
+
   return (
     <FlatList
       data={DATA}
       renderItem={({ item }) => <Post item={item} height={usableHeight} />}
       keyExtractor={(item) => item.id}
-      snapToInterval={usableHeight}
+      pagingEnabled
+      disableIntervalMomentum
       decelerationRate="fast"
       showsVerticalScrollIndicator={false}
-      windowSize={3}
-      initialNumToRender={1}
+      bounces={false}
+      overScrollMode="never"
     />
   );
 }
