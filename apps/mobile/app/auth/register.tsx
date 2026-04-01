@@ -16,6 +16,7 @@ import { Icon } from "@/components/Icon";
 import ArrowLongLeft from "@/assets/icons/ArrowLongLeft.svg";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { ThemedInput } from "@/components/ThemedInput";
 
 export default function RegisterScreen() {
   const router = useRouter();
@@ -104,57 +105,49 @@ export default function RegisterScreen() {
             </View>
 
             <View className="gap-4">
-              <View className="w-full rounded-full bg-white px-5 py-4">
-                <TextInput
-                  value={username}
-                  onChangeText={setUsername}
-                  placeholder="Username"
-                  placeholderTextColor="#888"
-                  keyboardType="default"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className="text-base text-black"
-                />
-              </View>
+              <ThemedInput
+                value={username}
+                onChangeText={setUsername}
+                placeholder="Username"
+                placeholderTextColor="#888"
+                keyboardType="default"
+                autoCapitalize="none"
+                autoCorrect={false}
+                className="text-base text-[#212121]"
+              />
 
-              <View className="w-full rounded-full bg-white px-5 py-4">
-                <TextInput
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="Email"
-                  placeholderTextColor="#888"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className="text-base text-black"
-                />
-              </View>
+              <ThemedInput
+                value={email}
+                onChangeText={setEmail}
+                placeholder="Email"
+                placeholderTextColor="#888"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                className="text-base text-[#212121]"
+              />
 
-              <View className="w-full rounded-full bg-white px-5 py-4">
-                <TextInput
-                  value={password}
-                  onChangeText={setPassword}
-                  placeholder="Password"
-                  placeholderTextColor="#888"
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className="text-base text-black"
-                />
-              </View>
+              <ThemedInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Password"
+                placeholderTextColor="#888"
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                className="text-base text-[#212121]"
+              />
 
-              <View className="w-full rounded-full bg-white px-5 py-4">
-                <TextInput
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="Confirm Password"
-                  placeholderTextColor="#888"
-                  secureTextEntry
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  className="text-base text-black"
-                />
-              </View>
+              <ThemedInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder="Confirm Password"
+                placeholderTextColor="#888"
+                secureTextEntry
+                autoCapitalize="none"
+                autoCorrect={false}
+                className="text-base text-[#212121]"
+              />
 
               <ThemedButton
                 className="w-full rounded-full bg-black py-4"
