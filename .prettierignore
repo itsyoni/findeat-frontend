@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+coverage
+.generated
+.next
+expo-env.d.ts
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

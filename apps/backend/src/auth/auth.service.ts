@@ -2,12 +2,12 @@ import {
   BadRequestException,
   Injectable,
   UnauthorizedException,
-} from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
-import { prisma } from '@repo/db';
-import { SignupDto } from './dto/signup.dto';
-import { LoginDto } from './dto/login.dto';
+} from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from "bcrypt";
+import { prisma } from "@repo/db";
+import { SignupDto } from "./dto/signup.dto";
+import { LoginDto } from "./dto/login.dto";
 
 @Injectable()
 export class AuthService {
@@ -21,7 +21,7 @@ export class AuthService {
     });
 
     if (existingUser) {
-      throw new BadRequestException('Email or username already in use');
+      throw new BadRequestException("Email or username already in use");
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
@@ -53,13 +53,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const passwordMatches = await bcrypt.compare(dto.password, user.password);
 
     if (!passwordMatches) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException("Invalid credentials");
     }
 
     const token = await this.signToken(user.id, user.email);
