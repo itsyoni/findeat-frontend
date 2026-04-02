@@ -14,6 +14,7 @@ export default function Chat() {
           <ThemedInput
             icon={MagnifyingGlass}
             iconSize={20}
+            iconColor="none"
             value={search}
             onChangeText={(text) => setSearch(text)}
             placeholder="Search"

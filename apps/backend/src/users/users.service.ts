@@ -10,6 +10,12 @@ export class UsersService {
         email: true,
         username: true,
         createdAt: true,
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+          },
+        },
       },
     });
   }

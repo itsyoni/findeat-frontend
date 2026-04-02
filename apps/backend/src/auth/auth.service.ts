@@ -30,6 +30,7 @@ export class AuthService {
       data: {
         email: dto.email,
         username: dto.username,
+        displayName: dto.displayName,
         password: hashedPassword,
       },
     });
@@ -80,5 +81,57 @@ export class AuthService {
       sub: userId,
       email,
     });
+  }
+
+  async getMe(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        displayName: true,
+        bio: true,
+        profilePictureUrl: true,
+        createdAt: true,
+        reviews: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            coverImageUrl: true,
+            overallRating: true,
+            createdAt: true,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            reviews: true,
+          },
+        },
+      },
+    });
+
+    if (!user) throw new UnauthorizedException();
+
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      displayName: user.displayName,
+      bio: user.bio,
+      profilePictureUrl: user.profilePictureUrl,
+      createdAt: user.createdAt,
+      reviews: user.reviews,
+
+      followersCount: user._count.followers,
+      followingCount: user._count.following,
+      reviewsCount: user._count.reviews,
+    };
   }
 }

@@ -1,6 +1,7 @@
 {
   "name": "@repo/db",
   "version": "0.0.1",
+  "type": "commonjs",
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "db:generate": "prisma generate",
@@ -11,11 +12,12 @@
   "devDependencies": {
     "@types/node": "^22.15.3",
     "prisma": "^7.5.0",
-    "typescript": "^5.8.3"
+    "typescript": "^6.0.2"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.5.0",
     "@prisma/client": "^7.5.0",
+    "dotenv": "^17.3.1",
     "pg": "^8.20.0"
   },
   "main": "./dist/src/index.js",

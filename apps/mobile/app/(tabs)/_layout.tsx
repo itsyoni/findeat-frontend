@@ -37,7 +37,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarShowLabel: false,
         tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
-        tabBarInactiveTintColor: "#000",
+        tabBarInactiveTintColor: "#212121",
         tabBarLabelStyle: { fontSize: 12 },
         tabBarStyle: {
           borderTopWidth: 0,

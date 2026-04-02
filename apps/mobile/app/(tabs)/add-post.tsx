@@ -8,7 +8,7 @@ export default function AddPost() {
   return (
     <SafeAreaView>
       <View className="px-10">
-        <Text className="text-black">Hello {user?.username}</Text>
+        <Text className="text-[#212121]">Hello {user?.username}</Text>
       </View>
     </SafeAreaView>
   );

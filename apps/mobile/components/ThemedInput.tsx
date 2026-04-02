@@ -30,8 +30,8 @@ export function ThemedInput({
   secureTextEntry = false,
   icon: InputIcon,
   iconSize = 20,
-  iconColor = "black",
-  iconStroke = "black",
+  iconColor = "#212121",
+  iconStroke = "#212121",
   iconStrokeWidth = 1,
   ...props
 }: ThemedInputProps) {
@@ -42,7 +42,7 @@ export function ThemedInput({
 
   return (
     <View
-      className={`w-full flex-row items-center rounded-lg bg-[#f5f5f5] px-5 py-5 gap-1 ${className}`}
+      className={`w-full flex-row items-center rounded-lg bg-[#f5f5f5] px-5 gap-1 ${className}`}
     >
       {InputIcon && (
         <View className="mr-2">
@@ -65,7 +65,7 @@ export function ThemedInput({
         autoCapitalize={isPasswordInput ? "none" : autoCapitalize}
         autoCorrect={isPasswordInput ? false : autoCorrect}
         secureTextEntry={actualSecureTextEntry}
-        className="min-w-0 flex-1 text-black font-cabinet text-xl"
+        className="min-w-0 flex-1 text-[#212121] font-cabinet text-xl py-5"
         {...props}
       />
 

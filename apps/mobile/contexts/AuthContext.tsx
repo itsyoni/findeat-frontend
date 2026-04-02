@@ -6,14 +6,28 @@ type User = {
   id: string;
   email: string;
   username?: string;
-  name?: string;
+  displayName?: string;
+  bio?: string | null;
+  profilePictureUrl?: string | null;
+  followersCount?: number;
+  followingCount?: number;
+  reviewsCount?: number;
+  reviews?: {
+    id: string;
+    title: string;
+    description?: string | null;
+    coverImageUrl?: string | null;
+    overallRating?: number | null;
+    createdAt: string;
+  }[];
+  createdAt?: string;
 };
 
 type AuthContextType = {
   user: User | null;
   token: string | null;
   loading: boolean;
-  signIn: (data: { user: User; token: string }) => Promise<void>;
+  signIn: (data: { token: string }) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -30,19 +44,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const loadAuth = async () => {
       try {
-        const token = await AsyncStorage.getItem("accessToken");
+        const storedToken = await AsyncStorage.getItem(TOKEN_KEY);
 
-        if (!token) return;
+        if (!storedToken) {
+          setLoading(false);
+          return;
+        }
 
-        setToken(token);
+        setToken(storedToken);
 
         const response = await api.get("/auth/me");
-
+        await AsyncStorage.setItem(USER_KEY, JSON.stringify(response.data));
         setUser(response.data);
       } catch (error) {
         console.log("Auth restore failed:", error);
 
-        await AsyncStorage.removeItem("accessToken");
+        await AsyncStorage.removeItem(TOKEN_KEY);
+        await AsyncStorage.removeItem(USER_KEY);
         setUser(null);
         setToken(null);
       } finally {
@@ -53,12 +71,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadAuth();
   }, []);
 
-  const signIn = async ({ user, token }: { user: User; token: string }) => {
+  const signIn = async ({ token }: { token: string }) => {
     await AsyncStorage.setItem(TOKEN_KEY, token);
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
-
-    setUser(user);
     setToken(token);
+
+    const response = await api.get("/auth/me");
+
+    await AsyncStorage.setItem(USER_KEY, JSON.stringify(response.data));
+    setUser(response.data);
   };
 
   const signOut = async () => {
