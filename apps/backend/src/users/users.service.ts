@@ -19,4 +19,46 @@ export class UsersService {
       },
     });
   }
+  async searchUsers(currentUserId: string, query: string) {
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
+      return [];
+    }
+
+    return prisma.user.findMany({
+      where: {
+        id: {
+          not: currentUserId,
+        },
+        OR: [
+          {
+            username: {
+              contains: trimmedQuery,
+              mode: "insensitive",
+            },
+          },
+          {
+            displayName: {
+              contains: trimmedQuery,
+              mode: "insensitive",
+            },
+          },
+          {
+            email: {
+              contains: trimmedQuery,
+              mode: "insensitive",
+            },
+          },
+        ],
+      },
+      select: {
+        id: true,
+        username: true,
+        displayName: true,
+        profilePictureUrl: true,
+      },
+      take: 20,
+    });
+  }
 }

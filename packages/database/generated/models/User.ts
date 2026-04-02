@@ -232,6 +232,8 @@ export type UserWhereInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberListRelationFilter
   receivedNotifications?: Prisma.NotificationListRelationFilter
   sentNotifications?: Prisma.NotificationListRelationFilter
+  conversations?: Prisma.ConversationParticipantListRelationFilter
+  messages?: Prisma.MessageListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -255,6 +257,8 @@ export type UserOrderByWithRelationInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberOrderByRelationAggregateInput
   receivedNotifications?: Prisma.NotificationOrderByRelationAggregateInput
   sentNotifications?: Prisma.NotificationOrderByRelationAggregateInput
+  conversations?: Prisma.ConversationParticipantOrderByRelationAggregateInput
+  messages?: Prisma.MessageOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -281,6 +285,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   invitedRestaurantMembers?: Prisma.RestaurantMemberListRelationFilter
   receivedNotifications?: Prisma.NotificationListRelationFilter
   sentNotifications?: Prisma.NotificationListRelationFilter
+  conversations?: Prisma.ConversationParticipantListRelationFilter
+  messages?: Prisma.MessageListRelationFilter
 }, "id" | "email" | "username">
 
 export type UserOrderByWithAggregationInput = {
@@ -336,6 +342,8 @@ export type UserCreateInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -359,6 +367,8 @@ export type UserUncheckedCreateInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserUpdateInput = {
@@ -382,6 +392,8 @@ export type UserUpdateInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -405,6 +417,8 @@ export type UserUncheckedUpdateInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -655,6 +669,34 @@ export type UserUpdateOneWithoutSentNotificationsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSentNotificationsInput, Prisma.UserUpdateWithoutSentNotificationsInput>, Prisma.UserUncheckedUpdateWithoutSentNotificationsInput>
 }
 
+export type UserCreateNestedOneWithoutConversationsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutConversationsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutConversationsInput
+  upsert?: Prisma.UserUpsertWithoutConversationsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutConversationsInput, Prisma.UserUpdateWithoutConversationsInput>, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+}
+
+export type UserCreateNestedOneWithoutMessagesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMessagesInput, Prisma.UserUncheckedCreateWithoutMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutMessagesInput, Prisma.UserUncheckedCreateWithoutMessagesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutMessagesInput
+  upsert?: Prisma.UserUpsertWithoutMessagesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMessagesInput, Prisma.UserUpdateWithoutMessagesInput>, Prisma.UserUncheckedUpdateWithoutMessagesInput>
+}
+
 export type UserCreateWithoutFollowingInput = {
   id?: string
   email: string
@@ -675,6 +717,8 @@ export type UserCreateWithoutFollowingInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutFollowingInput = {
@@ -697,6 +741,8 @@ export type UserUncheckedCreateWithoutFollowingInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutFollowingInput = {
@@ -724,6 +770,8 @@ export type UserCreateWithoutFollowersInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutFollowersInput = {
@@ -746,6 +794,8 @@ export type UserUncheckedCreateWithoutFollowersInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutFollowersInput = {
@@ -784,6 +834,8 @@ export type UserUpdateWithoutFollowingInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFollowingInput = {
@@ -806,6 +858,8 @@ export type UserUncheckedUpdateWithoutFollowingInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUpsertWithoutFollowersInput = {
@@ -839,6 +893,8 @@ export type UserUpdateWithoutFollowersInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutFollowersInput = {
@@ -861,6 +917,8 @@ export type UserUncheckedUpdateWithoutFollowersInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutReviewsInput = {
@@ -883,6 +941,8 @@ export type UserCreateWithoutReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutReviewsInput = {
@@ -905,6 +965,8 @@ export type UserUncheckedCreateWithoutReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutReviewsInput = {
@@ -943,6 +1005,8 @@ export type UserUpdateWithoutReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReviewsInput = {
@@ -965,6 +1029,8 @@ export type UserUncheckedUpdateWithoutReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutRestaurantMembershipsInput = {
@@ -987,6 +1053,8 @@ export type UserCreateWithoutRestaurantMembershipsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutRestaurantMembershipsInput = {
@@ -1009,6 +1077,8 @@ export type UserUncheckedCreateWithoutRestaurantMembershipsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutRestaurantMembershipsInput = {
@@ -1036,6 +1106,8 @@ export type UserCreateWithoutInvitedRestaurantMembersInput = {
   restaurantMemberships?: Prisma.RestaurantMemberCreateNestedManyWithoutUserInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutInvitedRestaurantMembersInput = {
@@ -1058,6 +1130,8 @@ export type UserUncheckedCreateWithoutInvitedRestaurantMembersInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutUserInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutInvitedRestaurantMembersInput = {
@@ -1096,6 +1170,8 @@ export type UserUpdateWithoutRestaurantMembershipsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutRestaurantMembershipsInput = {
@@ -1118,6 +1194,8 @@ export type UserUncheckedUpdateWithoutRestaurantMembershipsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUpsertWithoutInvitedRestaurantMembersInput = {
@@ -1151,6 +1229,8 @@ export type UserUpdateWithoutInvitedRestaurantMembersInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUpdateManyWithoutUserNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutInvitedRestaurantMembersInput = {
@@ -1173,6 +1253,8 @@ export type UserUncheckedUpdateWithoutInvitedRestaurantMembersInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutUserNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutLikedReviewsInput = {
@@ -1195,6 +1277,8 @@ export type UserCreateWithoutLikedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutLikedReviewsInput = {
@@ -1217,6 +1301,8 @@ export type UserUncheckedCreateWithoutLikedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutLikedReviewsInput = {
@@ -1255,6 +1341,8 @@ export type UserUpdateWithoutLikedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutLikedReviewsInput = {
@@ -1277,6 +1365,8 @@ export type UserUncheckedUpdateWithoutLikedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutSavedReviewsInput = {
@@ -1299,6 +1389,8 @@ export type UserCreateWithoutSavedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutSavedReviewsInput = {
@@ -1321,6 +1413,8 @@ export type UserUncheckedCreateWithoutSavedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutSavedReviewsInput = {
@@ -1359,6 +1453,8 @@ export type UserUpdateWithoutSavedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSavedReviewsInput = {
@@ -1381,6 +1477,8 @@ export type UserUncheckedUpdateWithoutSavedReviewsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutCommentsInput = {
@@ -1403,6 +1501,8 @@ export type UserCreateWithoutCommentsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutCommentsInput = {
@@ -1425,6 +1525,8 @@ export type UserUncheckedCreateWithoutCommentsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutCommentsInput = {
@@ -1463,6 +1565,8 @@ export type UserUpdateWithoutCommentsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -1485,6 +1589,8 @@ export type UserUncheckedUpdateWithoutCommentsInput = {
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserCreateWithoutReceivedNotificationsInput = {
@@ -1507,6 +1613,8 @@ export type UserCreateWithoutReceivedNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberCreateNestedManyWithoutUserInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutReceivedNotificationsInput = {
@@ -1529,6 +1637,8 @@ export type UserUncheckedCreateWithoutReceivedNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutUserInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutReceivedNotificationsInput = {
@@ -1556,6 +1666,8 @@ export type UserCreateWithoutSentNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberCreateNestedManyWithoutUserInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
 }
 
 export type UserUncheckedCreateWithoutSentNotificationsInput = {
@@ -1578,6 +1690,8 @@ export type UserUncheckedCreateWithoutSentNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutUserInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
   receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
 }
 
 export type UserCreateOrConnectWithoutSentNotificationsInput = {
@@ -1616,6 +1730,8 @@ export type UserUpdateWithoutReceivedNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUpdateManyWithoutUserNestedInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutReceivedNotificationsInput = {
@@ -1638,6 +1754,8 @@ export type UserUncheckedUpdateWithoutReceivedNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutUserNestedInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUpsertWithoutSentNotificationsInput = {
@@ -1671,6 +1789,8 @@ export type UserUpdateWithoutSentNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUpdateManyWithoutUserNestedInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSentNotificationsInput = {
@@ -1693,6 +1813,232 @@ export type UserUncheckedUpdateWithoutSentNotificationsInput = {
   restaurantMemberships?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutUserNestedInput
   invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
   receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+}
+
+export type UserCreateWithoutConversationsInput = {
+  id?: string
+  email: string
+  username: string
+  displayName: string
+  bio?: string | null
+  profilePictureUrl?: string | null
+  password: string
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reviews?: Prisma.ReviewCreateNestedManyWithoutAuthorInput
+  followers?: Prisma.FollowCreateNestedManyWithoutFollowingInput
+  following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
+  likedReviews?: Prisma.ReviewLikeCreateNestedManyWithoutUserInput
+  savedReviews?: Prisma.SavedReviewCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  restaurantMemberships?: Prisma.RestaurantMemberCreateNestedManyWithoutUserInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
+  receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
+  sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  messages?: Prisma.MessageCreateNestedManyWithoutSenderInput
+}
+
+export type UserUncheckedCreateWithoutConversationsInput = {
+  id?: string
+  email: string
+  username: string
+  displayName: string
+  bio?: string | null
+  profilePictureUrl?: string | null
+  password: string
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAuthorInput
+  followers?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
+  following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
+  likedReviews?: Prisma.ReviewLikeUncheckedCreateNestedManyWithoutUserInput
+  savedReviews?: Prisma.SavedReviewUncheckedCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  restaurantMemberships?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutUserInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
+  receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
+  sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  messages?: Prisma.MessageUncheckedCreateNestedManyWithoutSenderInput
+}
+
+export type UserCreateOrConnectWithoutConversationsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+}
+
+export type UserUpsertWithoutConversationsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutConversationsInput, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutConversationsInput, Prisma.UserUncheckedCreateWithoutConversationsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutConversationsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutConversationsInput, Prisma.UserUncheckedUpdateWithoutConversationsInput>
+}
+
+export type UserUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profilePictureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviews?: Prisma.ReviewUpdateManyWithoutAuthorNestedInput
+  followers?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
+  following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
+  likedReviews?: Prisma.ReviewLikeUpdateManyWithoutUserNestedInput
+  savedReviews?: Prisma.SavedReviewUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  restaurantMemberships?: Prisma.RestaurantMemberUpdateManyWithoutUserNestedInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
+  receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
+  sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  messages?: Prisma.MessageUpdateManyWithoutSenderNestedInput
+}
+
+export type UserUncheckedUpdateWithoutConversationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profilePictureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAuthorNestedInput
+  followers?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
+  following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
+  likedReviews?: Prisma.ReviewLikeUncheckedUpdateManyWithoutUserNestedInput
+  savedReviews?: Prisma.SavedReviewUncheckedUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  restaurantMemberships?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutUserNestedInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
+  receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
+  sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  messages?: Prisma.MessageUncheckedUpdateManyWithoutSenderNestedInput
+}
+
+export type UserCreateWithoutMessagesInput = {
+  id?: string
+  email: string
+  username: string
+  displayName: string
+  bio?: string | null
+  profilePictureUrl?: string | null
+  password: string
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reviews?: Prisma.ReviewCreateNestedManyWithoutAuthorInput
+  followers?: Prisma.FollowCreateNestedManyWithoutFollowingInput
+  following?: Prisma.FollowCreateNestedManyWithoutFollowerInput
+  likedReviews?: Prisma.ReviewLikeCreateNestedManyWithoutUserInput
+  savedReviews?: Prisma.SavedReviewCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentCreateNestedManyWithoutAuthorInput
+  restaurantMemberships?: Prisma.RestaurantMemberCreateNestedManyWithoutUserInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberCreateNestedManyWithoutInvitedByInput
+  receivedNotifications?: Prisma.NotificationCreateNestedManyWithoutRecipientInput
+  sentNotifications?: Prisma.NotificationCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantCreateNestedManyWithoutUserInput
+}
+
+export type UserUncheckedCreateWithoutMessagesInput = {
+  id?: string
+  email: string
+  username: string
+  displayName: string
+  bio?: string | null
+  profilePictureUrl?: string | null
+  password: string
+  role?: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  reviews?: Prisma.ReviewUncheckedCreateNestedManyWithoutAuthorInput
+  followers?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowingInput
+  following?: Prisma.FollowUncheckedCreateNestedManyWithoutFollowerInput
+  likedReviews?: Prisma.ReviewLikeUncheckedCreateNestedManyWithoutUserInput
+  savedReviews?: Prisma.SavedReviewUncheckedCreateNestedManyWithoutUserInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutAuthorInput
+  restaurantMemberships?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutUserInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedCreateNestedManyWithoutInvitedByInput
+  receivedNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutRecipientInput
+  sentNotifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutSenderInput
+  conversations?: Prisma.ConversationParticipantUncheckedCreateNestedManyWithoutUserInput
+}
+
+export type UserCreateOrConnectWithoutMessagesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutMessagesInput, Prisma.UserUncheckedCreateWithoutMessagesInput>
+}
+
+export type UserUpsertWithoutMessagesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutMessagesInput, Prisma.UserUncheckedUpdateWithoutMessagesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutMessagesInput, Prisma.UserUncheckedCreateWithoutMessagesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutMessagesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutMessagesInput, Prisma.UserUncheckedUpdateWithoutMessagesInput>
+}
+
+export type UserUpdateWithoutMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profilePictureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviews?: Prisma.ReviewUpdateManyWithoutAuthorNestedInput
+  followers?: Prisma.FollowUpdateManyWithoutFollowingNestedInput
+  following?: Prisma.FollowUpdateManyWithoutFollowerNestedInput
+  likedReviews?: Prisma.ReviewLikeUpdateManyWithoutUserNestedInput
+  savedReviews?: Prisma.SavedReviewUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutAuthorNestedInput
+  restaurantMemberships?: Prisma.RestaurantMemberUpdateManyWithoutUserNestedInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberUpdateManyWithoutInvitedByNestedInput
+  receivedNotifications?: Prisma.NotificationUpdateManyWithoutRecipientNestedInput
+  sentNotifications?: Prisma.NotificationUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUpdateManyWithoutUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  username?: Prisma.StringFieldUpdateOperationsInput | string
+  displayName?: Prisma.StringFieldUpdateOperationsInput | string
+  bio?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  profilePictureUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  reviews?: Prisma.ReviewUncheckedUpdateManyWithoutAuthorNestedInput
+  followers?: Prisma.FollowUncheckedUpdateManyWithoutFollowingNestedInput
+  following?: Prisma.FollowUncheckedUpdateManyWithoutFollowerNestedInput
+  likedReviews?: Prisma.ReviewLikeUncheckedUpdateManyWithoutUserNestedInput
+  savedReviews?: Prisma.SavedReviewUncheckedUpdateManyWithoutUserNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutAuthorNestedInput
+  restaurantMemberships?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutUserNestedInput
+  invitedRestaurantMembers?: Prisma.RestaurantMemberUncheckedUpdateManyWithoutInvitedByNestedInput
+  receivedNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutRecipientNestedInput
+  sentNotifications?: Prisma.NotificationUncheckedUpdateManyWithoutSenderNestedInput
+  conversations?: Prisma.ConversationParticipantUncheckedUpdateManyWithoutUserNestedInput
 }
 
 
@@ -1711,6 +2057,8 @@ export type UserCountOutputType = {
   invitedRestaurantMembers: number
   receivedNotifications: number
   sentNotifications: number
+  conversations: number
+  messages: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1724,6 +2072,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   invitedRestaurantMembers?: boolean | UserCountOutputTypeCountInvitedRestaurantMembersArgs
   receivedNotifications?: boolean | UserCountOutputTypeCountReceivedNotificationsArgs
   sentNotifications?: boolean | UserCountOutputTypeCountSentNotificationsArgs
+  conversations?: boolean | UserCountOutputTypeCountConversationsArgs
+  messages?: boolean | UserCountOutputTypeCountMessagesArgs
 }
 
 /**
@@ -1806,6 +2156,20 @@ export type UserCountOutputTypeCountSentNotificationsArgs<ExtArgs extends runtim
   where?: Prisma.NotificationWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountConversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ConversationParticipantWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.MessageWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1828,6 +2192,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   invitedRestaurantMembers?: boolean | Prisma.User$invitedRestaurantMembersArgs<ExtArgs>
   receivedNotifications?: boolean | Prisma.User$receivedNotificationsArgs<ExtArgs>
   sentNotifications?: boolean | Prisma.User$sentNotificationsArgs<ExtArgs>
+  conversations?: boolean | Prisma.User$conversationsArgs<ExtArgs>
+  messages?: boolean | Prisma.User$messagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -1882,6 +2248,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   invitedRestaurantMembers?: boolean | Prisma.User$invitedRestaurantMembersArgs<ExtArgs>
   receivedNotifications?: boolean | Prisma.User$receivedNotificationsArgs<ExtArgs>
   sentNotifications?: boolean | Prisma.User$sentNotificationsArgs<ExtArgs>
+  conversations?: boolean | Prisma.User$conversationsArgs<ExtArgs>
+  messages?: boolean | Prisma.User$messagesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1900,6 +2268,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     invitedRestaurantMembers: Prisma.$RestaurantMemberPayload<ExtArgs>[]
     receivedNotifications: Prisma.$NotificationPayload<ExtArgs>[]
     sentNotifications: Prisma.$NotificationPayload<ExtArgs>[]
+    conversations: Prisma.$ConversationParticipantPayload<ExtArgs>[]
+    messages: Prisma.$MessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -2316,6 +2686,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   invitedRestaurantMembers<T extends Prisma.User$invitedRestaurantMembersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$invitedRestaurantMembersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RestaurantMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   receivedNotifications<T extends Prisma.User$receivedNotificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$receivedNotificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sentNotifications<T extends Prisma.User$sentNotificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sentNotificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  conversations<T extends Prisma.User$conversationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$conversationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ConversationParticipantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  messages<T extends Prisma.User$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2985,6 +3357,54 @@ export type User$sentNotificationsArgs<ExtArgs extends runtime.Types.Extensions.
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.conversations
+ */
+export type User$conversationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ConversationParticipant
+   */
+  select?: Prisma.ConversationParticipantSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ConversationParticipant
+   */
+  omit?: Prisma.ConversationParticipantOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ConversationParticipantInclude<ExtArgs> | null
+  where?: Prisma.ConversationParticipantWhereInput
+  orderBy?: Prisma.ConversationParticipantOrderByWithRelationInput | Prisma.ConversationParticipantOrderByWithRelationInput[]
+  cursor?: Prisma.ConversationParticipantWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ConversationParticipantScalarFieldEnum | Prisma.ConversationParticipantScalarFieldEnum[]
+}
+
+/**
+ * User.messages
+ */
+export type User$messagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Message
+   */
+  select?: Prisma.MessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Message
+   */
+  omit?: Prisma.MessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.MessageInclude<ExtArgs> | null
+  where?: Prisma.MessageWhereInput
+  orderBy?: Prisma.MessageOrderByWithRelationInput | Prisma.MessageOrderByWithRelationInput[]
+  cursor?: Prisma.MessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.MessageScalarFieldEnum | Prisma.MessageScalarFieldEnum[]
 }
 
 /**

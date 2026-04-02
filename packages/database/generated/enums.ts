@@ -9,6 +9,15 @@
 * 🟢 You can import this file directly.
 */
 
+export const MessageType = {
+  TEXT: 'TEXT',
+  IMAGE: 'IMAGE',
+  SYSTEM: 'SYSTEM'
+} as const
+
+export type MessageType = (typeof MessageType)[keyof typeof MessageType]
+
+
 export const NotificationType = {
   FOLLOW: 'FOLLOW',
   LIKE_REVIEW: 'LIKE_REVIEW',

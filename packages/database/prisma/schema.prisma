@@ -8,26 +8,28 @@ datasource db {
 }
 
 model User {
-  id                       String             @id @default(cuid())
-  email                    String             @unique
-  username                 String             @unique
+  id                       String                    @id @default(cuid())
+  email                    String                    @unique
+  username                 String                    @unique
   displayName              String
   bio                      String?
   profilePictureUrl        String?
   password                 String
-  role                     UserRole           @default(USER)
+  role                     UserRole                  @default(USER)
   reviews                  Review[]
-  followers                Follow[]           @relation("Following")
-  following                Follow[]           @relation("Follower")
+  followers                Follow[]                  @relation("Following")
+  following                Follow[]                  @relation("Follower")
   likedReviews             ReviewLike[]
   savedReviews             SavedReview[]
   comments                 Comment[]
   restaurantMemberships    RestaurantMember[]
-  invitedRestaurantMembers RestaurantMember[] @relation("RestaurantMemberInvitedBy")
-  receivedNotifications    Notification[]     @relation("NotificationRecipient")
-  sentNotifications        Notification[]     @relation("NotificationSender")
-  createdAt                DateTime           @default(now())
-  updatedAt                DateTime           @updatedAt
+  invitedRestaurantMembers RestaurantMember[]        @relation("RestaurantMemberInvitedBy")
+  receivedNotifications    Notification[]            @relation("NotificationRecipient")
+  sentNotifications        Notification[]            @relation("NotificationSender")
+  conversations            ConversationParticipant[]
+  messages                 Message[]
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
 }
 
 model Follow {
@@ -185,6 +187,55 @@ model Notification {
   @@index([senderId])
   @@index([reviewId])
   @@index([commentId])
+}
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  isGroup      Boolean                   @default(false)
+  name         String?
+  imageUrl     String?
+  participants ConversationParticipant[]
+  messages     Message[]
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  role           String?
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+  @@index([conversationId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  conversationId String
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  senderId       String
+  content        String?
+  type           MessageType  @default(TEXT)
+  clientId       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([conversationId, senderId, clientId])
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  SYSTEM
 }
 
 enum NotificationType {
