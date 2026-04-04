@@ -17,10 +17,6 @@ function createPrismaClient() {
     log: [{ emit: "event", level: "query" }],
   });
 
-  client.$on("query", (e) => {
-    console.log("QUERY DURATION:", e.duration, "ms");
-  });
-
   return client;
 }
 
