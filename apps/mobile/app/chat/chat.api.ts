@@ -1,6 +1,6 @@
 import { api } from "@/lib/api";
 
-export async function fetchConversations() {
+export default async function fetchConversations() {
   const response = await api.get("/chat/conversations");
   return response.data;
 }

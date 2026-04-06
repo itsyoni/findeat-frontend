@@ -6,7 +6,7 @@ import Plus from "@/assets/icons/Plus.svg";
 
 type SpeedDialAction = {
   key: string;
-  label: string;
+  label?: string;
   icon: any;
   onPress: () => void;
 };
@@ -14,6 +14,7 @@ type SpeedDialAction = {
 type SpeedDialProps = {
   actions: SpeedDialAction[];
   mainIcon?: any;
+  direction?: "vertical" | "horizontal";
 };
 
 const MAIN_SIZE = 50;
@@ -23,12 +24,13 @@ const ACTION_RIGHT_OFFSET = (MAIN_SIZE - ACTION_SIZE) / 2;
 export default function SpeedDial({
   actions,
   mainIcon = Plus,
+  direction = "vertical",
 }: SpeedDialProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <View className="relative items-end">
-      {open && (
+      {open && direction === "vertical" && (
         <View className="absolute bottom-20 right-0 gap-3">
           {actions.map((action) => (
             <View
@@ -53,6 +55,31 @@ export default function SpeedDial({
                   <Icon Icon={action.icon} color="black" size={22} />
                 </ThemedButton>
               </View>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {open && direction === "horizontal" && (
+        <View className="absolute right-18 top-1.75 flex-row gap-3">
+          {actions.map((action) => (
+            <View key={action.key} className="items-center">
+              <ThemedButton
+                onPress={() => {
+                  action.onPress();
+                  setOpen(false);
+                }}
+                className="bg-white rounded-full items-center justify-center"
+                style={{ width: ACTION_SIZE, height: ACTION_SIZE }}
+              >
+                <Icon Icon={action.icon} color="black" size={22} />
+              </ThemedButton>
+
+              {action.label ? (
+                <Text className="text-white text-sm font-cabinet-medium mt-1">
+                  {action.label}
+                </Text>
+              ) : null}
             </View>
           ))}
         </View>
