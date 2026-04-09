@@ -1,12 +1,38 @@
-import { Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { MapView, Camera } from "@rnmapbox/maps";
+import { StyleSheet, Platform, View, Text } from "react-native";
 
 export default function Map() {
   return (
-    <SafeAreaView>
-      <View className="px-10">
-        <Text className="text-white">explore</Text>
-      </View>
-    </SafeAreaView>
+    // <View>
+    //   <Text>Map Screen</Text>
+    // </View>
+    <MapView
+      styleURL={"mapbox://styles/mapbox/standard"}
+      style={styles.map}
+      projection="globe"
+      scaleBarEnabled={false}
+      logoPosition={
+        Platform.OS === "android" ? { bottom: 40, left: 10 } : undefined
+      }
+      attributionPosition={
+        Platform.OS === "android" ? { bottom: 40, right: 10 } : undefined
+      }
+    >
+      <Camera
+        defaultSettings={{
+          centerCoordinate: [-43.2268, -22.9358],
+          zoomLevel: 12.1,
+          pitch: 70,
+          heading: -161.81,
+        }}
+      />
+    </MapView>
   );
 }
+
+const styles = StyleSheet.create({
+  map: {
+    flex: 1,
+    width: "100%",
+  },
+});

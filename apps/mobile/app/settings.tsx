@@ -13,15 +13,72 @@ import {
 import { Icon } from "@/components/Icon";
 import Pencil from "@/assets/icons/PencilSquareSolid.svg";
 import { ThemedInput } from "@/components/ThemedInput";
+import { useState } from "react";
 
 export default function SettingsScreen() {
   const { signOut, user } = useAuth();
+  const [displayName, setDisplayName] = useState(user?.displayName ?? "");
+  const [username, setUsername] = useState(user?.username ?? "");
+  const [email, setEmail] = useState(user?.email ?? "");
+  const [bio, setBio] = useState(user?.bio ?? "");
+  const [phoneNumber, setPhoneNumber] = useState(user?.phoneNumber ?? "");
+  const [gender, setGender] = useState(user?.gender ?? "");
+  const [pronouns, setPronouns] = useState(user?.pronouns ?? "");
   const router = useRouter();
 
   const handleLogout = async () => {
     await signOut();
     router.replace("/auth/welcome");
   };
+
+  // const handleRegister = async () => {
+  //   if (
+  //     !username.trim() ||
+  //     !email.trim() ||
+  //     !password.trim() ||
+  //     !confirmPassword.trim()
+  //   ) {
+  //     Alert.alert("Missing fields", "Please fill in all fields.");
+  //     return;
+  //   }
+
+  //   if (password !== confirmPassword) {
+  //     Alert.alert("Password mismatch", "Passwords do not match.");
+  //     return;
+  //   }
+
+  //   try {
+  //     setLoading(true);
+
+  //     const response = await api.post("/auth/signup", {
+  //       username: username.trim(),
+  //       displayName: username.trim(),
+  //       email: email.trim(),
+  //       password,
+  //     });
+
+  //     await signIn({
+  //       token: response.data.accessToken,
+  //     });
+  //     router.replace("/");
+  //   } catch (error: any) {
+  //     console.log(
+  //       "Registration failed:",
+  //       error?.response?.data || error.message,
+  //     );
+
+  //     const message =
+  //       error?.response?.data?.message ||
+  //       "Something went wrong. Please try again.";
+
+  //     Alert.alert(
+  //       "Registration failed",
+  //       Array.isArray(message) ? message[0] : message,
+  //     );
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   return (
     <>
@@ -64,7 +121,11 @@ export default function SettingsScreen() {
 
           <View className="px-5 flex-1 flex flex-col items-center gap-5 justify-between">
             <ScrollView
-              contentContainerStyle={{ flexGrow: 1, alignItems: "center" }}
+              contentContainerStyle={{
+                flexGrow: 1,
+                alignItems: "center",
+                width: "100%",
+              }}
               keyboardShouldPersistTaps="handled"
               showsVerticalScrollIndicator={false}
             >
@@ -76,7 +137,7 @@ export default function SettingsScreen() {
                   <ThemedInput
                     placeholder="Edit your name"
                     value={user?.displayName ?? ""}
-                    onChangeText={(text) => {}}
+                    onChangeText={(text) => setDisplayName(text)}
                     className="flex-1 bg-transparent h-15 pb-2 border-b border-[#212121]/30 rounded-none"
                   />
                 </View>
@@ -87,7 +148,7 @@ export default function SettingsScreen() {
                   <ThemedInput
                     placeholder="Edit your name"
                     value={user?.username ?? ""}
-                    onChangeText={(text) => {}}
+                    onChangeText={(text) => setUsername(text)}
                     className="flex-1 bg-transparent h-15 pb-2 border-b border-[#212121]/30 rounded-none"
                   />
                 </View>
@@ -98,18 +159,31 @@ export default function SettingsScreen() {
                   <ThemedInput
                     placeholder="Edit your email"
                     value={user?.email ?? ""}
-                    onChangeText={(text) => {}}
+                    onChangeText={(text) => setEmail(text)}
                     className="flex-1 bg-transparent h-15 pb-2 border-b border-[#212121]/30 rounded-none"
                   />
                 </View>
                 <View className="flex flex-row gap-5 items-center">
                   <View className="w-[25%] h-15 justify-center">
-                    <Text className="font-cabinet-bold text-xl">Email</Text>
+                    <Text className="font-cabinet-bold text-xl">Bio</Text>
                   </View>
                   <ThemedInput
-                    placeholder="Edit your email"
-                    value={user?.email ?? ""}
-                    onChangeText={(text) => {}}
+                    placeholder="Edit your bio"
+                    value={user?.bio ?? ""}
+                    onChangeText={(text) => setBio(text)}
+                    className="flex-1 bg-transparent h-15 pb-2 border-b border-[#212121]/30 rounded-none"
+                  />
+                </View>
+                <View className="flex flex-row gap-5 items-center">
+                  <View className="w-[25%] h-15 justify-center">
+                    <Text className="font-cabinet-bold text-xl">
+                      Phone Number
+                    </Text>
+                  </View>
+                  <ThemedInput
+                    placeholder="Edit your phone number"
+                    value={user?.phoneNumber ?? ""}
+                    onChangeText={(text) => setPhoneNumber(text)}
                     className="flex-1 bg-transparent h-15 pb-2 border-b border-[#212121]/30 rounded-none"
                   />
                 </View>
@@ -120,7 +194,7 @@ export default function SettingsScreen() {
                   <ThemedInput
                     placeholder="Edit your gender"
                     value={user?.gender ?? ""}
-                    onChangeText={(text) => {}}
+                    onChangeText={(text) => setGender(text)}
                     className="flex-1 bg-transparent h-15 pb-2 border-b border-[#212121]/30 rounded-none"
                   />
                 </View>
@@ -131,7 +205,7 @@ export default function SettingsScreen() {
                   <ThemedInput
                     placeholder="Edit your pronouns"
                     value={user?.pronouns ?? ""}
-                    onChangeText={(text) => {}}
+                    onChangeText={(text) => setPronouns(text)}
                     className="flex-1 bg-transparent h-15 pb-2 border-b border-[#212121]/30 rounded-none"
                   />
                 </View>

@@ -3,15 +3,19 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import "../global.css";
 import { useFonts } from "expo-font";
+import ArrowLeft from "@/assets/icons/ChevronLeft.svg";
 
 import "react-native-reanimated";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { Icon } from "@/components/Icon";
+import { ThemedButton } from "@/components/ThemedButton";
+import { View, Text } from "react-native";
 
 export const unstable_settings = {
   anchor: "(tabs)",
@@ -61,7 +65,24 @@ export default function RootLayout() {
             name="modal"
             options={{ presentation: "modal", title: "Modal" }}
           />
-          <Stack.Screen name="settings" options={{ title: "Settings" }} />
+          <Stack.Screen
+            name="settings"
+            options={{
+              headerLeft: () => (
+                // <ThemedButton
+                //   onPress={() => router.back()}
+                //   className="bg-transparent p-0"
+                // >
+                //   <Icon Icon={ArrowLeft} size={30} color="black" />
+                // </ThemedButton>
+                <View>
+                  <Text>Test</Text>
+                </View>
+              ),
+              title: "Settings",
+              headerBackVisible: false,
+            }}
+          />
         </Stack>
       </AuthProvider>
       <StatusBar style="auto" />

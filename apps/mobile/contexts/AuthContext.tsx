@@ -5,10 +5,13 @@ import { api } from "@/lib/api";
 type User = {
   id: string;
   email: string;
-  username?: string;
-  displayName?: string;
+  username: string;
+  displayName: string;
+  phoneNumber?: string | null;
   bio?: string | null;
   profilePictureUrl?: string | null;
+  gender?: string | null;
+  pronouns?: string | null;
   followersCount?: number;
   followingCount?: number;
   reviewsCount?: number;

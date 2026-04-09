@@ -20,7 +20,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.jonics.mobile"
     },
     "web": {
       "output": "static",
@@ -39,7 +40,6 @@
             "./assets/fonts/CabinetGrotesk/CabinetGrotesk-Bold.otf",
             "./assets/fonts/CabinetGrotesk/CabinetGrotesk-ExtraBold.otf",
             "./assets/fonts/CabinetGrotesk/CabinetGrotesk-Black.otf",
-
             "./assets/fonts/RedHatDisplay/RedHatDisplay-Light.ttf",
             "./assets/fonts/RedHatDisplay/RedHatDisplay-Regular.ttf",
             "./assets/fonts/RedHatDisplay/RedHatDisplay-Medium.ttf",
@@ -47,7 +47,6 @@
             "./assets/fonts/RedHatDisplay/RedHatDisplay-Bold.ttf",
             "./assets/fonts/RedHatDisplay/RedHatDisplay-ExtraBold.ttf",
             "./assets/fonts/RedHatDisplay/RedHatDisplay-Black.ttf",
-
             "./assets/fonts/RedHatDisplay/RedHatDisplay-LightItalic.ttf",
             "./assets/fonts/RedHatDisplay/RedHatDisplay-Italic.ttf",
             "./assets/fonts/RedHatDisplay/RedHatDisplay-MediumItalic.ttf",
@@ -69,6 +68,12 @@
           "dark": {
             "backgroundColor": "#212121"
           }
+        }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "YOUR_SECRET_DOWNLOAD_TOKEN"
         }
       ]
     ],

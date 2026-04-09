@@ -3,7 +3,6 @@ import {
   Text,
   View,
   StatusBar,
-  TextInput,
   Alert,
   KeyboardAvoidingView,
   Platform,
