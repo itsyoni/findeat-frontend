@@ -73,4 +73,16 @@ export class AuthService {
       accessToken: this.signToken(user.id, user.email),
     };
   }
+
+  async me(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdAt: true,
+      },
+    });
+  }
 }
