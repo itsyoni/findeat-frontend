@@ -1,5 +1,7 @@
 import axios from "axios";
 
+export const API_URL = "https://famous-boxes-greet.loca.lt";
+
 export const api = axios.create({
-  baseURL: "http://192.168.1.108:3000",
+  baseURL: API_URL,
 });
