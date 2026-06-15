@@ -14,6 +14,7 @@ type AuthContextType = {
   token: string | null;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -61,6 +62,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user);
   }
 
+  async function signup(email: string, username: string, password: string) {
+    const res = await api.post("/auth/signup", {
+      email,
+      username,
+      password,
+    });
+
+    const accessToken = res.data.accessToken;
+    const user = res.data.user;
+
+    await AsyncStorage.setItem(TOKEN_KEY, accessToken);
+
+    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+    setToken(accessToken);
+    setUser(user);
+  }
+
   async function logout() {
     await AsyncStorage.removeItem(TOKEN_KEY);
 
@@ -75,7 +94,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, token, isLoading, login, signup, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

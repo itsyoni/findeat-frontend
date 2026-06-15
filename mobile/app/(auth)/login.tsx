@@ -1,5 +1,4 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -14,7 +13,6 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       await login(email, password);
-      router.replace("/(tabs)");
     } catch {
       Alert.alert("Error", "Invalid email or password");
     } finally {
