@@ -19,4 +19,15 @@ export class PostsController {
   findAll() {
     return this.postsService.findAll();
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  findMine(@Req() req: Request) {
+    const user = req.user as {
+      userId: string;
+      email: string;
+    };
+
+    return this.postsService.findByUser(user.userId);
+  }
 }

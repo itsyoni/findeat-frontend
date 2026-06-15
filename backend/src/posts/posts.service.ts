@@ -39,4 +39,23 @@ export class PostsService {
       },
     });
   }
+
+  findByUser(userId: string) {
+    return this.prisma.post.findMany({
+      where: {
+        userId,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    });
+  }
 }
