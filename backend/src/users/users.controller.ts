@@ -19,6 +19,25 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  me(@Req() req: Request) {
+    const user = req.user as { userId: string; email: string };
+
+    return this.usersService.me(user.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('me')
+  updateMe(
+    @Req() req: Request,
+    @Body() body: { username?: string; bio?: string; avatarUrl?: string },
+  ) {
+    const user = req.user as { userId: string; email: string };
+
+    return this.usersService.updateMe(user.userId, body);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('search')
   search(@Query('q') query: string, @Req() req: Request) {
     const user = req.user as { userId: string; email: string };
@@ -58,24 +77,5 @@ export class UsersController {
     const user = req.user as { userId: string; email: string };
 
     return this.usersService.findOne(userId, user.userId);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('me')
-  me(@Req() req: Request) {
-    const user = req.user as { userId: string; email: string };
-
-    return this.usersService.me(user.userId);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('me')
-  updateMe(
-    @Req() req: Request,
-    @Body() body: { username?: string; bio?: string; avatarUrl?: string },
-  ) {
-    const user = req.user as { userId: string; email: string };
-
-    return this.usersService.updateMe(user.userId, body);
   }
 }
