@@ -93,8 +93,13 @@ export class UsersService {
         posts: {
           orderBy: { createdAt: 'desc' },
         },
-        followers: true,
-        following: true,
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            posts: true,
+          },
+        },
       },
     });
 
@@ -109,8 +114,8 @@ export class UsersService {
 
     return {
       ...user,
-      followersCount: user?.followers.length ?? 0,
-      followingCount: user?.following.length ?? 0,
+      followersCount: user?._count.followers ?? 0,
+      followingCount: user?._count.following ?? 0,
       isFollowing: !!follow,
     };
   }
@@ -128,15 +133,21 @@ export class UsersService {
         posts: {
           orderBy: { createdAt: 'desc' },
         },
-        followers: true,
-        following: true,
+        _count: {
+          select: {
+            followers: true,
+            following: true,
+            posts: true,
+          },
+        },
       },
     });
 
     return {
       ...user,
-      followersCount: user?.followers.length ?? 0,
-      followingCount: user?.following.length ?? 0,
+      postsCount: user?._count.posts ?? 0,
+      followersCount: user?._count.followers ?? 0,
+      followingCount: user?._count.following ?? 0,
     };
   }
 
