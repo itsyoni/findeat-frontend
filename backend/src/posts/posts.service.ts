@@ -58,4 +58,43 @@ export class PostsService {
       },
     });
   }
+
+  async getFeed(userId: string) {
+    const follows = await this.prisma.follow.findMany({
+      where: {
+        followerId: userId,
+      },
+      select: {
+        followingId: true,
+      },
+    });
+
+    const followingIds = follows.map((f) => f.followingId);
+
+    return this.prisma.post.findMany({
+      where: {
+        OR: [
+          {
+            userId,
+          },
+          {
+            userId: {
+              in: followingIds,
+            },
+          },
+        ],
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
 }

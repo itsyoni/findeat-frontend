@@ -1,8 +1,15 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type Post = {
   id: string;
@@ -19,6 +26,8 @@ export default function HomeScreen() {
   const { user } = useAuth();
 
   const [posts, setPosts] = useState<Post[]>([]);
+  const [query, setQuery] = useState("");
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const { refresh } = useLocalSearchParams();
 
@@ -37,6 +46,22 @@ export default function HomeScreen() {
     }
   }
 
+  async function searchUsers(text: string) {
+    setQuery(text);
+
+    if (!text.trim()) {
+      setUsers([]);
+      return;
+    }
+
+    try {
+      const res = await api.get(`/users/search?q=${text}`);
+      setUsers(res.data);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center">
@@ -47,13 +72,38 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-white">
-      <View className="px-6 pt-16 pb-4">
+      <View className="px-6 pt-16 pb-4 ">
         <Text className="text-3xl font-bold">FindEat</Text>
 
         <Text className="mt-1 text-gray-500">
           Logged in as @{user?.username}
         </Text>
       </View>
+      <TextInput
+        className="mb-6 mx-5 rounded-2xl border border-gray-200 px-4 py-4 text-base"
+        placeholder="Search people..."
+        placeholderTextColor="#9CA3AF"
+        value={query}
+        onChangeText={searchUsers}
+      />
+      {users.length > 0 && (
+        <View className="mb-6 rounded-2xl border border-gray-200">
+          {users.map((user: any) => (
+            <TouchableOpacity
+              key={user.id}
+              onPress={() =>
+                router.push({
+                  pathname: "/users/[id]",
+                  params: { id: user.id },
+                })
+              }
+              className="border-b border-gray-100 p-4"
+            >
+              <Text className="font-bold">@{user.username}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
 
       <FlatList
         data={posts}

@@ -30,4 +30,15 @@ export class PostsController {
 
     return this.postsService.findByUser(user.userId);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('feed')
+  getFeed(@Req() req: Request) {
+    const user = req.user as {
+      userId: string;
+      email: string;
+    };
+
+    return this.postsService.getFeed(user.userId);
+  }
 }
