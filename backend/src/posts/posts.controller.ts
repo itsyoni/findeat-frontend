@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
 import { PostsService } from './posts.service';
@@ -40,5 +49,21 @@ export class PostsController {
     };
 
     return this.postsService.getFeed(user.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/like')
+  like(@Param('id') postId: string, @Req() req: Request) {
+    const user = req.user as { userId: string; email: string };
+
+    return this.postsService.like(postId, user.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':id/like')
+  unlike(@Param('id') postId: string, @Req() req: Request) {
+    const user = req.user as { userId: string; email: string };
+
+    return this.postsService.unlike(postId, user.userId);
   }
 }

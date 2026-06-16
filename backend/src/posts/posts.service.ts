@@ -36,6 +36,7 @@ export class PostsService {
             username: true,
           },
         },
+        likes: true,
       },
     });
   }
@@ -55,6 +56,27 @@ export class PostsService {
             username: true,
           },
         },
+        likes: true,
+      },
+    });
+  }
+
+  like(postId: string, userId: string) {
+    return this.prisma.like.create({
+      data: {
+        postId,
+        userId,
+      },
+    });
+  }
+
+  unlike(postId: string, userId: string) {
+    return this.prisma.like.delete({
+      where: {
+        userId_postId: {
+          userId,
+          postId,
+        },
       },
     });
   }
@@ -71,18 +93,9 @@ export class PostsService {
 
     const followingIds = follows.map((f) => f.followingId);
 
-    return this.prisma.post.findMany({
+    const posts = await this.prisma.post.findMany({
       where: {
-        OR: [
-          {
-            userId,
-          },
-          {
-            userId: {
-              in: followingIds,
-            },
-          },
-        ],
+        OR: [{ userId }, { userId: { in: followingIds } }],
       },
       include: {
         user: {
@@ -91,10 +104,17 @@ export class PostsService {
             username: true,
           },
         },
+        likes: true,
       },
       orderBy: {
         createdAt: 'desc',
       },
     });
+
+    return posts.map((post) => ({
+      ...post,
+      likesCount: post.likes.length,
+      isLiked: post.likes.some((like) => like.userId === userId),
+    }));
   }
 }
