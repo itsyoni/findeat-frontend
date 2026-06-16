@@ -30,7 +30,7 @@ export default function CreatePostScreen() {
         params: { refresh: Date.now().toString() },
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       Alert.alert("Error", "Could not create post");
     } finally {
       setLoading(false);

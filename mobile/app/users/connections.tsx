@@ -1,6 +1,5 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -10,47 +9,50 @@ import {
   View,
 } from "react-native";
 
-type Chat = {
+type ConnectionItem = {
   id: string;
-  participants: {
-    userId: string;
-    user: {
-      id: string;
-      username: string;
-    };
-  }[];
-  messages: {
-    content: string | null;
-    createdAt: string;
-  }[];
+  follower?: {
+    id: string;
+    username: string;
+  };
+  following?: {
+    id: string;
+    username: string;
+  };
 };
 
-export default function ChatsScreen() {
-  const { user } = useAuth();
-  const [chats, setChats] = useState<Chat[]>([]);
+export default function ConnectionsScreen() {
+  const { id, type } = useLocalSearchParams<{
+    id: string;
+    type: "followers" | "following";
+  }>();
+
+  const [items, setItems] = useState<ConnectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    loadChats();
+    loadConnections();
   }, []);
 
   async function onRefresh() {
     setRefreshing(true);
-    await loadChats();
+    await loadConnections();
     setRefreshing(false);
   }
 
-  async function loadChats() {
+  async function loadConnections() {
     try {
-      const res = await api.get("/chats");
-      setChats(res.data);
+      const res = await api.get(`/users/${id}/${type}`);
+      setItems(res.data);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
   }
+
+  const title = type === "following" ? "Following" : "Followers";
 
   if (loading) {
     return (
@@ -62,40 +64,35 @@ export default function ChatsScreen() {
 
   return (
     <View className="flex-1 bg-white px-6 pt-20">
-      <Text className="mb-6 text-3xl font-bold text-black">Chats</Text>
+      <Text className="mb-6 text-3xl font-bold text-black">{title}</Text>
 
       <FlatList
         refreshing={refreshing}
         onRefresh={onRefresh}
-        data={chats}
+        data={items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => {
-          const otherUser = item.participants.find(
-            (p) => p.userId !== user?.id,
-          )?.user;
+          const user = type === "following" ? item.following : item.follower;
 
-          const lastMessage = item.messages[0];
+          if (!user) return null;
 
           return (
             <TouchableOpacity
               className="mb-4 rounded-2xl border border-gray-200 p-4"
               onPress={() =>
                 router.push({
-                  pathname: "/chats/[id]",
-                  params: { id: item.id },
+                  pathname: "/users/[id]",
+                  params: { id: user.id },
                 })
               }
             >
               <Text className="text-lg font-bold text-black">
-                @{otherUser?.username}
-              </Text>
-
-              <Text className="mt-1 text-gray-500">
-                {lastMessage?.content || "No messages yet"}
+                @{user.username}
               </Text>
             </TouchableOpacity>
           );
         }}
+        ListEmptyComponent={<Text className="text-gray-500">No users yet</Text>}
       />
     </View>
   );

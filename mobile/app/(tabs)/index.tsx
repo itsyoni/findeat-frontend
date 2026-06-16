@@ -37,17 +37,24 @@ export default function HomeScreen() {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { refresh } = useLocalSearchParams();
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadPosts();
   }, [refresh]);
+
+  async function onRefresh() {
+    setRefreshing(true);
+    await loadPosts();
+    setRefreshing(false);
+  }
 
   async function loadPosts() {
     try {
       const res = await api.get("/posts/feed");
       setPosts(res.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -65,7 +72,7 @@ export default function HomeScreen() {
       const res = await api.get(`/users/search?q=${text}`);
       setUsers(res.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   }
 
@@ -125,6 +132,8 @@ export default function HomeScreen() {
       <FlatList
         data={posts}
         keyExtractor={(item) => item.id}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingBottom: 32,

@@ -1,6 +1,7 @@
-import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useState } from "react";
+
 import {
   ActivityIndicator,
   FlatList,
@@ -16,22 +17,41 @@ type Post = {
   createdAt: string;
 };
 
+type Profile = {
+  id: string;
+  email: string;
+  username: string;
+  bio?: string | null;
+  avatarUrl?: string | null;
+  postsCount: number;
+  followersCount: number;
+  followingCount: number;
+  posts: Post[];
+};
+
 export default function ProfileScreen() {
-  const { user, logout } = useAuth();
-
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadMyPosts();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, []),
+  );
 
-  async function loadMyPosts() {
+  async function onRefresh() {
+    setRefreshing(true);
+    await loadProfile();
+    setRefreshing(false);
+  }
+
+  async function loadProfile() {
     try {
-      const res = await api.get("/posts/me");
-      setPosts(res.data);
+      const res = await api.get("/users/me");
+      setProfile(res.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -40,7 +60,9 @@ export default function ProfileScreen() {
   return (
     <View className="flex-1 bg-white">
       <FlatList
-        data={posts}
+        refreshing={refreshing}
+        onRefresh={onRefresh}
+        data={profile?.posts ?? []}
         keyExtractor={(item) => item.id}
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -54,35 +76,55 @@ export default function ProfileScreen() {
             <View className="mt-8 rounded-3xl border border-gray-200 bg-white p-5">
               <View className="h-20 w-20 items-center justify-center rounded-full bg-black">
                 <Text className="text-3xl font-bold text-white">
-                  {user?.username?.charAt(0).toUpperCase()}
+                  {profile?.username?.charAt(0).toUpperCase()}
                 </Text>
               </View>
 
               <Text className="mt-5 text-2xl font-bold text-black">
-                @{user?.username}
+                @{profile?.username}
               </Text>
 
               <Text className="mt-1 text-base text-gray-500">
-                {user?.email}
+                {profile?.email}
               </Text>
+
+              {!!profile?.bio && (
+                <Text className="mt-4 text-base text-black">{profile.bio}</Text>
+              )}
 
               <View className="mt-6 h-px bg-gray-100" />
 
               <View className="mt-5 flex-row">
                 <View className="mr-8">
                   <Text className="text-xl font-bold text-black">
-                    {posts.length}
+                    {profile?.postsCount ?? 0}
                   </Text>
                   <Text className="mt-1 text-sm text-gray-500">Posts</Text>
+                </View>
+
+                <View className="mr-8">
+                  <Text className="text-xl font-bold text-black">
+                    {profile?.followersCount ?? 0}
+                  </Text>
+                  <Text className="mt-1 text-sm text-gray-500">Followers</Text>
+                </View>
+
+                <View>
+                  <Text className="text-xl font-bold text-black">
+                    {profile?.followingCount ?? 0}
+                  </Text>
+                  <Text className="mt-1 text-sm text-gray-500">Following</Text>
                 </View>
               </View>
             </View>
 
             <TouchableOpacity
-              className="mt-5 rounded-2xl bg-black py-4"
-              onPress={logout}
+              className="mt-5 rounded-2xl border border-gray-200 py-4"
+              onPress={() => router.push("/edit-profile")}
             >
-              <Text className="text-center font-bold text-white">Logout</Text>
+              <Text className="text-center font-bold text-black">
+                Edit Profile
+              </Text>
             </TouchableOpacity>
 
             <Text className="mt-8 mb-4 text-xl font-bold text-black">

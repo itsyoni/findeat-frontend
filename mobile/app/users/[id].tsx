@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -27,20 +27,26 @@ type UserProfile = {
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
-
   const [user, setUser] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     loadUser();
   }, []);
+
+  async function onRefresh() {
+    setRefreshing(true);
+    await loadUser();
+    setRefreshing(false);
+  }
 
   async function loadUser() {
     try {
       const res = await api.get(`/users/${id}`);
       setUser(res.data);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -58,7 +64,22 @@ export default function UserProfileScreen() {
 
       await loadUser();
     } catch (error) {
-      console.log(error);
+      console.error(error);
+    }
+  }
+
+  async function startChat() {
+    if (!user) return;
+
+    try {
+      const res = await api.post(`/chats/start/${user.id}`);
+
+      router.push({
+        pathname: "/chats/[id]",
+        params: { id: res.data.id },
+      });
+    } catch (error) {
+      console.error(error);
     }
   }
 
@@ -76,6 +97,8 @@ export default function UserProfileScreen() {
 
   return (
     <FlatList
+      refreshing={refreshing}
+      onRefresh={onRefresh}
       data={user.posts}
       keyExtractor={(item) => item.id}
       contentContainerStyle={{
@@ -103,15 +126,30 @@ export default function UserProfileScreen() {
               <Text className="text-gray-500">Posts</Text>
             </View>
 
-            <View className="mr-8">
+            <TouchableOpacity
+              className="mr-8"
+              onPress={() =>
+                router.push({
+                  pathname: "/users/connections",
+                  params: { id: user.id, type: "followers" },
+                })
+              }
+            >
               <Text className="text-xl font-bold">{user.followersCount}</Text>
               <Text className="text-gray-500">Followers</Text>
-            </View>
+            </TouchableOpacity>
 
-            <View>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/users/connections",
+                  params: { id: user.id, type: "following" },
+                })
+              }
+            >
               <Text className="text-xl font-bold">{user.followingCount}</Text>
               <Text className="text-gray-500">Following</Text>
-            </View>
+            </TouchableOpacity>
           </View>
 
           <TouchableOpacity
@@ -121,6 +159,13 @@ export default function UserProfileScreen() {
             <Text className="text-center font-bold text-white">
               {user.isFollowing ? "Following" : "Follow"}
             </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            className="mt-3 rounded-2xl border border-gray-200 py-4"
+            onPress={startChat}
+          >
+            <Text className="text-center font-bold text-black">Message</Text>
           </TouchableOpacity>
 
           <Text className="mt-8 mb-4 text-xl font-bold">Posts</Text>
