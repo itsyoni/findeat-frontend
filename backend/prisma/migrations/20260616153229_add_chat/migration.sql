@@ -1,34 +1,33 @@
-/*
-  Warnings:
+-- CreateEnum safely
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ConversationType') THEN
+    CREATE TYPE "ConversationType" AS ENUM ('DIRECT', 'GROUP');
+  END IF;
+END $$;
 
-  - Added the required column `updatedAt` to the `Comment` table without a default value. This is not possible if the table is not empty.
+-- AlterTable safely
+ALTER TABLE "Comment"
+ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
-*/
--- CreateEnum
-CREATE TYPE "ConversationType" AS ENUM ('DIRECT', 'GROUP');
+ALTER TABLE "Post"
+ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
--- AlterTable
-ALTER TABLE "Comment" ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL;
-
--- AlterTable
-ALTER TABLE "Post" ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
-
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE "User"
+ADD COLUMN IF NOT EXISTS "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
 
 -- CreateTable
-CREATE TABLE "Conversation" (
+CREATE TABLE IF NOT EXISTS "Conversation" (
     "id" TEXT NOT NULL,
     "type" "ConversationType" NOT NULL DEFAULT 'DIRECT',
     "title" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Conversation_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "ConversationParticipant" (
+CREATE TABLE IF NOT EXISTS "ConversationParticipant" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "conversationId" TEXT NOT NULL,
@@ -38,13 +37,12 @@ CREATE TABLE "ConversationParticipant" (
     CONSTRAINT "ConversationParticipant_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "Message" (
+CREATE TABLE IF NOT EXISTS "Message" (
     "id" TEXT NOT NULL,
     "content" TEXT,
     "imageUrl" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deletedAt" TIMESTAMP(3),
     "conversationId" TEXT NOT NULL,
     "senderId" TEXT NOT NULL,
@@ -52,17 +50,55 @@ CREATE TABLE "Message" (
     CONSTRAINT "Message_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "ConversationParticipant_conversationId_userId_key" ON "ConversationParticipant"("conversationId", "userId");
+-- CreateIndex safely
+CREATE UNIQUE INDEX IF NOT EXISTS "ConversationParticipant_conversationId_userId_key"
+ON "ConversationParticipant"("conversationId", "userId");
 
--- AddForeignKey
-ALTER TABLE "ConversationParticipant" ADD CONSTRAINT "ConversationParticipant_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+-- AddForeignKey safely
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'ConversationParticipant_conversationId_fkey'
+  ) THEN
+    ALTER TABLE "ConversationParticipant"
+    ADD CONSTRAINT "ConversationParticipant_conversationId_fkey"
+    FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id")
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "ConversationParticipant" ADD CONSTRAINT "ConversationParticipant_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'ConversationParticipant_userId_fkey'
+  ) THEN
+    ALTER TABLE "ConversationParticipant"
+    ADD CONSTRAINT "ConversationParticipant_userId_fkey"
+    FOREIGN KEY ("userId") REFERENCES "User"("id")
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_conversationId_fkey" FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'Message_conversationId_fkey'
+  ) THEN
+    ALTER TABLE "Message"
+    ADD CONSTRAINT "Message_conversationId_fkey"
+    FOREIGN KEY ("conversationId") REFERENCES "Conversation"("id")
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+END $$;
 
--- AddForeignKey
-ALTER TABLE "Message" ADD CONSTRAINT "Message_senderId_fkey" FOREIGN KEY ("senderId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'Message_senderId_fkey'
+  ) THEN
+    ALTER TABLE "Message"
+    ADD CONSTRAINT "Message_senderId_fkey"
+    FOREIGN KEY ("senderId") REFERENCES "User"("id")
+    ON DELETE RESTRICT ON UPDATE CASCADE;
+  END IF;
+END $$;
