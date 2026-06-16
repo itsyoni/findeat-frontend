@@ -81,4 +81,37 @@ export class UsersService {
       },
     });
   }
+
+  async findOne(userId: string, currentUserId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        createdAt: true,
+        posts: {
+          orderBy: { createdAt: 'desc' },
+        },
+        followers: true,
+        following: true,
+      },
+    });
+
+    const follow = await this.prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId: currentUserId,
+          followingId: userId,
+        },
+      },
+    });
+
+    return {
+      ...user,
+      followersCount: user?.followers.length ?? 0,
+      followingCount: user?.following.length ?? 0,
+      isFollowing: !!follow,
+    };
+  }
 }

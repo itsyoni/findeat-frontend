@@ -49,4 +49,12 @@ export class UsersController {
   following(@Param('id') userId: string) {
     return this.usersService.following(userId);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':id')
+  findOne(@Param('id') userId: string, @Req() req: Request) {
+    const user = req.user as { userId: string; email: string };
+
+    return this.usersService.findOne(userId, user.userId);
+  }
 }
