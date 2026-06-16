@@ -81,6 +81,39 @@ export class PostsService {
     });
   }
 
+  addComment(postId: string, userId: string, content: string) {
+    return this.prisma.comment.create({
+      data: {
+        postId,
+        userId,
+        content,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    });
+  }
+
+  getComments(postId: string) {
+    return this.prisma.comment.findMany({
+      where: { postId },
+      orderBy: { createdAt: 'asc' },
+      include: {
+        user: {
+          select: {
+            id: true,
+            username: true,
+          },
+        },
+      },
+    });
+  }
+
   async getFeed(userId: string) {
     const follows = await this.prisma.follow.findMany({
       where: {

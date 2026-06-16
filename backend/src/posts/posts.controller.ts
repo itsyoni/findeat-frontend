@@ -66,4 +66,21 @@ export class PostsController {
 
     return this.postsService.unlike(postId, user.userId);
   }
+
+  @Post(':id/comments')
+  @UseGuards(AuthGuard('jwt'))
+  addComment(
+    @Param('id') postId: string,
+    @Req() req: Request,
+    @Body() body: { content: string },
+  ) {
+    const user = req.user as { userId: string; email: string };
+
+    return this.postsService.addComment(postId, user.userId, body.content);
+  }
+
+  @Get(':id/comments')
+  getComments(@Param('id') postId: string) {
+    return this.postsService.getComments(postId);
+  }
 }
