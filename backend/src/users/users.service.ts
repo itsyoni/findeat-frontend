@@ -114,4 +114,51 @@ export class UsersService {
       isFollowing: !!follow,
     };
   }
+
+  async me(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        bio: true,
+        avatarUrl: true,
+        createdAt: true,
+        posts: {
+          orderBy: { createdAt: 'desc' },
+        },
+        followers: true,
+        following: true,
+      },
+    });
+
+    return {
+      ...user,
+      followersCount: user?.followers.length ?? 0,
+      followingCount: user?.following.length ?? 0,
+    };
+  }
+
+  updateMe(
+    userId: string,
+    data: {
+      username?: string;
+      bio?: string;
+      avatarUrl?: string;
+    },
+  ) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data,
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        bio: true,
+        avatarUrl: true,
+        createdAt: true,
+      },
+    });
+  }
 }
