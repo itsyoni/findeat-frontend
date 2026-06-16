@@ -1,5 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View } from "react-native";
 
@@ -19,10 +20,11 @@ export default function HomeScreen() {
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const { refresh } = useLocalSearchParams();
 
   useEffect(() => {
     loadPosts();
-  }, []);
+  }, [refresh]);
 
   async function loadPosts() {
     try {

@@ -25,7 +25,10 @@ export default function CreatePostScreen() {
       setTitle("");
       setDescription("");
 
-      router.replace("/(tabs)");
+      router.replace({
+        pathname: "/(tabs)",
+        params: { refresh: Date.now().toString() },
+      });
     } catch (error) {
       console.log(error);
       Alert.alert("Error", "Could not create post");

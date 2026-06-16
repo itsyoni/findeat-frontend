@@ -18,7 +18,25 @@ model User {
   password  String
   createdAt DateTime @default(now())
 
+  bio       String?
+  avatarUrl String?
+
   posts     Post[]
+  followers Follow[] @relation("UserFollowers")
+  following Follow[] @relation("UserFollowing")
+}
+
+model Follow {
+  id          String   @id @default(uuid())
+  createdAt   DateTime @default(now())
+
+  followerId  String
+  followingId String
+
+  follower    User @relation("UserFollowing", fields: [followerId], references: [id])
+  following   User @relation("UserFollowers", fields: [followingId], references: [id])
+
+  @@unique([followerId, followingId])
 }
 
 model Post {
