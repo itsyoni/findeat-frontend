@@ -19,6 +19,14 @@ export class UsersController {
   constructor(private usersService: UsersService) {}
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('search')
+  search(@Query('q') query: string, @Req() req: Request) {
+    const user = req.user as { userId: string; email: string };
+
+    return this.usersService.search(query || '', user.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Get('me')
   me(@Req() req: Request) {
     const user = req.user as { userId: string; email: string };
@@ -35,14 +43,6 @@ export class UsersController {
     const user = req.user as { userId: string; email: string };
 
     return this.usersService.updateMe(user.userId, body);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Get('search')
-  search(@Query('q') query: string, @Req() req: Request) {
-    const user = req.user as { userId: string; email: string };
-
-    return this.usersService.search(query || '', user.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
