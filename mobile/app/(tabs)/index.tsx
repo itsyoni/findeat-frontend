@@ -1,7 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -10,6 +11,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
+import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
 
 type Post = {
   id: string;
@@ -22,14 +25,16 @@ type Post = {
   };
   likesCount: number;
   isLiked: boolean;
+  commentsCount: number;
 };
 
 export default function HomeScreen() {
   const { user } = useAuth();
-
+  const commentsSheetRef = useRef<BottomSheet>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState([]);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const { refresh } = useLocalSearchParams();
 
@@ -144,9 +149,18 @@ export default function HomeScreen() {
                 {item.isLiked ? "❤️" : "🤍"} {item.likesCount}
               </Text>
             </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedPostId(item.id);
+                commentsSheetRef.current?.snapToIndex(0);
+              }}
+            >
+              <Text>💬 {item.commentsCount}</Text>
+            </TouchableOpacity>
           </View>
         )}
       />
+      <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
     </View>
   );
 }

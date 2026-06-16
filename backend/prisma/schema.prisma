@@ -17,26 +17,31 @@ model User {
   username  String   @unique
   password  String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   bio       String?
   avatarUrl String?
 
   posts     Post[]
-  likes Like[]
-  comments Comment[]
+  likes     Like[]
+  comments  Comment[]
+
   followers Follow[] @relation("UserFollowers")
   following Follow[] @relation("UserFollowing")
+
+  conversations ConversationParticipant[]
+  sentMessages  Message[]
 }
 
 model Follow {
-  id          String   @id @default(uuid())
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
 
   followerId  String
   followingId String
 
-  follower    User @relation("UserFollowing", fields: [followerId], references: [id])
-  following   User @relation("UserFollowers", fields: [followingId], references: [id])
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id])
+  following User @relation("UserFollowers", fields: [followingId], references: [id])
 
   @@unique([followerId, followingId])
 }
@@ -46,11 +51,13 @@ model Post {
   title       String
   description String?
   createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   userId String
-  likes Like[]
+
+  user     User      @relation(fields: [userId], references: [id])
+  likes    Like[]
   comments Comment[]
-  user   User @relation(fields: [userId], references: [id])
 }
 
 model Like {
@@ -70,10 +77,57 @@ model Comment {
   id        String   @id @default(uuid())
   content   String
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   userId String
   postId String
 
   user User @relation(fields: [userId], references: [id])
   post Post @relation(fields: [postId], references: [id])
+}
+
+model Conversation {
+  id        String   @id @default(uuid())
+  type      ConversationType @default(DIRECT)
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  conversationId String
+  userId         String
+
+  lastReadAt DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String?
+  imageUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  conversationId String
+  senderId       String
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+}
+
+enum ConversationType {
+  DIRECT
+  GROUP
 }
