@@ -138,6 +138,7 @@ export class PostsService {
           },
         },
         likes: true,
+        comments: true,
       },
       orderBy: {
         createdAt: 'desc',
@@ -147,6 +148,7 @@ export class PostsService {
     return posts.map((post) => ({
       ...post,
       likesCount: post.likes.length,
+      commentsCount: post.comments.length,
       isLiked: post.likes.some((like) => like.userId === userId),
     }));
   }
