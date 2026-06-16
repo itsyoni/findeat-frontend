@@ -20,6 +20,8 @@ type Post = {
     id: string;
     username: string;
   };
+  likesCount: number;
+  isLiked: boolean;
 };
 
 export default function HomeScreen() {
@@ -37,7 +39,7 @@ export default function HomeScreen() {
 
   async function loadPosts() {
     try {
-      const res = await api.get("/posts");
+      const res = await api.get("/posts/feed");
       setPosts(res.data);
     } catch (error) {
       console.log(error);
@@ -60,6 +62,16 @@ export default function HomeScreen() {
     } catch (error) {
       console.log(error);
     }
+  }
+
+  async function toggleLike(postId: string, isLiked: boolean) {
+    if (isLiked) {
+      await api.delete(`/posts/${postId}/like`);
+    } else {
+      await api.post(`/posts/${postId}/like`);
+    }
+
+    await loadPosts();
   }
 
   if (loading) {
@@ -123,6 +135,15 @@ export default function HomeScreen() {
             <Text className="mt-3 text-sm text-gray-400">
               @{item.user.username}
             </Text>
+
+            <TouchableOpacity
+              className="mt-3"
+              onPress={() => toggleLike(item.id, item.isLiked)}
+            >
+              <Text>
+                {item.isLiked ? "❤️" : "🤍"} {item.likesCount}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
       />
