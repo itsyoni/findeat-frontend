@@ -88,19 +88,20 @@ export default function EditProfileScreen() {
       </TouchableOpacity>
       <TouchableOpacity
         className="mt-3 rounded-2xl border border-red-300 py-4"
-        onPress={() =>
-          Alert.alert("Logout", "Are you sure you want to logout?", [
-            {
-              text: "Cancel",
-              style: "cancel",
-            },
-            {
-              text: "Logout",
-              style: "destructive",
-              onPress: logout,
-            },
-          ])
-        }
+        onPress={logout}
+        // onPress={() =>
+        //   Alert.alert("Logout", "Are you sure you want to logout?", [
+        //     {
+        //       text: "Cancel",
+        //       style: "cancel",
+        //     },
+        //     {
+        //       text: "Logout",
+        //       style: "destructive",
+        //       onPress: logout,
+        //     },
+        //   ])
+        // }
       >
         <Text className="text-center font-bold text-red-500">Logout</Text>
       </TouchableOpacity>

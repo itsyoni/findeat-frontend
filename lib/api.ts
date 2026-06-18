@@ -1,7 +1,21 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-export const API_URL = "https://findeat-production.up.railway.app";
+export const API_URL = "http://172.20.10.6:3000";
+// export const API_URL = "http://localhost:3000";
 
 export const api = axios.create({
   baseURL: API_URL,
+});
+
+const TOKEN_KEY = "findeat_access_token";
+
+api.interceptors.request.use(async (config) => {
+  const token = await AsyncStorage.getItem(TOKEN_KEY);
+
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
 });

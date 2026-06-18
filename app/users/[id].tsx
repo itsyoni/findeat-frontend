@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { UserProfile } from "@/types/profile";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -8,22 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-type Post = {
-  id: string;
-  title: string;
-  description?: string;
-};
-
-type UserProfile = {
-  id: string;
-  username: string;
-  email: string;
-  followersCount: number;
-  followingCount: number;
-  isFollowing: boolean;
-  posts: Post[];
-};
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();

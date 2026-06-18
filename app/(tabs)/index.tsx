@@ -2,7 +2,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -13,43 +13,22 @@ import {
 } from "react-native";
 
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
-
-type Post = {
-  id: string;
-  title: string;
-  description?: string;
-  createdAt: string;
-  user: {
-    id: string;
-    username: string;
-  };
-  likesCount: number;
-  isLiked: boolean;
-  commentsCount: number;
-};
+import { Post } from "@/types/post";
 
 export default function HomeScreen() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const { refresh } = useLocalSearchParams();
   const commentsSheetRef = useRef<BottomSheet>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState([]);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const { refresh } = useLocalSearchParams();
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadPosts();
-  }, [refresh]);
+  const loadPosts = useCallback(async () => {
+    if (!user) return;
 
-  async function onRefresh() {
-    setRefreshing(true);
-    await loadPosts();
-    setRefreshing(false);
-  }
-
-  async function loadPosts() {
     try {
       const res = await api.get("/posts/feed");
       setPosts(res.data);
@@ -58,6 +37,14 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
+  }, [user]);
+
+  async function onRefresh() {
+    if (!user) return;
+
+    setRefreshing(true);
+    await loadPosts();
+    setRefreshing(false);
   }
 
   async function searchUsers(text: string) {
@@ -86,7 +73,14 @@ export default function HomeScreen() {
     await loadPosts();
   }
 
-  if (loading) {
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
+
+    loadPosts();
+  }, [refresh, authLoading, user, loadPosts]);
+
+  if (authLoading || loading) {
     return (
       <View className="flex-1 items-center justify-center">
         <ActivityIndicator />

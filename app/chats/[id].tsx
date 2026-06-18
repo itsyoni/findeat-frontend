@@ -1,10 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
-import { useLocalSearchParams } from "expo-router";
+import { Message } from "@/types/chat";
+import { Stack, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import type { Socket } from "socket.io-client";
-import { io } from "socket.io-client";
-
 import {
   ActivityIndicator,
   FlatList,
@@ -15,17 +13,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-type Message = {
-  id: string;
-  content: string | null;
-  createdAt: string;
-  senderId: string;
-  sender: {
-    id: string;
-    username: string;
-  };
-};
+import type { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 
 export default function ChatScreen() {
   const { id } = useLocalSearchParams();
@@ -35,6 +24,7 @@ export default function ChatScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+  const { title } = useLocalSearchParams();
 
   useEffect(() => {
     loadMessages();
@@ -102,54 +92,56 @@ export default function ChatScreen() {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-white"
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={90}
-    >
-      <FlatList
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        data={messages}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 80,
-          paddingBottom: 16,
-        }}
-        renderItem={({ item }) => {
-          const isMine = item.senderId === user?.id;
+    <>
+      <Stack.Screen options={{ title: title as string }} />
+      <KeyboardAvoidingView
+        className="flex-1 bg-white"
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={90}
+      >
+        <FlatList
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          data={messages}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: 10,
+            paddingTop: 10,
+          }}
+          renderItem={({ item }) => {
+            const isMine = item.senderId === user?.id;
 
-          return (
-            <View
-              className={`mb-3 max-w-[80%] rounded-2xl px-4 py-3 ${
-                isMine ? "self-end bg-black" : "self-start bg-gray-100"
-              }`}
-            >
-              <Text className={isMine ? "text-white" : "text-black"}>
-                {item.content}
-              </Text>
-            </View>
-          );
-        }}
-      />
-
-      <View className="flex-row items-center gap-2 border-t border-gray-200 px-4 py-3">
-        <TextInput
-          className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-black"
-          placeholder="Message..."
-          placeholderTextColor="#9CA3AF"
-          value={content}
-          onChangeText={setContent}
+            return (
+              <View
+                className={`mb-3 max-w-[80%] rounded-2xl px-4 py-3 ${
+                  isMine
+                    ? "self-end bg-[#F7D786] rounded-br-none"
+                    : "self-start bg-[#EEEEEE] rounded-bl-none"
+                }`}
+              >
+                <Text className={"text-black"}>{item.content}</Text>
+              </View>
+            );
+          }}
         />
 
-        <TouchableOpacity
-          className="rounded-2xl bg-black px-4 py-3"
-          onPress={sendMessage}
-        >
-          <Text className="font-bold text-white">Send</Text>
-        </TouchableOpacity>
-      </View>
-    </KeyboardAvoidingView>
+        <View className="flex-row items-center gap-2 border-t border-gray-200 px-4 py-3">
+          <TextInput
+            className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-black"
+            placeholder="Message..."
+            placeholderTextColor="#9CA3AF"
+            value={content}
+            onChangeText={setContent}
+          />
+
+          <TouchableOpacity
+            className="rounded-2xl bg-black px-4 py-3"
+            onPress={sendMessage}
+          >
+            <Text className="font-bold text-white">Send</Text>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+    </>
   );
 }

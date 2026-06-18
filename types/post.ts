@@ -7,4 +7,7 @@ export type Post = {
     id: string;
     username: string;
   };
+  likesCount: number;
+  isLiked: boolean;
+  commentsCount: number;
 };

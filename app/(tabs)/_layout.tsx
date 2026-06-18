@@ -1,13 +1,15 @@
-import { Tabs } from "expo-router";
-import React from "react";
-
 import { HapticTab } from "@/components/haptic-tab";
 import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
+import { useAuth } from "@/contexts/AuthContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { Tabs } from "expo-router";
+import React from "react";
+import { Text, View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
+  const { user, isLoading } = useAuth();
 
   return (
     <Tabs
@@ -23,7 +25,7 @@ export default function TabLayout() {
         options={{
           title: "Home",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
+            <IconSymbol size={28} name="house.fill" color={"black"} />
           ),
         }}
       />
@@ -32,7 +34,7 @@ export default function TabLayout() {
         options={{
           title: "Chat",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="bubble.fill" color={color} />
+            <IconSymbol size={28} name="bubble.fill" color={"black"} />
           ),
         }}
       />
@@ -41,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: "Create",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="plus.circle.fill" color={color} />
+            <IconSymbol size={28} name="plus.circle.fill" color={"black"} />
           ),
         }}
       />
@@ -50,7 +52,7 @@ export default function TabLayout() {
         options={{
           title: "Map",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="map.fill" color={color} />
+            <IconSymbol size={28} name="map.fill" color={"black"} />
           ),
         }}
       />
@@ -59,7 +61,12 @@ export default function TabLayout() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
+            // <IconSymbol size={28} name="person.fill" color={"black"} />
+            <View className="h-7 w-7 items-center justify-center rounded-full bg-black">
+              <Text className="text-xs font-bold text-white">
+                {user?.username?.charAt(0).toUpperCase()}
+              </Text>
+            </View>
           ),
         }}
       />

@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setToken(savedToken);
       setUser(res.data);
-    } catch (error) {
+    } catch (error: any) {
       await AsyncStorage.removeItem(TOKEN_KEY);
       setToken(null);
       setUser(null);
