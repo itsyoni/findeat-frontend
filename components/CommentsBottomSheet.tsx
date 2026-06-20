@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { Comment } from "@/types";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -7,16 +8,6 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { forwardRef, useEffect, useMemo, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
-
-type Comment = {
-  id: string;
-  content: string;
-  createdAt: string;
-  user: {
-    id: string;
-    username: string;
-  };
-};
 
 type Props = {
   postId: string | null;

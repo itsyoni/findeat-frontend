@@ -1,3 +1,5 @@
+import { UserSummary } from "./user";
+
 export type Chat = {
   id: string;
   type: "DIRECT" | "GROUP";
@@ -16,11 +18,7 @@ export type Chat = {
     lastReadAt?: string | null;
     pinned?: boolean;
     muted?: boolean;
-    user: {
-      id: string;
-      username: string;
-      avatarUrl?: string | null;
-    };
+    user: UserSummary;
   }[];
 };
 
@@ -30,9 +28,5 @@ export type Message = {
   imageUrl?: string | null;
   createdAt: string;
   senderId: string;
-  sender: {
-    id: string;
-    username: string;
-    avatarUrl?: string | null;
-  };
+  sender: UserSummary;
 };

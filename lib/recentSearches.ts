@@ -1,13 +1,7 @@
+import { RecentSearchItem } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const STORAGE_KEY = "findeat_recent_searches";
-
-export type RecentSearchItem = {
-  id: string;
-  type: "user" | "restaurant" | "dish";
-  title: string;
-  subtitle?: string;
-};
 
 export async function getRecentSearches() {
   const data = await AsyncStorage.getItem(STORAGE_KEY);

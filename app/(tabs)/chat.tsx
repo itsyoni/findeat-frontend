@@ -3,14 +3,13 @@ import ChatList from "@/components/chats/ChatList";
 import SearchUsersView from "@/components/chats/SearchUsersView";
 import { api } from "@/lib/api";
 import { Chat } from "@/types/chat";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ChatsScreen() {
-  const { refresh } = useLocalSearchParams();
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -19,7 +18,7 @@ export default function ChatsScreen() {
   useFocusEffect(
     useCallback(() => {
       loadChats();
-    }, [refresh]),
+    }, []),
   );
 
   async function loadChats() {

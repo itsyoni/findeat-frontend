@@ -1,15 +1,16 @@
 import SearchBar from "@/components/SearchBar";
 import { api } from "@/lib/api";
-import {
-  addRecentSearch,
-  getRecentSearches,
-  RecentSearchItem,
-} from "@/lib/recentSearches";
-import { UserProfile } from "@/types/profile";
+import { addRecentSearch, getRecentSearches } from "@/lib/recentSearches";
+import { RecentSearchItem, UserSummary } from "@/types";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, Text, TouchableOpacity } from "react-native";
-import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
+import Avatar from "../Avatar";
 
 type Props = {
   onCancel: () => void;
@@ -18,7 +19,7 @@ type Props = {
 
 export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
   const [query, setQuery] = useState("");
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<UserSummary[]>([]);
   const [recentSearches, setRecentSearches] = useState<RecentSearchItem[]>([]);
 
   useEffect(() => {
@@ -45,7 +46,8 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
         const updated = await addRecentSearch({
           id: selectedUser.id,
           type: "user",
-          title: `@${selectedUser.username}`,
+          title: selectedUser.username,
+          avatarUrl: selectedUser.avatarUrl,
         });
 
         setRecentSearches(updated);
@@ -78,7 +80,7 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
         exiting={FadeOut.duration(120)}
         className="flex-row items-center"
       >
-        <Animated.View layout={Layout.springify()} className="flex-1">
+        <Animated.View layout={LinearTransition.springify()} className="flex-1">
           <SearchBar
             value={query}
             onChangeText={searchUsers}
@@ -90,7 +92,7 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
         <Animated.View
           entering={FadeIn.delay(80).duration(160)}
           exiting={FadeOut.duration(100)}
-          layout={Layout.springify()}
+          layout={LinearTransition.springify()}
         >
           <TouchableOpacity className="pr-5" onPress={onCancel}>
             <Text className="font-semibold text-black">Cancel</Text>
@@ -105,9 +107,10 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => handleUserPress(item.id)}
-              className="border-b border-gray-100 p-4"
+              className="border-b border-gray-100 p-4 flex-1 flex-row items-center gap-4"
             >
-              <Text className="font-bold">@{item.username}</Text>
+              <Avatar uri={item.avatarUrl} username={item.username} size={44} />
+              <Text className="font-bold">{item.username}</Text>
             </TouchableOpacity>
           )}
         />
@@ -118,9 +121,10 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => handleUserPress(item.id)}
-              className="border-b border-gray-100 p-4"
+              className="flex-row items-center gap-4 border-b border-gray-100 p-4"
             >
-              <Text className="font-bold">{item.title}</Text>
+              <Avatar uri={item.avatarUrl} username={item.title} size={44} />
+              <Text className="font-bold">@{item.title}</Text>
             </TouchableOpacity>
           )}
         />

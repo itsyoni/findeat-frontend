@@ -1,7 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Chat } from "@/types/chat";
 import { router } from "expo-router";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
+import Avatar from "../Avatar";
 
 type Props = {
   chat: Chat;
@@ -25,23 +26,21 @@ export default function ChatRow({ chat }: Props) {
       onPress={() =>
         router.push({
           pathname: "/chats/[id]",
-          params: { id: chat.id, title: chat.id },
+          params: {
+            id: chat.id,
+            title: otherUser?.username ?? "Chat",
+            avatarUrl: otherUser?.avatarUrl ?? "",
+            isOnline: String(otherUser?.isOnline ?? false),
+            lastSeenAt: otherUser?.lastSeenAt ?? "",
+          },
         })
       }
     >
-      {otherUser?.avatarUrl ? (
-        <Image
-          source={{ uri: otherUser.avatarUrl }}
-          className="h-12 w-12 rounded-full"
-        />
-      ) : (
-        <View className="h-12 w-12 items-center justify-center rounded-full bg-black">
-          <Text className="text-base font-bold text-white">
-            {otherUser?.username?.charAt(0).toUpperCase() || "?"}
-          </Text>
-        </View>
-      )}
-
+      <Avatar
+        uri={otherUser?.avatarUrl}
+        username={otherUser?.username}
+        size={48}
+      />
       <View className="flex-1">
         <Text
           className={`text-lg text-black ${

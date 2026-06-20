@@ -1,4 +1,5 @@
 import { api } from "@/lib/api";
+import { ConnectionItem } from "@/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -8,18 +9,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-type ConnectionItem = {
-  id: string;
-  follower?: {
-    id: string;
-    username: string;
-  };
-  following?: {
-    id: string;
-    username: string;
-  };
-};
 
 export default function ConnectionsScreen() {
   const { id, type } = useLocalSearchParams<{

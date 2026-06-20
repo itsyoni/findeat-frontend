@@ -1,23 +1,10 @@
 import { Post } from "./post";
+import { User } from "./user";
 
-export type Profile = {
-  id: string;
-  email: string;
-  username: string;
-  bio?: string | null;
-  avatarUrl?: string | null;
+export type Profile = User & {
   postsCount: number;
   followersCount: number;
   followingCount: number;
-  posts: Post[];
-};
-
-export type UserProfile = {
-  id: string;
-  username: string;
-  email: string;
-  followersCount: number;
-  followingCount: number;
-  isFollowing: boolean;
+  isFollowing?: boolean;
   posts: Post[];
 };
