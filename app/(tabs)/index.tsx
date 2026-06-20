@@ -1,30 +1,27 @@
+import SearchUsersView from "@/components/chats/SearchUsersView";
+import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
+import FakeSearchBar from "@/components/FakeSearchBar";
+import FeedPostList from "@/components/feed/FeedPostList";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import BottomSheet from "@gorhom/bottom-sheet";
-import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
 import { Post } from "@/types/post";
+import BottomSheet from "@gorhom/bottom-sheet";
+import { useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { ActivityIndicator, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { user, isLoading: authLoading } = useAuth();
   const { refresh } = useLocalSearchParams();
+
   const commentsSheetRef = useRef<BottomSheet>(null);
+
   const [posts, setPosts] = useState<Post[]>([]);
-  const [query, setQuery] = useState("");
-  const [users, setUsers] = useState([]);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
   const loadPosts = useCallback(async () => {
     if (!user) return;
@@ -40,27 +37,9 @@ export default function HomeScreen() {
   }, [user]);
 
   async function onRefresh() {
-    if (!user) return;
-
     setRefreshing(true);
     await loadPosts();
     setRefreshing(false);
-  }
-
-  async function searchUsers(text: string) {
-    setQuery(text);
-
-    if (!text.trim()) {
-      setUsers([]);
-      return;
-    }
-
-    try {
-      const res = await api.get(`/users/search?q=${text}`);
-      setUsers(res.data);
-    } catch (error) {
-      console.error(error);
-    }
   }
 
   async function toggleLike(postId: string, isLiked: boolean) {
@@ -73,6 +52,11 @@ export default function HomeScreen() {
     await loadPosts();
   }
 
+  function openComments(postId: string) {
+    setSelectedPostId(postId);
+    commentsSheetRef.current?.snapToIndex(0);
+  }
+
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
@@ -82,88 +66,37 @@ export default function HomeScreen() {
 
   if (authLoading || loading) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
-      <View className="px-6 pt-16 pb-4 ">
-        <Text className="text-3xl font-bold">FindEat</Text>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      {isSearching ? (
+        <SearchUsersView
+          mode="profile"
+          onCancel={() => setIsSearching(false)}
+        />
+      ) : (
+        <>
+          <FakeSearchBar
+            placeholder="Search people..."
+            onPress={() => setIsSearching(true)}
+          />
 
-        <Text className="mt-1 text-gray-500">
-          Logged in as @{user?.username}
-        </Text>
-      </View>
-      <TextInput
-        className="mb-6 mx-5 rounded-2xl border border-gray-200 px-4 py-4 text-base"
-        placeholder="Search people..."
-        placeholderTextColor="#9CA3AF"
-        value={query}
-        onChangeText={searchUsers}
-      />
-      {users.length > 0 && (
-        <View className="mb-6 rounded-2xl border border-gray-200">
-          {users.map((user: any) => (
-            <TouchableOpacity
-              key={user.id}
-              onPress={() =>
-                router.push({
-                  pathname: "/users/[id]",
-                  params: { id: user.id },
-                })
-              }
-              className="border-b border-gray-100 p-4"
-            >
-              <Text className="font-bold">@{user.username}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+          <FeedPostList
+            posts={posts}
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            onToggleLike={toggleLike}
+            onOpenComments={openComments}
+          />
+
+          <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
+        </>
       )}
-
-      <FlatList
-        data={posts}
-        keyExtractor={(item) => item.id}
-        refreshing={refreshing}
-        onRefresh={onRefresh}
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingBottom: 32,
-        }}
-        renderItem={({ item }) => (
-          <View className="mb-4 rounded-2xl border border-gray-200 p-4">
-            <Text className="text-lg font-bold">{item.title}</Text>
-
-            {!!item.description && (
-              <Text className="mt-2 text-gray-600">{item.description}</Text>
-            )}
-
-            <Text className="mt-3 text-sm text-gray-400">
-              @{item.user.username}
-            </Text>
-
-            <TouchableOpacity
-              className="mt-3"
-              onPress={() => toggleLike(item.id, item.isLiked)}
-            >
-              <Text>
-                {item.isLiked ? "❤️" : "🤍"} {item.likesCount}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedPostId(item.id);
-                commentsSheetRef.current?.snapToIndex(0);
-              }}
-            >
-              <Text>💬 {item.commentsCount}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
-      />
-      <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
-    </View>
+    </SafeAreaView>
   );
 }

@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Tabs } from "expo-router";
 import React from "react";
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -56,18 +56,24 @@ export default function TabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color }) => (
-            // <IconSymbol size={28} name="person.fill" color={"black"} />
-            <View className="h-7 w-7 items-center justify-center rounded-full bg-black">
-              <Text className="text-xs font-bold text-white">
-                {user?.username?.charAt(0).toUpperCase()}
-              </Text>
-            </View>
-          ),
+          tabBarIcon: () =>
+            user?.avatarUrl ? (
+              <Image
+                source={{ uri: user.avatarUrl }}
+                className="h-7 w-7 rounded-full"
+              />
+            ) : (
+              <View className="h-7 w-7 items-center justify-center rounded-full bg-black">
+                <Text className="text-xs font-bold text-white">
+                  {user?.username?.charAt(0).toUpperCase() || "?"}
+                </Text>
+              </View>
+            ),
         }}
       />
     </Tabs>

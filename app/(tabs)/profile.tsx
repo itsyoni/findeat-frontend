@@ -5,6 +5,7 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   Text,
   TouchableOpacity,
   View,
@@ -50,11 +51,18 @@ export default function ProfileScreen() {
           ListHeaderComponent={
             <View className="flex items-center">
               <View className="flex items-center w-full">
-                <View className="h-20 w-20 items-center justify-center rounded-full bg-black">
-                  <Text className="text-3xl font-bold text-white">
-                    {profile?.username?.charAt(0).toUpperCase()}
-                  </Text>
-                </View>
+                {profile?.avatarUrl ? (
+                  <Image
+                    source={{ uri: profile.avatarUrl }}
+                    className="h-20 w-20 rounded-full"
+                  />
+                ) : (
+                  <View className="h-20 w-20 items-center justify-center rounded-full bg-black">
+                    <Text className="text-3xl font-bold text-white">
+                      {profile?.username?.charAt(0).toUpperCase() || "?"}
+                    </Text>
+                  </View>
+                )}
 
                 <Text className="mt-2 text-2xl font-bold text-black">
                   @{profile?.username}
