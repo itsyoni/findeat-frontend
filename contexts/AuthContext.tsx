@@ -1,4 +1,4 @@
-import { AuthContextType, User } from "@/types";
+import { AuthContextType, SignupWithRestaurantData, User } from "@/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../lib/api";
@@ -65,6 +65,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user);
   }
 
+  async function signupWithRestaurant(data: SignupWithRestaurantData) {
+    const res = await api.post("/auth/signup-with-restaurant", data);
+
+    const accessToken = res.data.accessToken;
+    const user = res.data.user;
+
+    await AsyncStorage.setItem(TOKEN_KEY, accessToken);
+
+    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+    setToken(accessToken);
+    setUser(user);
+  }
+
   async function logout() {
     await AsyncStorage.removeItem(TOKEN_KEY);
 
@@ -80,7 +94,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, login, signup, logout }}
+      value={{
+        user,
+        token,
+        isLoading,
+        login,
+        signup,
+        signupWithRestaurant,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

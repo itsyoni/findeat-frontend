@@ -1,5 +1,7 @@
+import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { Restaurant } from "@/types/post";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -25,6 +27,8 @@ export default function CreatePostScreen() {
   const [rating, setRating] = useState("");
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string>();
+  const [selectedRestaurant, setSelectedRestaurant] =
+    useState<Restaurant | null>(null);
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -62,6 +66,8 @@ export default function CreatePostScreen() {
         description: description.trim(),
         imageUrl,
         rating: postType === "REVIEW" ? Number(rating) : undefined,
+        restaurantId:
+          postType === "REVIEW" ? selectedRestaurant?.id : undefined,
       });
 
       setDescription("");
@@ -130,6 +136,12 @@ export default function CreatePostScreen() {
               <Text className="text-gray-500">+ Add photo</Text>
             )}
           </TouchableOpacity>
+          {postType === "REVIEW" && (
+            <RestaurantSearch
+              selectedRestaurant={selectedRestaurant}
+              onSelect={setSelectedRestaurant}
+            />
+          )}
 
           {postType === "REVIEW" && (
             <TextInput

@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [feedHeight, setFeedHeight] = useState(0);
 
   const loadPosts = useCallback(async () => {
     if (!user) return;
@@ -74,7 +75,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
       {isSearching ? (
         <SearchUsersView
           mode="profile"
@@ -110,24 +111,30 @@ export default function HomeScreen() {
             </TouchableOpacity>
           </View>
 
-          {activeFeed === "CONTENT" ? (
-            <ContentFeedList
-              posts={posts}
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              onToggleLike={toggleLike}
-              onOpenComments={openComments}
-            />
-          ) : (
-            <FeedPostList
-              posts={posts}
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              onToggleLike={toggleLike}
-              onOpenComments={openComments}
-            />
-          )}
-
+          <View
+            style={{ flex: 1 }}
+            onLayout={(e) => setFeedHeight(e.nativeEvent.layout.height)}
+          >
+            {feedHeight > 0 &&
+              (activeFeed === "CONTENT" ? (
+                <ContentFeedList
+                  posts={posts}
+                  height={feedHeight}
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  onToggleLike={toggleLike}
+                  onOpenComments={openComments}
+                />
+              ) : (
+                <FeedPostList
+                  posts={posts}
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  onToggleLike={toggleLike}
+                  onOpenComments={openComments}
+                />
+              ))}
+          </View>
           <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
         </>
       )}

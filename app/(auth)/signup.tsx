@@ -12,10 +12,14 @@ export default function SignupScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
+    if (!email.trim() || !username.trim() || !password.trim()) {
+      Alert.alert("Missing details", "Please fill all fields");
+      return;
+    }
+
     try {
       setLoading(true);
-
-      await signup(email, username, password);
+      await signup(email.trim(), username.trim(), password);
     } catch {
       Alert.alert("Error", "Could not create account");
     } finally {
@@ -30,7 +34,7 @@ export default function SignupScreen() {
       </Text>
 
       <Text className="mb-8 text-center text-gray-500">
-        Create your account
+        Create your personal account
       </Text>
 
       <TextInput
@@ -68,6 +72,15 @@ export default function SignupScreen() {
       >
         <Text className="text-center text-base font-bold text-white">
           {loading ? "Creating account..." : "Sign up"}
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        className="mt-5"
+        onPress={() => router.push("/(auth)/restaurant-signup")}
+      >
+        <Text className="text-center font-semibold text-black">
+          Business owner? Add your restaurant here
         </Text>
       </TouchableOpacity>
 

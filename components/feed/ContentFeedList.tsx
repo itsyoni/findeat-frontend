@@ -1,11 +1,10 @@
 import { Post } from "@/types/post";
-import { Dimensions, FlatList } from "react-native";
+import { FlatList } from "react-native";
 import ContentFeedPost from "./ContentFeedPost";
-
-const { height } = Dimensions.get("window");
 
 type Props = {
   posts: Post[];
+  height: number;
   refreshing: boolean;
   onRefresh: () => void;
   onToggleLike: (postId: string, isLiked: boolean) => void;
@@ -14,6 +13,7 @@ type Props = {
 
 export default function ContentFeedList({
   posts,
+  height,
   refreshing,
   onRefresh,
   onToggleLike,
@@ -27,12 +27,11 @@ export default function ContentFeedList({
       onRefresh={onRefresh}
       pagingEnabled
       showsVerticalScrollIndicator={false}
-      snapToInterval={height - 120}
       decelerationRate="fast"
       renderItem={({ item }) => (
         <ContentFeedPost
           post={item}
-          height={height - 120}
+          height={height}
           onToggleLike={onToggleLike}
           onOpenComments={onOpenComments}
         />

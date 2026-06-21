@@ -1,6 +1,11 @@
 import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
 import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  ChatBubbleOvalLeftEllipsisIcon,
+  HeartIcon,
+  ShareIcon,
+} from "react-native-heroicons/solid";
 
 type Props = {
   post: Post;
@@ -16,7 +21,7 @@ export default function ContentFeedPost({
   onOpenComments,
 }: Props) {
   return (
-    <View style={{ height }} className="bg-black">
+    <View style={{ height }}>
       {post.imageUrl ? (
         <Image
           source={{ uri: post.imageUrl }}
@@ -49,15 +54,22 @@ export default function ContentFeedPost({
 
       <View className="absolute bottom-10 right-4 items-center gap-5">
         <TouchableOpacity onPress={() => onToggleLike(post.id, post.isLiked)}>
-          <Text className="text-3xl">{post.isLiked ? "❤️" : "🤍"}</Text>
-          <Text className="text-center text-xs font-bold text-white">
+          <HeartIcon fill={post.isLiked ? "red" : "white"} size={35} />
+          <Text className="text-center text-lg text-white">
             {post.likesCount}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => onOpenComments(post.id)}>
-          <Text className="text-3xl">💬</Text>
-          <Text className="text-center text-xs font-bold text-white">
+          <ChatBubbleOvalLeftEllipsisIcon fill="white" size={35} />
+          <Text className="text-center text-lg text-white">
+            {post.commentsCount}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity>
+          <ShareIcon fill="white" size={35} />
+          <Text className="text-center text-lg text-white">
             {post.commentsCount}
           </Text>
         </TouchableOpacity>
