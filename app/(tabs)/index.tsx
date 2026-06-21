@@ -1,14 +1,14 @@
 import SearchUsersView from "@/components/chats/SearchUsersView";
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
-import FakeSearchBar from "@/components/FakeSearchBar";
+import ContentFeedList from "@/components/feed/ContentFeedList";
 import FeedPostList from "@/components/feed/FeedPostList";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { Post } from "@/types/post";
+import { Post, PostType } from "@/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -17,6 +17,7 @@ export default function HomeScreen() {
 
   const commentsSheetRef = useRef<BottomSheet>(null);
 
+  const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -27,14 +28,14 @@ export default function HomeScreen() {
     if (!user) return;
 
     try {
-      const res = await api.get("/posts/feed");
+      const res = await api.get(`/posts/feed?type=${activeFeed}`);
       setPosts(res.data);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [user, activeFeed]);
 
   async function onRefresh() {
     setRefreshing(true);
@@ -58,9 +59,9 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    if (authLoading) return;
-    if (!user) return;
+    if (authLoading || !user) return;
 
+    setLoading(true);
     loadPosts();
   }, [refresh, authLoading, user, loadPosts]);
 
@@ -81,18 +82,51 @@ export default function HomeScreen() {
         />
       ) : (
         <>
-          <FakeSearchBar
-            placeholder="Search people..."
-            onPress={() => setIsSearching(true)}
-          />
+          <View className="flex-row border-b border-gray-100">
+            <TouchableOpacity
+              className="flex-1 py-4"
+              onPress={() => setActiveFeed("CONTENT")}
+            >
+              <Text
+                className={`text-center font-bold ${
+                  activeFeed === "CONTENT" ? "text-black" : "text-gray-400"
+                }`}
+              >
+                Content
+              </Text>
+            </TouchableOpacity>
 
-          <FeedPostList
-            posts={posts}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            onToggleLike={toggleLike}
-            onOpenComments={openComments}
-          />
+            <TouchableOpacity
+              className="flex-1 py-4"
+              onPress={() => setActiveFeed("REVIEW")}
+            >
+              <Text
+                className={`text-center font-bold ${
+                  activeFeed === "REVIEW" ? "text-black" : "text-gray-400"
+                }`}
+              >
+                Reviews
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {activeFeed === "CONTENT" ? (
+            <ContentFeedList
+              posts={posts}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              onToggleLike={toggleLike}
+              onOpenComments={openComments}
+            />
+          ) : (
+            <FeedPostList
+              posts={posts}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              onToggleLike={toggleLike}
+              onOpenComments={openComments}
+            />
+          )}
 
           <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
         </>

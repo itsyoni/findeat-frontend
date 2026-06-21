@@ -1,12 +1,39 @@
 import { UserSummary } from "./user";
 
+export type PostType = "CONTENT" | "REVIEW";
+
+export type Restaurant = {
+  id: string;
+  name: string;
+  description?: string | null;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
+  address?: string | null;
+  city?: string | null;
+};
+
 export type Post = {
   id: string;
-  title: string;
+  type: PostType;
+
+  title?: string | null;
   description?: string | null;
+
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+
+  rating?: number | null;
+  visitDate?: string | null;
+
+  restaurantId?: string | null;
+  restaurant?: Restaurant | null;
+
   createdAt: string;
+  updatedAt: string;
+
   user: UserSummary;
+
   likesCount: number;
-  isLiked: boolean;
   commentsCount: number;
+  isLiked: boolean;
 };
