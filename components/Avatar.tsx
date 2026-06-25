@@ -1,4 +1,5 @@
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
+import { SvgUri } from "react-native-svg";
 
 type Props = {
   uri?: string | null;
@@ -6,26 +7,32 @@ type Props = {
   size?: number;
 };
 
-export default function Avatar({ uri, username, size = 80 }: Props) {
-  const initial = username?.charAt(0).toUpperCase() || "?";
+export default function Avatar({ uri, size = 40 }: Props) {
+  if (!uri) return null;
 
-  if (uri) {
-    return (
-      <Image
-        source={{ uri }}
-        style={{ width: size, height: size, borderRadius: size / 2 }}
-      />
-    );
-  }
+  const isSvg = uri.startsWith("data:image/svg+xml") || uri.endsWith(".svg");
 
   return (
     <View
-      className="items-center justify-center bg-black"
-      style={{ width: size, height: size, borderRadius: size / 2 }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: "hidden",
+      }}
     >
-      <Text className="font-bold text-white" style={{ fontSize: size * 0.38 }}>
-        {initial}
-      </Text>
+      {isSvg ? (
+        <SvgUri width={size} height={size} uri={uri} />
+      ) : (
+        <Image
+          source={{ uri }}
+          style={{
+            width: size,
+            height: size,
+            borderRadius: size / 2,
+          }}
+        />
+      )}
     </View>
   );
 }

@@ -1,10 +1,10 @@
+import AddressAutocomplete, {
+  SelectedAddress,
+} from "@/components/AddressAutocomplete";
 import { useAuth } from "@/contexts/AuthContext";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
-import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import {
   Alert,
-  Image,
   Keyboard,
   KeyboardAvoidingView,
   Platform,
@@ -17,44 +17,29 @@ import {
 
 export default function RestaurantSignupScreen() {
   const { signupWithRestaurant } = useAuth();
-
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-
   const [restaurantName, setRestaurantName] = useState("");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
-
-  const [logoUri, setLogoUri] = useState<string>();
-  const [coverUri, setCoverUri] = useState<string>();
+  const [latitude, setLatitude] = useState<number>();
+  const [longitude, setLongitude] = useState<number>();
+  const [mapboxId, setMapboxId] = useState<string>();
   const [loading, setLoading] = useState(false);
-
-  async function pickLogo() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) setLogoUri(result.assets[0].uri);
-  }
-
-  async function pickCover() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      quality: 0.8,
-    });
-
-    if (!result.canceled) setCoverUri(result.assets[0].uri);
-  }
 
   async function handleSignup() {
     if (
       !email.trim() ||
       !username.trim() ||
       !password.trim() ||
-      !restaurantName.trim()
+      !restaurantName.trim() ||
+      !address.trim() ||
+      !city.trim() ||
+      typeof latitude !== "number" ||
+      typeof longitude !== "number" ||
+      !mapboxId
     ) {
       Alert.alert("Missing details", "Please fill all required fields");
       return;
@@ -63,28 +48,35 @@ export default function RestaurantSignupScreen() {
     try {
       setLoading(true);
 
-      const avatarUrl = logoUri
-        ? await uploadImageToCloudinary(logoUri)
-        : undefined;
-
-      const coverUrl = coverUri
-        ? await uploadImageToCloudinary(coverUri)
-        : undefined;
-
       await signupWithRestaurant({
         email: email.trim(),
         username: username.trim(),
         password,
         restaurantName: restaurantName.trim(),
-        city: city.trim() || undefined,
-        address: address.trim() || undefined,
+        city: city.trim(),
+        address: address.trim(),
         description: description.trim() || undefined,
-        avatarUrl,
-        coverUrl,
+        latitude,
+        longitude,
+        mapboxId,
       });
-    } catch (error) {
-      console.error(error);
-      Alert.alert("Error", "Could not create business account");
+    } catch (error: any) {
+      console.log("STATUS:", error.response?.status);
+      console.log("DATA:", error.response?.data);
+      console.log({
+        email: email.trim(),
+        username: username.trim(),
+        restaurantName: restaurantName.trim(),
+        city: city.trim(),
+        address: address.trim(),
+        latitude,
+        longitude,
+        mapboxId,
+      });
+      Alert.alert(
+        "Error",
+        error.response?.data?.message ?? "Could not create business account",
+      );
     } finally {
       setLoading(false);
     }
@@ -140,36 +132,6 @@ export default function RestaurantSignupScreen() {
             secureTextEntry
           />
 
-          <TouchableOpacity
-            className="mt-6 h-28 items-center justify-center rounded-2xl border border-gray-200 bg-gray-50"
-            onPress={pickLogo}
-          >
-            {logoUri ? (
-              <Image
-                source={{ uri: logoUri }}
-                className="h-full w-full rounded-2xl"
-                resizeMode="cover"
-              />
-            ) : (
-              <Text className="text-gray-500">+ Add logo</Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="mt-4 h-44 items-center justify-center rounded-2xl border border-gray-200 bg-gray-50"
-            onPress={pickCover}
-          >
-            {coverUri ? (
-              <Image
-                source={{ uri: coverUri }}
-                className="h-full w-full rounded-2xl"
-                resizeMode="cover"
-              />
-            ) : (
-              <Text className="text-gray-500">+ Add cover</Text>
-            )}
-          </TouchableOpacity>
-
           <TextInput
             className="mt-6 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
             placeholder="Restaurant name"
@@ -178,21 +140,21 @@ export default function RestaurantSignupScreen() {
             onChangeText={setRestaurantName}
           />
 
-          <TextInput
-            className="mt-4 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
-            placeholder="City"
-            placeholderTextColor="#9CA3AF"
-            value={city}
-            onChangeText={setCity}
+          <AddressAutocomplete
+            onSelect={(selected: SelectedAddress) => {
+              setAddress(selected.address);
+              setCity(selected.city ?? "");
+              setLatitude(selected.latitude);
+              setLongitude(selected.longitude);
+              setMapboxId(selected.id);
+            }}
           />
 
-          <TextInput
-            className="mt-4 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
-            placeholder="Address"
-            placeholderTextColor="#9CA3AF"
-            value={address}
-            onChangeText={setAddress}
-          />
+          {!!address && (
+            <Text className="mt-2 text-sm text-gray-500">
+              Selected: {address}
+            </Text>
+          )}
 
           <TextInput
             className="mt-4 min-h-32 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"

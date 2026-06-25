@@ -1,16 +1,6 @@
-import { UserSummary } from "./user";
+import { Restaurant, UserSummary } from "./user";
 
 export type PostType = "CONTENT" | "REVIEW";
-
-export type Restaurant = {
-  id: string;
-  name: string;
-  description?: string | null;
-  avatarUrl?: string | null;
-  coverUrl?: string | null;
-  address?: string | null;
-  city?: string | null;
-};
 
 export type Post = {
   id: string;

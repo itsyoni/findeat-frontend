@@ -6,20 +6,35 @@ import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 export default function SignupScreen() {
   const { signup } = useAuth();
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
-    if (!email.trim() || !username.trim() || !password.trim()) {
+    if (
+      !firstName.trim() ||
+      !lastName.trim() ||
+      !email.trim() ||
+      !username.trim() ||
+      !password.trim()
+    ) {
       Alert.alert("Missing details", "Please fill all fields");
       return;
     }
 
     try {
       setLoading(true);
-      await signup(email.trim(), username.trim(), password);
+
+      await signup(
+        email.trim(),
+        username.trim(),
+        password,
+        firstName.trim(),
+        lastName.trim(),
+      );
     } catch {
       Alert.alert("Error", "Could not create account");
     } finally {
@@ -36,6 +51,26 @@ export default function SignupScreen() {
       <Text className="mb-8 text-center text-gray-500">
         Create your personal account
       </Text>
+
+      <View className="mb-4 flex-row gap-3">
+        <TextInput
+          className="flex-1 rounded-2xl border border-gray-300 px-4 py-4 text-base text-black"
+          placeholder="First name"
+          placeholderTextColor="#9CA3AF"
+          value={firstName}
+          onChangeText={setFirstName}
+          autoCapitalize="words"
+        />
+
+        <TextInput
+          className="flex-1 rounded-2xl border border-gray-300 px-4 py-4 text-base text-black"
+          placeholder="Last name"
+          placeholderTextColor="#9CA3AF"
+          value={lastName}
+          onChangeText={setLastName}
+          autoCapitalize="words"
+        />
+      </View>
 
       <TextInput
         className="mb-4 rounded-2xl border border-gray-300 px-4 py-4 text-base text-black"

@@ -47,11 +47,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(user);
   }
 
-  async function signup(email: string, username: string, password: string) {
+  async function signup(
+    email: string,
+    username: string,
+    password: string,
+    firstName: string,
+    lastName: string,
+  ) {
     const res = await api.post("/auth/signup", {
       email,
       username,
       password,
+      firstName,
+      lastName,
     });
 
     const accessToken = res.data.accessToken;
@@ -88,6 +96,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
   }
 
+  async function refreshUser() {
+    const res = await api.get<User>("/auth/me");
+    setUser(res.data);
+  }
+
   useEffect(() => {
     loadUser();
   }, []);
@@ -102,6 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signup,
         signupWithRestaurant,
         logout,
+        refreshUser,
       }}
     >
       {children}

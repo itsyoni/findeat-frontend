@@ -2,13 +2,14 @@ import SearchUsersView from "@/components/chats/SearchUsersView";
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
 import ContentFeedList from "@/components/feed/ContentFeedList";
 import FeedPostList from "@/components/feed/FeedPostList";
+import Tabs from "@/components/Tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { Post, PostType } from "@/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -83,33 +84,14 @@ export default function HomeScreen() {
         />
       ) : (
         <>
-          <View className="flex-row border-b border-gray-100">
-            <TouchableOpacity
-              className="flex-1 py-4"
-              onPress={() => setActiveFeed("CONTENT")}
-            >
-              <Text
-                className={`text-center font-bold ${
-                  activeFeed === "CONTENT" ? "text-black" : "text-gray-400"
-                }`}
-              >
-                Content
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              className="flex-1 py-4"
-              onPress={() => setActiveFeed("REVIEW")}
-            >
-              <Text
-                className={`text-center font-bold ${
-                  activeFeed === "REVIEW" ? "text-black" : "text-gray-400"
-                }`}
-              >
-                Reviews
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Tabs
+            activeTab={activeFeed}
+            onChange={setActiveFeed}
+            tabs={[
+              { label: "Content", value: "CONTENT" },
+              { label: "Reviews", value: "REVIEW" },
+            ]}
+          />
 
           <View
             style={{ flex: 1 }}
@@ -135,6 +117,7 @@ export default function HomeScreen() {
                 />
               ))}
           </View>
+
           <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
         </>
       )}

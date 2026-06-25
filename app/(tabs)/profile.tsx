@@ -1,33 +1,35 @@
+import Avatar from "@/components/Avatar";
+import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
+import ContentFeedList from "@/components/feed/ContentFeedList";
+import FeedPostList from "@/components/feed/FeedPostList";
+import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
+import { PostType } from "@/types/post";
 import { Profile } from "@/types/profile";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useCallback, useMemo, useRef, useState } from "react";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
+  const commentsSheetRef = useRef<BottomSheet>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [feedHeight, setFeedHeight] = useState(0);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const posts = useMemo(() => {
+    return profile?.posts?.filter((post) => post.type === activeFeed) ?? [];
+  }, [profile, activeFeed]);
 
   useFocusEffect(
     useCallback(() => {
       loadProfile();
     }, []),
   );
-
-  async function onRefresh() {
-    setRefreshing(true);
-    await loadProfile();
-    setRefreshing(false);
-  }
 
   async function loadProfile() {
     try {
@@ -40,120 +42,142 @@ export default function ProfileScreen() {
     }
   }
 
+  async function onRefresh() {
+    setRefreshing(true);
+    await loadProfile();
+    setRefreshing(false);
+  }
+
+  async function toggleLike(postId: string, isLiked: boolean) {
+    if (isLiked) {
+      await api.delete(`/posts/${postId}/like`);
+    } else {
+      await api.post(`/posts/${postId}/like`);
+    }
+
+    await loadProfile();
+  }
+
+  function openComments(postId: string) {
+    setSelectedPostId(postId);
+    commentsSheetRef.current?.snapToIndex(0);
+  }
+
+  if (loading) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <View className="flex-1 bg-white">
-        <FlatList
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          data={profile?.posts ?? []}
-          keyExtractor={(item) => item.id}
-          ListHeaderComponent={
-            <View className="flex items-center">
-              <View className="flex items-center w-full">
-                {profile?.avatarUrl ? (
-                  <Image
-                    source={{ uri: profile.avatarUrl }}
-                    className="h-20 w-20 rounded-full"
-                  />
-                ) : (
-                  <View className="h-20 w-20 items-center justify-center rounded-full bg-black">
-                    <Text className="text-3xl font-bold text-white">
-                      {profile?.username?.charAt(0).toUpperCase() || "?"}
-                    </Text>
-                  </View>
-                )}
+      <View className="bg-white px-5 pb-5">
+        <View className="items-center">
+          <Avatar
+            uri={profile?.avatarUrl}
+            username={profile?.username}
+            size={96}
+          />
 
-                <Text className="mt-2 text-2xl font-bold text-black">
-                  @{profile?.username}
-                </Text>
+          <Text className="mt-2 text-2xl font-bold text-black">
+            {profile?.username}
+          </Text>
 
-                {!!profile?.bio && (
-                  <Text className="mt-4 text-base text-black">
-                    {profile.bio}
-                  </Text>
-                )}
-
-                <View className="mt-5 px-7 flex flex-row w-full">
-                  <View className="flex flex-1">
-                    <Text className="text-xl font-bold text-black text-center">
-                      {profile?.postsCount ?? 0}
-                    </Text>
-                    <Text className="mt-1 text-sm text-gray-500 text-center">
-                      Posts
-                    </Text>
-                  </View>
-
-                  <TouchableOpacity
-                    className="flex flex-1"
-                    onPress={() =>
-                      router.push({
-                        pathname: "/users/connections",
-                        params: { id: profile?.id, type: "followers" },
-                      })
-                    }
-                  >
-                    <Text className="text-xl font-bold text-black text-center">
-                      {profile?.followersCount ?? 0}
-                    </Text>
-                    <Text className="mt-1 text-sm text-gray-500 text-center">
-                      Followers
-                    </Text>
-                  </TouchableOpacity>
-
-                  <TouchableOpacity
-                    className="flex flex-1"
-                    onPress={() =>
-                      router.push({
-                        pathname: "/users/connections",
-                        params: { id: profile?.id, type: "following" },
-                      })
-                    }
-                  >
-                    <Text className="text-xl font-bold text-black text-center">
-                      {profile?.followingCount ?? 0}
-                    </Text>
-                    <Text className="mt-1 text-sm text-gray-500 text-center">
-                      Following
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                className="mt-5 rounded-lg py-2 bg-[#F5F4F5] w-40"
-                onPress={() => router.push("/edit-profile")}
-              >
-                <Text className="text-center text-black">Edit Profile</Text>
-              </TouchableOpacity>
-
-              <Text className="mt-8 mb-4 text-xl font-bold text-black">
-                My Posts
-              </Text>
-
-              {loading && (
-                <View className="py-6">
-                  <ActivityIndicator />
-                </View>
-              )}
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View className="mb-4 bg-white p-4">
-              <Text className="text-lg font-bold text-black">{item.title}</Text>
-
-              {!!item.description && (
-                <Text className="mt-2 text-gray-600">{item.description}</Text>
-              )}
-            </View>
+          {!!profile?.bio && (
+            <Text className="mt-4 text-base text-black">{profile.bio}</Text>
           )}
-          ListEmptyComponent={
-            !loading ? (
-              <Text className="text-gray-500 text-center">No posts yet</Text>
-            ) : null
-          }
-        />
+
+          <View className="mt-5 flex-row w-full">
+            <View className="flex-1">
+              <Text className="text-xl font-bold text-black text-center">
+                {profile?.postsCount ?? 0}
+              </Text>
+              <Text className="mt-1 text-sm text-gray-500 text-center">
+                Posts
+              </Text>
+            </View>
+
+            <TouchableOpacity
+              className="flex-1"
+              onPress={() =>
+                router.push({
+                  pathname: "/users/connections",
+                  params: { id: profile?.id, type: "followers" },
+                })
+              }
+            >
+              <Text className="text-xl font-bold text-black text-center">
+                {profile?.followersCount ?? 0}
+              </Text>
+              <Text className="mt-1 text-sm text-gray-500 text-center">
+                Followers
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-1"
+              onPress={() =>
+                router.push({
+                  pathname: "/users/connections",
+                  params: { id: profile?.id, type: "following" },
+                })
+              }
+            >
+              <Text className="text-xl font-bold text-black text-center">
+                {profile?.followingCount ?? 0}
+              </Text>
+              <Text className="mt-1 text-sm text-gray-500 text-center">
+                Following
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            className="mt-5 rounded-lg py-2 bg-[#F5F4F5] w-40"
+            onPress={() => router.push("/edit-profile")}
+          >
+            <Text className="text-center text-black">Edit Profile</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+
+      <Tabs
+        activeTab={activeFeed}
+        onChange={setActiveFeed}
+        tabs={[
+          { label: "Content", value: "CONTENT" },
+          { label: "Reviews", value: "REVIEW" },
+        ]}
+      />
+
+      <View
+        style={{ flex: 1 }}
+        onLayout={(e) => setFeedHeight(e.nativeEvent.layout.height)}
+      >
+        {feedHeight > 0 &&
+          (activeFeed === "CONTENT" ? (
+            <ContentFeedList
+              posts={posts}
+              height={feedHeight}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              onToggleLike={toggleLike}
+              onOpenComments={openComments}
+            />
+          ) : (
+            <FeedPostList
+              posts={posts}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              onToggleLike={toggleLike}
+              onOpenComments={openComments}
+            />
+          ))}
+      </View>
+
+      <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
     </SafeAreaView>
   );
 }

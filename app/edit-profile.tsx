@@ -1,25 +1,20 @@
+import Avatar from "@/components/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  Image,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function EditProfileScreen() {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [loading, setLoading] = useState(false);
-  const { logout } = useAuth();
+  const { logout, refreshUser } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [newAvatarUri, setNewAvatarUri] = useState<string | null>(null);
+  const displayedAvatar = newAvatarUri || avatarUrl;
 
   useEffect(() => {
     loadProfile();
@@ -60,6 +55,7 @@ export default function EditProfileScreen() {
       setAvatarUrl(finalAvatarUrl);
       setNewAvatarUri(null);
 
+      await refreshUser();
       router.back();
     } catch (error) {
       console.error(error);
@@ -85,18 +81,7 @@ export default function EditProfileScreen() {
   return (
     <View className="flex-1 bg-white px-5">
       <TouchableOpacity onPress={pickAvatar} className="items-center ">
-        {avatarUrl ? (
-          <Image
-            source={{ uri: avatarUrl }}
-            className="h-24 w-24 rounded-full"
-          />
-        ) : (
-          <View className="h-24 w-24 items-center justify-center rounded-full bg-black">
-            <Text className="text-3xl font-bold text-white">
-              {username.charAt(0).toUpperCase() || "?"}
-            </Text>
-          </View>
-        )}
+        <Avatar uri={displayedAvatar} username={username} size={96} />
 
         <Text className="mt-3 font-semibold text-black">
           Change profile photo
