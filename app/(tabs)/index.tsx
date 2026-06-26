@@ -1,5 +1,6 @@
 import SearchUsersView from "@/components/chats/SearchUsersView";
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
+import FakeSearchBar from "@/components/FakeSearchBar";
 import ContentFeedList from "@/components/feed/ContentFeedList";
 import FeedPostList from "@/components/feed/FeedPostList";
 import Tabs from "@/components/Tabs";
@@ -10,6 +11,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
@@ -78,12 +80,29 @@ export default function HomeScreen() {
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
       {isSearching ? (
-        <SearchUsersView
-          mode="profile"
-          onCancel={() => setIsSearching(false)}
-        />
+        <Animated.View
+          key="search"
+          entering={FadeIn.duration(180)}
+          exiting={FadeOut.duration(120)}
+          className="flex-1"
+        >
+          <SearchUsersView
+            mode="profile"
+            onCancel={() => setIsSearching(false)}
+          />
+        </Animated.View>
       ) : (
-        <>
+        <Animated.View
+          key="normal"
+          entering={FadeIn.duration(180)}
+          exiting={FadeOut.duration(120)}
+          className="flex-1"
+        >
+          <FakeSearchBar
+            placeholder="Search people, places..."
+            onPress={() => setIsSearching(true)}
+          />
+
           <Tabs
             activeTab={activeFeed}
             onChange={setActiveFeed}
@@ -119,7 +138,7 @@ export default function HomeScreen() {
           </View>
 
           <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
-        </>
+        </Animated.View>
       )}
     </SafeAreaView>
   );

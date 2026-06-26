@@ -35,8 +35,11 @@ export default function SignupScreen() {
         firstName.trim(),
         lastName.trim(),
       );
-    } catch {
-      Alert.alert("Error", "Could not create account");
+    } catch (error: any) {
+      Alert.alert(
+        "Error",
+        error.response?.data?.message ?? "Could not create account",
+      );
     } finally {
       setLoading(false);
     }

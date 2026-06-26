@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { Menu } from "@/types/menu";
+import { Menu } from "@/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -90,6 +90,24 @@ export default function BusinessMenuScreen() {
             >
               <Text className="text-center font-bold text-black">
                 Manage dishes
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="mt-3 rounded-xl bg-white py-3"
+              onPress={() =>
+                router.push({
+                  pathname: "/business/menu/edit-section/[id]",
+                  params: {
+                    id: item.id,
+                    title: item.title,
+                    description: item.description ?? "",
+                    itemsCount: item.items.length.toString(),
+                  },
+                })
+              }
+            >
+              <Text className="text-center font-bold text-black">
+                Edit section
               </Text>
             </TouchableOpacity>
           </View>

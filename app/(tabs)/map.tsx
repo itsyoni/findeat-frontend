@@ -3,8 +3,9 @@ import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
 import { Restaurant } from "@/types";
 import { MapType } from "@/types/map";
+import * as Location from "expo-location";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -19,6 +20,9 @@ export default function MapScreen() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<MapType>("MAP");
+  const mapRef = useRef<MapView>(null);
+  const [userLocation, setUserLocation] =
+    useState<Location.LocationObject | null>(null);
 
   const restaurantsWithLocation = restaurants.filter(
     (restaurant) =>
@@ -28,6 +32,7 @@ export default function MapScreen() {
 
   useEffect(() => {
     loadRestaurants();
+    loadUserLocation();
   }, []);
 
   async function loadRestaurants() {
@@ -39,6 +44,29 @@ export default function MapScreen() {
     } finally {
       setLoading(false);
     }
+  }
+
+  async function loadUserLocation() {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+
+    if (status !== "granted") {
+      console.log("Location permission denied");
+      return;
+    }
+
+    const location = await Location.getCurrentPositionAsync({});
+
+    setUserLocation(location);
+
+    mapRef.current?.animateToRegion(
+      {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.03,
+        longitudeDelta: 0.03,
+      },
+      600,
+    );
   }
 
   if (loading) {
@@ -61,10 +89,13 @@ export default function MapScreen() {
       />
       {viewMode === "MAP" ? (
         <MapView
+          ref={mapRef}
           style={{ flex: 1 }}
+          showsUserLocation
+          showsMyLocationButton
           initialRegion={{
-            latitude: 32.0853,
-            longitude: 34.7818,
+            latitude: userLocation?.coords.latitude ?? 32.0853,
+            longitude: userLocation?.coords.longitude ?? 34.7818,
             latitudeDelta: 0.05,
             longitudeDelta: 0.05,
           }}

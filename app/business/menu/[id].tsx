@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { Menu } from "@/types/menu";
+import { Menu } from "@/types";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -174,6 +174,8 @@ export default function ManageMenuScreen() {
                   price: item.price?.toString() ?? "",
                   imageUrl: item.imageUrl ?? "",
                   category: item.category ?? "",
+                  isAvailable: item.isAvailable.toString(),
+                  isFeatured: item.isFeatured.toString(),
                 },
               })
             }
@@ -213,6 +215,9 @@ export default function ManageMenuScreen() {
                     {item.description}
                   </Text>
                 )}
+
+                {!item.isAvailable && <Text>Unavailable</Text>}
+                {item.isFeatured && <Text>Featured</Text>}
 
                 <Text className="mt-3 text-xs font-semibold text-gray-400">
                   Tap to edit

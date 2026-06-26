@@ -61,18 +61,6 @@ export default function RestaurantSignupScreen() {
         mapboxId,
       });
     } catch (error: any) {
-      console.log("STATUS:", error.response?.status);
-      console.log("DATA:", error.response?.data);
-      console.log({
-        email: email.trim(),
-        username: username.trim(),
-        restaurantName: restaurantName.trim(),
-        city: city.trim(),
-        address: address.trim(),
-        latitude,
-        longitude,
-        mapboxId,
-      });
       Alert.alert(
         "Error",
         error.response?.data?.message ?? "Could not create business account",

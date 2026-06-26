@@ -22,7 +22,7 @@ export default function ConnectionsScreen() {
 
   useEffect(() => {
     loadConnections();
-  }, []);
+  }, [id, type]);
 
   async function onRefresh() {
     setRefreshing(true);
@@ -33,6 +33,7 @@ export default function ConnectionsScreen() {
   async function loadConnections() {
     try {
       const res = await api.get(`/users/${id}/${type}`);
+
       setItems(res.data);
     } catch (error) {
       console.error(error);

@@ -31,6 +31,9 @@ export type Restaurant = {
   city?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
   account?: {
     id: string;
     username: string;
@@ -39,12 +42,16 @@ export type Restaurant = {
   menus: {
     id: string;
     title: string;
+    description?: string | null;
     items: {
       id: string;
       name: string;
       description?: string | null;
       price?: number | null;
       imageUrl?: string | null;
+      category?: string | null;
+      isAvailable: boolean;
+      isFeatured: boolean;
     }[];
   }[];
   posts: {

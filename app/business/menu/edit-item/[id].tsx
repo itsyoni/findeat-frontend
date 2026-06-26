@@ -9,9 +9,11 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  Switch,
   Text,
   TextInput,
   TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -23,14 +25,23 @@ export default function EditMenuItemScreen() {
     price?: string;
     imageUrl?: string;
     category?: string;
+    isAvailable?: string;
+    isFeatured?: string;
   }>();
+
+  const initialImageUrl =
+    params.imageUrl && params.imageUrl.length > 0 ? params.imageUrl : undefined;
 
   const [name, setName] = useState(params.name ?? "");
   const [description, setDescription] = useState(params.description ?? "");
   const [price, setPrice] = useState(params.price ?? "");
   const [category, setCategory] = useState(params.category ?? "");
-  const [imageUrl, setImageUrl] = useState<string | undefined>(params.imageUrl);
+  const [imageUrl] = useState<string | undefined>(initialImageUrl);
   const [newImageUri, setNewImageUri] = useState<string>();
+  const [isAvailable, setIsAvailable] = useState(
+    params.isAvailable !== "false",
+  );
+  const [isFeatured, setIsFeatured] = useState(params.isFeatured === "true");
   const [loading, setLoading] = useState(false);
 
   async function pickImage() {
@@ -72,6 +83,8 @@ export default function EditMenuItemScreen() {
         price: parsedPrice,
         category: category.trim() || null,
         imageUrl: finalImageUrl ?? null,
+        isAvailable,
+        isFeatured,
       });
 
       router.back();
@@ -168,6 +181,30 @@ export default function EditMenuItemScreen() {
             multiline
             textAlignVertical="top"
           />
+
+          <View className="mt-4 rounded-2xl bg-[#F5F4F5] p-4">
+            <View className="flex-row items-center justify-between">
+              <View className="flex-1 pr-4">
+                <Text className="font-bold text-black">Available</Text>
+                <Text className="mt-1 text-sm text-gray-500">
+                  Hide this dish when it is sold out.
+                </Text>
+              </View>
+
+              <Switch value={isAvailable} onValueChange={setIsAvailable} />
+            </View>
+
+            <View className="mt-4 flex-row items-center justify-between border-t border-gray-200 pt-4">
+              <View className="flex-1 pr-4">
+                <Text className="font-bold text-black">Featured dish</Text>
+                <Text className="mt-1 text-sm text-gray-500">
+                  Highlight this dish on your restaurant page.
+                </Text>
+              </View>
+
+              <Switch value={isFeatured} onValueChange={setIsFeatured} />
+            </View>
+          </View>
 
           <TouchableOpacity
             className="mt-6 rounded-2xl bg-black py-4"
