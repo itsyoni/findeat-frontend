@@ -1,5 +1,6 @@
 import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
+import { router } from "expo-router";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import {
   ChatBubbleOvalLeftEllipsisIcon,
@@ -20,6 +21,8 @@ export default function ContentFeedPost({
   onToggleLike,
   onOpenComments,
 }: Props) {
+  const isBusinessPost = post.user.accountType === "BUSINESS";
+
   return (
     <View style={{ height }}>
       {post.imageUrl ? (
@@ -37,15 +40,45 @@ export default function ContentFeedPost({
       )}
 
       <View className="absolute bottom-8 left-4 right-20">
-        <View className="mb-3 flex-row items-center gap-3">
+        <TouchableOpacity
+          className="mb-3 flex-row items-center gap-3"
+          activeOpacity={0.8}
+          onPress={() => {
+            if (post.user.accountType === "BUSINESS" && post.restaurant) {
+              router.push({
+                pathname: "/restaurants/[id]",
+                params: { id: post.restaurant.id },
+              });
+            } else {
+              router.push({
+                pathname: "/users/[id]",
+                params: { id: post.user.id },
+              });
+            }
+          }}
+        >
           <Avatar
             uri={post.user.avatarUrl}
             username={post.user.username}
             size={42}
           />
 
-          <Text className="font-bold text-white">@{post.user.username}</Text>
-        </View>
+          <View>
+            <Text className="font-bold text-white">@{post.user.username}</Text>
+
+            {isBusinessPost && (
+              <Text className="mt-1 text-xs font-semibold text-[#F7D786]">
+                Official restaurant
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+
+        {!!post.restaurant?.name && (
+          <Text className="mb-2 text-sm font-semibold text-white">
+            📍 {post.restaurant.name}
+          </Text>
+        )}
 
         {!!post.description && (
           <Text className="text-base text-white">{post.description}</Text>
@@ -69,9 +102,6 @@ export default function ContentFeedPost({
 
         <TouchableOpacity>
           <ShareIcon fill="white" size={35} />
-          <Text className="text-center text-lg text-white">
-            {post.commentsCount}
-          </Text>
         </TouchableOpacity>
       </View>
     </View>

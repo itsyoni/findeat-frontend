@@ -1,6 +1,6 @@
 import SearchBar from "@/components/SearchBar";
 import { api } from "@/lib/api";
-import { UserProfile } from "@/types/profile";
+import { User } from "@/types";
 import { router } from "expo-router";
 import { useState } from "react";
 import { FlatList, Text, TouchableOpacity } from "react-native";
@@ -8,7 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserSearchScreen() {
   const [query, setQuery] = useState("");
-  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
 
   async function searchUsers(text: string) {
     setQuery(text);
@@ -32,7 +32,7 @@ export default function UserSearchScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <SearchBar
         value={query}
         onChangeText={searchUsers}

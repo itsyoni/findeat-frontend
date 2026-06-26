@@ -49,6 +49,7 @@ function RootNavigator() {
           name="modal"
           options={{ presentation: "modal", title: "Modal" }}
         />
+        <Stack.Screen name="business/index" />
       </Stack>
 
       <StatusBar style="dark" />

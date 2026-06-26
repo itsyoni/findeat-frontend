@@ -1,9 +1,14 @@
+export type AccountType = "USER" | "BUSINESS";
+
 export type User = {
   id: string;
   email: string;
+  firstName: string;
+  lastName: string;
   username: string;
+  accountType: AccountType;
   createdAt: string;
-  avatarUrl?: string | null;
+  avatarUrl: string;
   bio?: string | null;
 };
 
@@ -11,6 +16,7 @@ export type UserSummary = {
   id: string;
   username: string;
   avatarUrl?: string | null;
+  accountType: AccountType;
   isOnline?: boolean;
   lastSeenAt?: string | null;
 };
@@ -51,6 +57,7 @@ export type Restaurant = {
       id: string;
       username: string;
       avatarUrl?: string | null;
+      accountType: AccountType;
     };
     _count: {
       likes: number;
