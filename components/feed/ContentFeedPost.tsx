@@ -1,12 +1,8 @@
 import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
 import { router } from "expo-router";
+import { ChatCircleIcon, HeartIcon, ShareIcon } from "phosphor-react-native";
 import { Image, Text, TouchableOpacity, View } from "react-native";
-import {
-  ChatBubbleOvalLeftEllipsisIcon,
-  HeartIcon,
-  ShareIcon,
-} from "react-native-heroicons/solid";
 
 type Props = {
   post: Post;
@@ -87,21 +83,25 @@ export default function ContentFeedPost({
 
       <View className="absolute bottom-10 right-4 items-center gap-5">
         <TouchableOpacity onPress={() => onToggleLike(post.id, post.isLiked)}>
-          <HeartIcon fill={post.isLiked ? "red" : "white"} size={35} />
+          <HeartIcon
+            weight={post.isLiked ? "fill" : "regular"}
+            color={post.isLiked ? "red" : "white"}
+            size={35}
+          />
           <Text className="text-center text-lg text-white">
             {post.likesCount}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => onOpenComments(post.id)}>
-          <ChatBubbleOvalLeftEllipsisIcon fill="white" size={35} />
+          <ChatCircleIcon weight="regular" color="white" size={35} />
           <Text className="text-center text-lg text-white">
             {post.commentsCount}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <ShareIcon fill="white" size={35} />
+          <ShareIcon weight="regular" color="white" size={35} />
         </TouchableOpacity>
       </View>
     </View>

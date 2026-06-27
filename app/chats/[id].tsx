@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
 import { Chat, Message } from "@/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -15,7 +16,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ChevronLeftIcon } from "react-native-heroicons/outline";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
 
@@ -187,7 +187,7 @@ export default function ChatScreen() {
                 onPress={() => router.back()}
                 className="mr-3 h-10 w-10 items-center justify-center rounded-full bg-gray-100"
               >
-                <ChevronLeftIcon size={22} color="black" />
+                <CaretLeftIcon size={22} color="black" />
               </Pressable>
 
               <Pressable

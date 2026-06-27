@@ -1,5 +1,5 @@
+import { MagnifyingGlassIcon } from "phosphor-react-native";
 import { Text, TouchableOpacity } from "react-native";
-import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
 
 type FakeSearchBarProps = {
   placeholder?: string;

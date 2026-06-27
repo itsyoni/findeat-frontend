@@ -1,6 +1,7 @@
 import { api } from "@/lib/api";
 import { Profile } from "@/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
+import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,7 +12,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { ChevronLeftIcon } from "react-native-heroicons/outline";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -104,7 +104,7 @@ export default function UserProfileScreen() {
                 }
               }}
             >
-              <ChevronLeftIcon size={24} color="black" />
+              <CaretLeftIcon size={24} color="black" />
               <Text className="text-lg text-black">Back</Text>
             </Pressable>
           ),

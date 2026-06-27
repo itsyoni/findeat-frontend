@@ -1,5 +1,5 @@
+import { MagnifyingGlassIcon } from "phosphor-react-native";
 import { TextInput, View } from "react-native";
-import { MagnifyingGlassIcon } from "react-native-heroicons/outline";
 
 type SearchBarProps = {
   value: string;
