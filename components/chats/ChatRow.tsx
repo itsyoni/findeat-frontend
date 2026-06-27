@@ -1,7 +1,8 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Chat } from "@/types/chat";
 import { router } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import Text from "../AppText";
 import Avatar from "../Avatar";
 
 type Props = {

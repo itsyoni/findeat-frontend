@@ -1,11 +1,17 @@
 import Avatar from "@/components/Avatar";
 import { HapticTab } from "@/components/haptic-tab";
-import { IconSymbol } from "@/components/ui/icon-symbol";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Tabs } from "expo-router";
+import {
+  ChatCircleIcon,
+  HouseIcon,
+  MapPinIcon,
+  PlusCircleIcon,
+} from "phosphor-react-native";
 import React from "react";
+import { View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -24,35 +30,54 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={"black"} />
+          tabBarIcon: ({ focused }) => (
+            <HouseIcon
+              size={28}
+              color="#000"
+              weight={focused ? "fill" : "regular"}
+            />
           ),
         }}
       />
+
       <Tabs.Screen
         name="chat"
         options={{
           title: "Chat",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="bubble.fill" color={"black"} />
+          tabBarIcon: ({ focused }) => (
+            <ChatCircleIcon
+              size={28}
+              color="#000"
+              weight={focused ? "fill" : "regular"}
+            />
           ),
         }}
       />
+
       <Tabs.Screen
         name="create"
         options={{
           title: "Create",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="plus.circle.fill" color={"black"} />
+          tabBarIcon: ({ focused }) => (
+            <PlusCircleIcon
+              size={28}
+              color="#000"
+              weight={focused ? "fill" : "regular"}
+            />
           ),
         }}
       />
+
       <Tabs.Screen
         name="map"
         options={{
           title: "Map",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="map.fill" color={"black"} />
+          tabBarIcon: ({ focused }) => (
+            <MapPinIcon
+              size={28}
+              color="#000"
+              weight={focused ? "fill" : "regular"}
+            />
           ),
         }}
       />
@@ -61,7 +86,25 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: () => <Avatar uri={user?.avatarUrl} size={28} />,
+          tabBarIcon: ({ focused }) => (
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                alignItems: "center",
+                justifyContent: "center",
+                borderWidth: focused ? 2 : 0,
+                borderColor: "#000",
+              }}
+            >
+              <Avatar
+                uri={user?.avatarUrl}
+                username={user?.username}
+                size={28}
+              />
+            </View>
+          ),
         }}
       />
     </Tabs>

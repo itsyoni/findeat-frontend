@@ -1,5 +1,6 @@
 import { router } from "expo-router";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import Text from "../AppText";
 
 type Props = {
   accountId: string;

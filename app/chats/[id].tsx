@@ -1,3 +1,5 @@
+import Text from "@/components/AppText";
+import TextInput from "@/components/AppTextInput";
 import Avatar from "@/components/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
@@ -11,8 +13,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";

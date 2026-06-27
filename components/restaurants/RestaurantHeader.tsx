@@ -1,6 +1,7 @@
 import Avatar from "@/components/Avatar";
 import { Restaurant } from "@/types";
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
+import Text from "../AppText";
 import RestaurantFollowButton from "./RestaurantFollowButton";
 import RestaurantStats from "./RestaurantStats";
 

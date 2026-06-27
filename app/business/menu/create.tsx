@@ -1,3 +1,5 @@
+import Text from "@/components/AppText";
+import TextInput from "@/components/AppTextInput";
 import { api } from "@/lib/api";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -5,8 +7,6 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Text,
-  TextInput,
   TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

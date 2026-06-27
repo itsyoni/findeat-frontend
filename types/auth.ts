@@ -7,7 +7,7 @@ export type SignupWithRestaurantData = {
   restaurantName: string;
   city?: string;
   address?: string;
-  description?: string;
+  bio?: string;
   avatarUrl?: string;
   coverUrl?: string;
   latitude?: number;
@@ -24,8 +24,7 @@ export type AuthContextType = {
     email: string,
     username: string,
     password: string,
-    firstName: string,
-    lastName: string,
+    displayName: string,
   ) => Promise<void>;
   signupWithRestaurant: (data: SignupWithRestaurantData) => Promise<void>;
   logout: () => Promise<void>;

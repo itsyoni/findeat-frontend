@@ -39,7 +39,7 @@ export const restaurantSignupSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
   mapboxId: z.string().min(1, "Address is required"),
-  description: z.string().trim().optional(),
+  bio: z.string().trim().max(500).optional(),
 });
 
 export type LoginFormData = z.infer<typeof loginSchema>;

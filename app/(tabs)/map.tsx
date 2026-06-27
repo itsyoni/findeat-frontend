@@ -1,3 +1,4 @@
+import Text from "@/components/AppText";
 import Avatar from "@/components/Avatar";
 import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
@@ -9,7 +10,6 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";

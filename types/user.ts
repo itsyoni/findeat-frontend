@@ -3,12 +3,12 @@ export type AccountType = "USER" | "BUSINESS";
 export type User = {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
+  displayName: string;
   username: string;
   accountType: AccountType;
   createdAt: string;
   avatarUrl: string;
+  coverUrl?: string | null;
   bio?: string | null;
 };
 

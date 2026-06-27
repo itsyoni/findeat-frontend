@@ -1,3 +1,4 @@
+import Text from "@/components/AppText";
 import { api } from "@/lib/api";
 import { Profile } from "@/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
@@ -8,7 +9,6 @@ import {
   FlatList,
   Image,
   Pressable,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";

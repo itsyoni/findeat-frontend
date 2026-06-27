@@ -1,5 +1,6 @@
 import { Restaurant } from "@/types";
-import { Image, Text, View } from "react-native";
+import { Image, View } from "react-native";
+import Text from "../AppText";
 
 type Props = {
   item: Restaurant["menus"][number]["items"][number];

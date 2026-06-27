@@ -13,6 +13,7 @@ type Props = TextProps & {
 
 const fonts = {
   thin: "CabinetThin",
+  extralight: "CabinetExtraLight",
   light: "CabinetLight",
   regular: "CabinetRegular",
   medium: "CabinetMedium",

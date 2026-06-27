@@ -4,9 +4,6 @@ import { User } from "./user";
 export type BusinessRestaurant = {
   id: string;
   name: string;
-  description?: string | null;
-  avatarUrl?: string | null;
-  coverUrl?: string | null;
   address?: string | null;
   city?: string | null;
   latitude?: number | null;

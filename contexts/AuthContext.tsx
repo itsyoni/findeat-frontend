@@ -51,15 +51,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     email: string,
     username: string,
     password: string,
-    firstName: string,
-    lastName: string,
+    displayName: string,
   ) {
     const res = await api.post("/auth/signup", {
       email,
       username,
       password,
-      firstName,
-      lastName,
+      displayName,
     });
 
     const accessToken = res.data.accessToken;

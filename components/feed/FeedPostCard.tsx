@@ -1,6 +1,7 @@
 import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
+import Text from "../AppText";
 
 type Props = {
   post: Post;

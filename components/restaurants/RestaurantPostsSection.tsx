@@ -1,5 +1,6 @@
 import { Restaurant } from "@/types";
-import { Text, View } from "react-native";
+import { View } from "react-native";
+import Text from "../AppText";
 import RestaurantPostCard from "./RestaurantPostCard";
 
 type Props = {

@@ -1,3 +1,5 @@
+import Text from "@/components/AppText";
+import TextInput from "@/components/AppTextInput";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
@@ -13,8 +15,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
-  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,

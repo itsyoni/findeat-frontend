@@ -1,3 +1,4 @@
+import Text from "@/components/AppText";
 import Tabs from "@/components/Tabs";
 import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
 import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSection";
@@ -6,7 +7,7 @@ import { api } from "@/lib/api";
 import { Restaurant } from "@/types";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 
 type RestaurantTab = "CONTENT" | "REVIEWS" | "MENU";
 

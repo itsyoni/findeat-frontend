@@ -67,8 +67,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         data.email,
         data.username,
         data.password,
-        data.firstName,
-        data.lastName,
+        `${data.firstName} ${data.lastName}`.trim(),
       );
 
       console.log("SIGNUP 5: signup success");

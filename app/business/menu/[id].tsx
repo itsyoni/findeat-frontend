@@ -1,3 +1,5 @@
+import Text from "@/components/AppText";
+import TextInput from "@/components/AppTextInput";
 import { api } from "@/lib/api";
 import { Menu } from "@/types";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
@@ -7,8 +9,6 @@ import {
   Alert,
   FlatList,
   Image,
-  Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";

@@ -1,3 +1,4 @@
+import Text from "@/components/AppText";
 import { api } from "@/lib/api";
 import { Profile } from "@/types/profile";
 import { router, useFocusEffect } from "expo-router";
@@ -5,7 +6,6 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";

@@ -1,8 +1,14 @@
 import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
 import { router } from "expo-router";
-import { ChatCircleIcon, HeartIcon, ShareIcon } from "phosphor-react-native";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  ChatCircleIcon,
+  HeartIcon,
+  MapPinLineIcon,
+  ShareFatIcon,
+} from "phosphor-react-native";
+import { Image, TouchableOpacity, View } from "react-native";
+import Text from "../AppText";
 
 type Props = {
   post: Post;
@@ -72,7 +78,8 @@ export default function ContentFeedPost({
 
         {!!post.restaurant?.name && (
           <Text className="mb-2 text-sm font-semibold text-white">
-            📍 {post.restaurant.name}
+            <MapPinLineIcon size={20} color="#212121" weight="fill" />
+            {post.restaurant.name}
           </Text>
         )}
 
@@ -84,7 +91,7 @@ export default function ContentFeedPost({
       <View className="absolute bottom-10 right-4 items-center gap-5">
         <TouchableOpacity onPress={() => onToggleLike(post.id, post.isLiked)}>
           <HeartIcon
-            weight={post.isLiked ? "fill" : "regular"}
+            weight={"fill"}
             color={post.isLiked ? "red" : "white"}
             size={35}
           />
@@ -94,14 +101,14 @@ export default function ContentFeedPost({
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => onOpenComments(post.id)}>
-          <ChatCircleIcon weight="regular" color="white" size={35} />
+          <ChatCircleIcon weight="fill" color="white" size={35} />
           <Text className="text-center text-lg text-white">
             {post.commentsCount}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <ShareIcon weight="regular" color="white" size={35} />
+          <ShareFatIcon weight="fill" color="white" size={35} />
         </TouchableOpacity>
       </View>
     </View>

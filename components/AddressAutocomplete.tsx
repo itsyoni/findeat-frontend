@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import Text from "./AppText";
+import TextInput from "./AppTextInput";
 
 export type SelectedAddress = {
   id: string;

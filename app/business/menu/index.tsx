@@ -1,3 +1,4 @@
+import Text from "@/components/AppText";
 import { api } from "@/lib/api";
 import { Menu } from "@/types";
 import { router, useFocusEffect } from "expo-router";
@@ -5,7 +6,6 @@ import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";

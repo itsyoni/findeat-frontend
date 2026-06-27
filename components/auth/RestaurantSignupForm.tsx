@@ -31,7 +31,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
   const [restaurantName, setRestaurantName] = useState("");
   const [city, setCity] = useState("");
   const [address, setAddress] = useState("");
-  const [description, setDescription] = useState("");
+  const [bio, setBio] = useState("");
   const [latitude, setLatitude] = useState<number>();
   const [longitude, setLongitude] = useState<number>();
   const [mapboxId, setMapboxId] = useState<string>();
@@ -47,7 +47,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
         restaurantName,
         city,
         address,
-        description,
+        bio,
         latitude,
         longitude,
         mapboxId,
@@ -62,7 +62,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
         restaurantName: data.restaurantName,
         city: data.city,
         address: data.address,
-        description: data.description || undefined,
+        bio: data.bio || undefined,
         latitude: data.latitude,
         longitude: data.longitude,
         mapboxId: data.mapboxId,
@@ -144,9 +144,9 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
         )}
 
         <TextInput
-          placeholder="Description"
-          value={description}
-          onChangeText={setDescription}
+          placeholder="Bio"
+          value={bio}
+          onChangeText={setBio}
           multiline
           textAlignVertical="top"
           className="min-h-32 border-0 bg-[#f8f8f8]"

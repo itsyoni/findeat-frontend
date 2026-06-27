@@ -1,4 +1,6 @@
+import Text from "@/components/AppText";
 import Avatar from "@/components/Avatar";
+import FormInput from "@/components/FormInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
@@ -6,15 +8,7 @@ import { Profile } from "@/types/profile";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import {
-  Alert,
-  Image,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
 
 export default function EditProfileScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -23,7 +17,7 @@ export default function EditProfileScreen() {
   const [bio, setBio] = useState("");
 
   const [restaurantName, setRestaurantName] = useState("");
-  const [restaurantDescription, setRestaurantDescription] = useState("");
+  const [restaurantBio, setRestaurantBio] = useState("");
   const [restaurantAddress, setRestaurantAddress] = useState("");
   const [restaurantCity, setRestaurantCity] = useState("");
   const [restaurantPhone, setRestaurantPhone] = useState("");
@@ -62,13 +56,13 @@ export default function EditProfileScreen() {
 
       if (data.accountType === "BUSINESS" && data.businessRestaurant) {
         setRestaurantName(data.businessRestaurant.name ?? "");
-        setRestaurantDescription(data.businessRestaurant.description ?? "");
+        setRestaurantBio(data.bio ?? "");
         setRestaurantAddress(data.businessRestaurant.address ?? "");
         setRestaurantCity(data.businessRestaurant.city ?? "");
         setRestaurantPhone(data.businessRestaurant.phone ?? "");
         setRestaurantWebsite(data.businessRestaurant.website ?? "");
         setRestaurantInstagram(data.businessRestaurant.instagram ?? "");
-        setCoverUrl(data.businessRestaurant.coverUrl ?? null);
+        setCoverUrl(data.coverUrl ?? null);
       }
     } catch (error) {
       console.error(error);
@@ -109,7 +103,7 @@ export default function EditProfileScreen() {
       if (isBusiness) {
         await api.patch("/restaurants/me", {
           name: restaurantName.trim(),
-          description: restaurantDescription.trim() || null,
+          bio: restaurantBio.trim() || null,
           address: restaurantAddress.trim() || null,
           city: restaurantCity.trim() || null,
           phone: restaurantPhone.trim() || null,
@@ -225,9 +219,9 @@ export default function EditProfileScreen() {
             />
 
             <FormInput
-              label="Description"
-              value={restaurantDescription}
-              onChangeText={setRestaurantDescription}
+              label="Bio"
+              value={restaurantBio}
+              onChangeText={setRestaurantBio}
               placeholder="Tell people about the restaurant..."
               multiline
             />
@@ -302,45 +296,5 @@ export default function EditProfileScreen() {
 function SectionTitle({ title }: { title: string }) {
   return (
     <Text className="mt-8 mb-3 text-xl font-bold text-black">{title}</Text>
-  );
-}
-
-function FormInput({
-  label,
-  value,
-  onChangeText,
-  placeholder,
-  multiline,
-  autoCapitalize,
-  keyboardType,
-}: {
-  label: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-  autoCapitalize?: "none" | "sentences" | "words" | "characters";
-  keyboardType?: "default" | "phone-pad" | "url";
-}) {
-  return (
-    <>
-      <Text className="mt-5 mb-2 text-sm font-semibold text-gray-500">
-        {label}
-      </Text>
-
-      <TextInput
-        className={`rounded-2xl border border-gray-200 px-4 py-4 text-base text-black ${
-          multiline ? "min-h-32" : ""
-        }`}
-        placeholder={placeholder}
-        placeholderTextColor="#9CA3AF"
-        value={value}
-        onChangeText={onChangeText}
-        multiline={multiline}
-        textAlignVertical={multiline ? "top" : "center"}
-        autoCapitalize={autoCapitalize}
-        keyboardType={keyboardType}
-      />
-    </>
   );
 }

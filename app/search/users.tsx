@@ -1,9 +1,10 @@
+import Text from "@/components/AppText";
 import SearchBar from "@/components/SearchBar";
 import { api } from "@/lib/api";
 import { User } from "@/types";
 import { router } from "expo-router";
 import { useState } from "react";
-import { FlatList, Text, TouchableOpacity } from "react-native";
+import { FlatList, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserSearchScreen() {

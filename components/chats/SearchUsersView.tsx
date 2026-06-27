@@ -4,12 +4,13 @@ import { addRecentSearch, getRecentSearches } from "@/lib/recentSearches";
 import { RecentSearchItem, UserSummary } from "@/types";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { FlatList, Text, TouchableOpacity } from "react-native";
+import { FlatList, TouchableOpacity } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
+import Text from "../AppText";
 import Avatar from "../Avatar";
 
 type Props = {

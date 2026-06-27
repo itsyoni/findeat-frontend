@@ -9,6 +9,7 @@ type Props = {
   onRefresh: () => void;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
+  initialIndex?: number;
 };
 
 export default function ContentFeedList({
@@ -18,6 +19,7 @@ export default function ContentFeedList({
   onRefresh,
   onToggleLike,
   onOpenComments,
+  initialIndex = 0,
 }: Props) {
   return (
     <FlatList
@@ -28,6 +30,12 @@ export default function ContentFeedList({
       pagingEnabled
       showsVerticalScrollIndicator={false}
       decelerationRate="fast"
+      initialScrollIndex={initialIndex}
+      getItemLayout={(_, index) => ({
+        length: height,
+        offset: height * index,
+        index,
+      })}
       renderItem={({ item }) => (
         <ContentFeedPost
           post={item}

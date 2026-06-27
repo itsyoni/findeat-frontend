@@ -1,5 +1,6 @@
 import { MagnifyingGlassIcon } from "phosphor-react-native";
-import { Text, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
+import Text from "./AppText";
 
 type FakeSearchBarProps = {
   placeholder?: string;
