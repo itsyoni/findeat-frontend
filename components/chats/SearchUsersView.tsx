@@ -1,8 +1,13 @@
 import SearchBar from "@/components/SearchBar";
 import { api } from "@/lib/api";
-import { addRecentSearch, getRecentSearches } from "@/lib/recentSearches";
+import {
+  addRecentSearch,
+  getRecentSearches,
+  removeRecentSearch,
+} from "@/lib/recentSearches";
 import { RecentSearchItem, UserSummary } from "@/types";
 import { router } from "expo-router";
+import { XIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { FlatList, TouchableOpacity } from "react-native";
 import Animated, {
@@ -74,6 +79,11 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
     }
   }
 
+  async function handleRemoveRecentSearch(item: RecentSearchItem) {
+    const updated = await removeRecentSearch(item.id, item.type);
+    setRecentSearches(updated);
+  }
+
   return (
     <>
       <Animated.View
@@ -82,12 +92,7 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
         className="flex-row items-center"
       >
         <Animated.View layout={LinearTransition.springify()} className="flex-1">
-          <SearchBar
-            value={query}
-            onChangeText={searchUsers}
-            placeholder="Search people..."
-            autoFocus
-          />
+          <SearchBar value={query} onChangeText={searchUsers} autoFocus />
         </Animated.View>
 
         <Animated.View
@@ -125,7 +130,18 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
               className="flex-row items-center gap-4 border-b border-gray-100 p-4"
             >
               <Avatar uri={item.avatarUrl} username={item.title} size={44} />
-              <Text className="font-bold">@{item.title}</Text>
+
+              <Text className="flex-1 font-bold">@{item.title}</Text>
+
+              <TouchableOpacity
+                onPress={(event) => {
+                  event.stopPropagation();
+                  handleRemoveRecentSearch(item);
+                }}
+                hitSlop={12}
+              >
+                <XIcon size={16} color="#000" />
+              </TouchableOpacity>
             </TouchableOpacity>
           )}
         />

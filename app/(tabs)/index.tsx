@@ -99,7 +99,7 @@ export default function HomeScreen() {
           className="flex-1"
         >
           <FakeSearchBar
-            placeholder="Search people, places..."
+            placeholder="Search"
             onPress={() => setIsSearching(true)}
           />
 

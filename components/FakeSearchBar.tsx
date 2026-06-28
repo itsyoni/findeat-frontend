@@ -14,7 +14,7 @@ export default function FakeSearchBar({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className="mx-5 my-4 flex-row items-center rounded-xl bg-[#F5F4F5] px-4 py-3"
+      className="mx-5 my-4 flex-row items-center rounded-2xl bg-[#F5F4F5] px-4 py-4"
     >
       <MagnifyingGlassIcon size={20} color="#9CA3AF" />
       <Text className="ml-3 text-base text-gray-400">{placeholder}</Text>

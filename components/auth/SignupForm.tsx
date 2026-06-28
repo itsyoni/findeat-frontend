@@ -31,11 +31,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
-    console.log("SIGNUP 1: pressed");
-
     try {
-      console.log("SIGNUP 2: before zod");
-
       const data: SignupFormData = signupSchema.parse({
         firstName,
         lastName,
@@ -45,23 +41,17 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         confirmPassword,
       });
 
-      console.log("SIGNUP 3: zod passed", data);
-
       if (availability.usernameAvailable === false) {
-        console.log("SIGNUP BLOCKED: username taken");
         Alert.alert("Invalid details", "Username is already taken");
         return;
       }
 
       if (availability.emailAvailable === false) {
-        console.log("SIGNUP BLOCKED: email taken");
         Alert.alert("Invalid details", "Email is already registered");
         return;
       }
 
       setLoading(true);
-
-      console.log("SIGNUP 4: before api/signup");
 
       await signup(
         data.email,
@@ -69,12 +59,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         data.password,
         `${data.firstName} ${data.lastName}`.trim(),
       );
-
-      console.log("SIGNUP 5: signup success");
     } catch (error: any) {
-      console.log("SIGNUP ERROR:", error);
-      console.log("SIGNUP ERROR RESPONSE:", error?.response?.data);
-
       if (error instanceof ZodError) {
         Alert.alert("Invalid details", error.issues[0]?.message);
         return;
@@ -85,7 +70,6 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         error.response?.data?.message ?? "Could not create account",
       );
     } finally {
-      console.log("SIGNUP 6: finally");
       setLoading(false);
     }
   }

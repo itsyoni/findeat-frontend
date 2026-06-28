@@ -123,17 +123,85 @@ export default function EditProfileScreen() {
     }
   }
 
-  async function pickAvatar() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+  async function pickImage(
+    aspect: [number, number],
+    onSelect: (uri: string) => void,
+  ) {
+    async function openCamera() {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
 
-    if (!result.canceled) {
-      setNewAvatarUri(result.assets[0].uri);
+      if (!permission.granted) {
+        Alert.alert("Permission required", "Camera access is required.");
+        return;
+      }
+
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect,
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        onSelect(result.assets[0].uri);
+      }
     }
+
+    async function openLibrary() {
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        Alert.alert("Permission required", "Photo library access is required.");
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect,
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        onSelect(result.assets[0].uri);
+      }
+    }
+
+    async function removeProfilePicture() {
+      try {
+        const res = await api.delete("/users/me/avatar");
+
+        setAvatarUrl(res.data.avatarUrl);
+        setNewAvatarUri(null);
+      } catch (error) {
+        console.error(error);
+        Alert.alert("Error", "Could not remove profile picture.");
+      }
+    }
+
+    Alert.alert("Choose image", "Where would you like to get the image from?", [
+      {
+        text: "Take Photo",
+        onPress: openCamera,
+      },
+      {
+        text: "Choose From Library",
+        onPress: openLibrary,
+      },
+      {
+        text: "Remove Profile Picture",
+        style: "destructive",
+        onPress: removeProfilePicture,
+      },
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+    ]);
+  }
+
+  async function pickAvatar() {
+    await pickImage([1, 1], setNewAvatarUri);
   }
 
   async function pickCover() {

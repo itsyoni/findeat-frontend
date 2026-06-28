@@ -22,6 +22,21 @@ export async function addRecentSearch(item: RecentSearchItem) {
   return updated;
 }
 
+export async function removeRecentSearch(
+  id: string,
+  type: RecentSearchItem["type"],
+) {
+  const items = await getRecentSearches();
+
+  const updated = items.filter(
+    (item) => !(item.id === id && item.type === type),
+  );
+
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+  return updated;
+}
+
 export async function clearRecentSearches() {
   await AsyncStorage.removeItem(STORAGE_KEY);
 }

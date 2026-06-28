@@ -65,7 +65,7 @@ export default function ChatsScreen() {
           className="flex-1"
         >
           <FakeSearchBar
-            placeholder="Search people..."
+            placeholder="Search"
             onPress={() => setIsSearching(true)}
           />
 

@@ -34,12 +34,7 @@ export default function UserSearchScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <SearchBar
-        value={query}
-        onChangeText={searchUsers}
-        placeholder="Search people..."
-        autoFocus
-      />
+      <SearchBar value={query} onChangeText={searchUsers} autoFocus />
 
       <FlatList
         data={users}
