@@ -94,6 +94,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
 
       <View className="gap-4">
         <TextInput
+          useBottomSheetInput
           placeholder="Business email"
           value={email}
           onChangeText={setEmail}
@@ -104,6 +105,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
         />
 
         <TextInput
+          useBottomSheetInput
           placeholder="Restaurant username"
           value={username}
           onChangeText={setUsername}
@@ -113,6 +115,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
         />
 
         <TextInput
+          useBottomSheetInput
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -122,6 +125,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
         />
 
         <TextInput
+          useBottomSheetInput
           placeholder="Restaurant name"
           value={restaurantName}
           onChangeText={setRestaurantName}
@@ -144,6 +148,7 @@ export default function RestaurantSignupForm({ onLogin }: Props) {
         )}
 
         <TextInput
+          useBottomSheetInput
           placeholder="Bio"
           value={bio}
           onChangeText={setBio}

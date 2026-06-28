@@ -2,12 +2,19 @@ import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
 import { router } from "expo-router";
 import {
+  BookmarkSimpleIcon,
   ChatCircleIcon,
   HeartIcon,
   MapPinLineIcon,
   ShareFatIcon,
 } from "phosphor-react-native";
 import { Image, TouchableOpacity, View } from "react-native";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+} from "react-native-reanimated";
 import Text from "../AppText";
 
 type Props = {
@@ -15,6 +22,11 @@ type Props = {
   height: number;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
+  onToggleWantToTry: (
+    postId: string,
+    restaurantId: string,
+    isWantToTry: boolean,
+  ) => void;
 };
 
 export default function ContentFeedPost({
@@ -22,8 +34,44 @@ export default function ContentFeedPost({
   height,
   onToggleLike,
   onOpenComments,
+  onToggleWantToTry,
 }: Props) {
+  const userRestaurant = post.restaurant?.userSaves?.[0];
+  const isWantToTry = !!userRestaurant?.wantToTry;
   const isBusinessPost = post.user.accountType === "BUSINESS";
+
+  const likeScale = useSharedValue(1);
+
+  const likeAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: likeScale.value }],
+  }));
+
+  const iconShadow = {
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 4,
+    elevation: 6,
+  };
+
+  function handleLike() {
+    if (!post.isLiked) {
+      likeScale.value = 1;
+
+      likeScale.value = withSequence(withSpring(1.25), withSpring(1));
+    } else {
+      // Reset immediately if unliking
+      likeScale.value = 1;
+    }
+
+    onToggleLike(post.id, post.isLiked);
+  }
+
+  function handleWantToTry() {
+    if (!post.restaurant?.id) return;
+
+    onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
+  }
 
   return (
     <View style={{ height }}>
@@ -89,26 +137,55 @@ export default function ContentFeedPost({
       </View>
 
       <View className="absolute bottom-10 right-4 items-center gap-5">
-        <TouchableOpacity onPress={() => onToggleLike(post.id, post.isLiked)}>
-          <HeartIcon
-            weight={"fill"}
-            color={post.isLiked ? "red" : "white"}
-            size={35}
-          />
+        <TouchableOpacity onPress={handleLike}>
+          <Animated.View style={likeAnimatedStyle}>
+            <HeartIcon
+              weight="fill"
+              color={post.isLiked ? "#FF3040" : "#FFFFFFCC"}
+              size={35}
+              style={[
+                iconShadow,
+                post.isLiked && {
+                  shadowColor: "#FF3040",
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                },
+              ]}
+            />
+          </Animated.View>
+
           <Text className="text-center text-lg text-white">
             {post.likesCount}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => onOpenComments(post.id)}>
-          <ChatCircleIcon weight="fill" color="white" size={35} />
+          <ChatCircleIcon
+            weight="fill"
+            color="#FFFFFFCC"
+            size={35}
+            style={iconShadow}
+          />
           <Text className="text-center text-lg text-white">
             {post.commentsCount}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity>
-          <ShareFatIcon weight="fill" color="white" size={35} />
+          <ShareFatIcon
+            weight="fill"
+            color="#FFFFFFCC"
+            size={35}
+            style={iconShadow}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleWantToTry}>
+          <BookmarkSimpleIcon
+            weight="fill"
+            color={isWantToTry ? "#F7D786" : "#FFFFFFCC"}
+            size={35}
+            style={iconShadow}
+          />
         </TouchableOpacity>
       </View>
     </View>

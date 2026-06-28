@@ -7,7 +7,12 @@ import { api } from "@/lib/api";
 import { Restaurant } from "@/types";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 type RestaurantTab = "CONTENT" | "REVIEWS" | "MENU";
 
@@ -72,6 +77,56 @@ export default function RestaurantScreen() {
     }
   }
 
+  async function updateRestaurantStatus(
+    nextStatus: Partial<Restaurant["userRestaurant"]>,
+  ) {
+    if (!restaurant) return;
+
+    setRestaurant((prev) =>
+      prev
+        ? {
+            ...prev,
+            userRestaurant: {
+              id: prev.userRestaurant?.id ?? "",
+              wantToTry: prev.userRestaurant?.wantToTry ?? false,
+              visited: prev.userRestaurant?.visited ?? false,
+              favorite: prev.userRestaurant?.favorite ?? false,
+              ...nextStatus,
+            },
+          }
+        : prev,
+    );
+  }
+
+  async function markVisited() {
+    if (!restaurant) return;
+
+    await api.post(`/restaurants/${restaurant.id}/visited`);
+
+    updateRestaurantStatus({
+      visited: true,
+      wantToTry: false,
+    });
+  }
+
+  async function toggleFavorite() {
+    if (!restaurant) return;
+
+    const isFavorite = restaurant.userRestaurant?.favorite === true;
+
+    if (isFavorite) {
+      await api.delete(`/restaurants/${restaurant.id}/favorite`);
+      updateRestaurantStatus({ favorite: false });
+    } else {
+      await api.post(`/restaurants/${restaurant.id}/favorite`);
+      updateRestaurantStatus({
+        favorite: true,
+        visited: true,
+        wantToTry: false,
+      });
+    }
+  }
+
   const featuredItems = useMemo(() => {
     if (!restaurant) return [];
 
@@ -107,6 +162,44 @@ export default function RestaurantScreen() {
   return (
     <ScrollView className="flex-1 bg-white">
       <RestaurantHeader restaurant={restaurant} onToggleFollow={toggleFollow} />
+
+      <View className="px-6 py-4">
+        <View className="flex-row gap-3">
+          <TouchableOpacity
+            onPress={markVisited}
+            className={`flex-1 rounded-full px-4 py-3 ${
+              restaurant.userRestaurant?.visited
+                ? "bg-green-600"
+                : "bg-gray-100"
+            }`}
+          >
+            <Text
+              className={`text-center font-bold ${
+                restaurant.userRestaurant?.visited ? "text-white" : "text-black"
+              }`}
+            >
+              Visited
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={toggleFavorite}
+            className={`flex-1 rounded-full px-4 py-3 ${
+              restaurant.userRestaurant?.favorite ? "bg-red-500" : "bg-gray-100"
+            }`}
+          >
+            <Text
+              className={`text-center font-bold ${
+                restaurant.userRestaurant?.favorite
+                  ? "text-white"
+                  : "text-black"
+              }`}
+            >
+              Favorite
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       <Tabs
         activeTab={activeTab}

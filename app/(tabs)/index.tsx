@@ -1,8 +1,8 @@
 import SearchUsersView from "@/components/chats/SearchUsersView";
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
-import FakeSearchBar from "@/components/FakeSearchBar";
 import ContentFeedList from "@/components/feed/ContentFeedList";
 import FeedPostList from "@/components/feed/FeedPostList";
+import SearchBar from "@/components/SearchBar";
 import Tabs from "@/components/Tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
@@ -57,6 +57,22 @@ export default function HomeScreen() {
     await loadPosts();
   }
 
+  async function toggleWantToTry(
+    postId: string,
+    restaurantId: string,
+    isWantToTry: boolean,
+  ) {
+    if (isWantToTry) {
+      await api.delete(`/restaurants/${restaurantId}/want-to-try`);
+    } else {
+      await api.post(`/restaurants/${restaurantId}/want-to-try`, {
+        savedFromPostId: postId,
+      });
+    }
+
+    await loadPosts();
+  }
+
   function openComments(postId: string) {
     setSelectedPostId(postId);
     commentsSheetRef.current?.snapToIndex(0);
@@ -98,7 +114,8 @@ export default function HomeScreen() {
           exiting={FadeOut.duration(120)}
           className="flex-1"
         >
-          <FakeSearchBar
+          <SearchBar
+            editable={false}
             placeholder="Search"
             onPress={() => setIsSearching(true)}
           />
@@ -125,6 +142,7 @@ export default function HomeScreen() {
                   onRefresh={onRefresh}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
+                  onToggleWantToTry={toggleWantToTry}
                 />
               ) : (
                 <FeedPostList
@@ -133,6 +151,7 @@ export default function HomeScreen() {
                   onRefresh={onRefresh}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
+                  onToggleWantToTry={toggleWantToTry}
                 />
               ))}
           </View>

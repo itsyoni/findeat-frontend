@@ -4,7 +4,7 @@ import RestaurantSignupForm from "@/components/auth/RestaurantSignupForm";
 import SignupForm from "@/components/auth/SignupForm";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { ImageBackground, TouchableOpacity, View } from "react-native";
 import Animated, {
   FadeInRight,
@@ -32,7 +32,6 @@ type AuthMode = "login" | "signup" | "restaurant-signup";
 
 export default function AuthIndexScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const snapPoints = useMemo(() => ["88%"], []);
 
   const [step, setStep] = useState(0);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -154,8 +153,10 @@ export default function AuthIndexScreen() {
         <BottomSheet
           ref={bottomSheetRef}
           index={-1}
-          snapPoints={snapPoints}
           enablePanDownToClose
+          keyboardBehavior="interactive"
+          keyboardBlurBehavior="restore"
+          android_keyboardInputMode="adjustResize"
           onClose={() => setSheetOpen(false)}
           backgroundStyle={{
             backgroundColor: "white",

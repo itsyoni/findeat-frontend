@@ -9,6 +9,11 @@ type Props = {
   onRefresh: () => void;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
+  onToggleWantToTry: (
+    postId: string,
+    restaurantId: string,
+    isWantToTry: boolean,
+  ) => void;
   initialIndex?: number;
 };
 
@@ -19,6 +24,7 @@ export default function ContentFeedList({
   onRefresh,
   onToggleLike,
   onOpenComments,
+  onToggleWantToTry,
   initialIndex = 0,
 }: Props) {
   return (
@@ -42,6 +48,7 @@ export default function ContentFeedList({
           height={height}
           onToggleLike={onToggleLike}
           onOpenComments={onOpenComments}
+          onToggleWantToTry={onToggleWantToTry}
         />
       )}
     />

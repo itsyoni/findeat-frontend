@@ -117,6 +117,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
       <View className="gap-4">
         <View className="flex-row gap-3">
           <TextInput
+            useBottomSheetInput
             placeholder="First name"
             value={firstName}
             onChangeText={setFirstName}
@@ -125,6 +126,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
           />
 
           <TextInput
+            useBottomSheetInput
             placeholder="Last name"
             value={lastName}
             onChangeText={setLastName}
@@ -133,6 +135,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
           />
         </View>
         <TextInput
+          useBottomSheetInput
           placeholder="Username"
           value={username}
           onChangeText={(text) => {
@@ -150,6 +153,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         )}
 
         <TextInput
+          useBottomSheetInput
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
@@ -166,6 +170,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         )}
 
         <TextInput
+          useBottomSheetInput
           placeholder="Password"
           value={password}
           onChangeText={setPassword}
@@ -175,6 +180,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         />
 
         <TextInput
+          useBottomSheetInput
           placeholder="Confirm Password"
           value={confirmPassword}
           onChangeText={setConfirmPassword}

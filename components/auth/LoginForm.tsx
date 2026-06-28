@@ -3,14 +3,8 @@ import TextInput from "@/components/AppTextInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginFormData, loginSchema } from "@/lib/validation/auth";
 import { EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
-import { useRef, useState } from "react";
-import {
-  Alert,
-  Keyboard,
-  TextInput as RNTextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useState } from "react";
+import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 
 type Props = {
@@ -20,7 +14,6 @@ type Props = {
 
 export default function LoginForm({ onSignup }: Props) {
   const { login } = useAuth();
-  const passwordRef = useRef<RNTextInput>(null);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,20 +56,21 @@ export default function LoginForm({ onSignup }: Props) {
 
       <View className="gap-4">
         <TextInput
+          useBottomSheetInput
           placeholder="Email"
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
-          returnKeyType="next"
-          submitBehavior="submit"
-          onSubmitEditing={() => passwordRef.current?.focus()}
+          returnKeyType="done"
+          submitBehavior="blurAndSubmit"
+          onSubmitEditing={Keyboard.dismiss}
           className="border-0 bg-[#f8f8f8]"
           leftIcon={<EnvelopeSimpleIcon size={20} color="#212121" />}
         />
 
         <TextInput
-          ref={passwordRef}
+          useBottomSheetInput
           placeholder="Password"
           value={password}
           onChangeText={setPassword}

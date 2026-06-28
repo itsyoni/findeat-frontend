@@ -1,4 +1,4 @@
-import FakeSearchBar from "@/components/FakeSearchBar";
+import SearchBar from "@/components/SearchBar";
 import ChatList from "@/components/chats/ChatList";
 import SearchUsersView from "@/components/chats/SearchUsersView";
 import { api } from "@/lib/api";
@@ -64,7 +64,8 @@ export default function ChatsScreen() {
           exiting={FadeOut.duration(120)}
           className="flex-1"
         >
-          <FakeSearchBar
+          <SearchBar
+            editable={false}
             placeholder="Search"
             onPress={() => setIsSearching(true)}
           />

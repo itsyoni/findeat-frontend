@@ -8,6 +8,11 @@ type Props = {
   onRefresh: () => void;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
+  onToggleWantToTry: (
+    postId: string,
+    restaurantId: string,
+    isWantToTry: boolean,
+  ) => void;
 };
 
 export default function FeedPostList({
@@ -16,6 +21,7 @@ export default function FeedPostList({
   onRefresh,
   onToggleLike,
   onOpenComments,
+  onToggleWantToTry,
 }: Props) {
   return (
     <FlatList
@@ -23,15 +29,12 @@ export default function FeedPostList({
       keyExtractor={(item) => item.id}
       refreshing={refreshing}
       onRefresh={onRefresh}
-      contentContainerStyle={{
-        paddingHorizontal: 16,
-        paddingBottom: 32,
-      }}
       renderItem={({ item }) => (
         <FeedPostCard
           post={item}
           onToggleLike={onToggleLike}
           onOpenComments={onOpenComments}
+          onToggleWantToTry={onToggleWantToTry}
         />
       )}
     />

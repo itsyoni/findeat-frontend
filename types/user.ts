@@ -21,6 +21,16 @@ export type UserSummary = {
   lastSeenAt?: string | null;
 };
 
+export type UserRestaurant = {
+  id: string;
+  wantToTry: boolean;
+  visited: boolean;
+  favorite: boolean;
+  savedFromPostId?: string | null;
+  visitedAt?: string | null;
+  favoritedAt?: string | null;
+};
+
 export type Restaurant = {
   id: string;
   name: string;
@@ -34,6 +44,8 @@ export type Restaurant = {
   followersCount: number;
   followingCount: number;
   isFollowing: boolean;
+  userSaves?: UserRestaurant[];
+  userRestaurant?: UserRestaurant | null;
   account?: {
     id: string;
     username: string;
