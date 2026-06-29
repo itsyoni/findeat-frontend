@@ -207,12 +207,6 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
             </Text>
           </Text>
         </TouchableOpacity>
-
-        <TouchableOpacity onPress={onRestaurantSignup}>
-          <Text weight="bold" className="text-center text-[#212121]">
-            Creating a restaurant account?
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

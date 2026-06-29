@@ -1,6 +1,5 @@
 import Text from "@/components/AppText";
 import LoginForm from "@/components/auth/LoginForm";
-import RestaurantSignupForm from "@/components/auth/RestaurantSignupForm";
 import SignupForm from "@/components/auth/SignupForm";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { CaretLeftIcon } from "phosphor-react-native";
@@ -187,10 +186,6 @@ export default function AuthIndexScreen() {
                 onLogin={() => setAuthMode("login")}
                 onRestaurantSignup={() => setAuthMode("restaurant-signup")}
               />
-            )}
-
-            {authMode === "restaurant-signup" && (
-              <RestaurantSignupForm onLogin={() => setAuthMode("login")} />
             )}
           </BottomSheetScrollView>
         </BottomSheet>

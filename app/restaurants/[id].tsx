@@ -39,7 +39,7 @@ export default function RestaurantScreen() {
   }
 
   async function toggleFollow() {
-    if (!restaurant?.id) return;
+    if (!restaurant) return;
 
     const wasFollowing = restaurant.isFollowing;
 
@@ -48,30 +48,24 @@ export default function RestaurantScreen() {
         ? {
             ...prev,
             isFollowing: !wasFollowing,
-            followersCount: wasFollowing
-              ? prev.followersCount - 1
-              : prev.followersCount + 1,
+            followersCount: prev.followersCount + (wasFollowing ? -1 : 1),
           }
         : prev,
     );
 
     try {
       if (wasFollowing) {
-        await api.delete(`/users/${restaurant.id}/follow`);
+        await api.delete(`/restaurants/${restaurant.id}/follow`);
       } else {
-        await api.post(`/users/${restaurant.id}/follow`);
+        await api.post(`/restaurants/${restaurant.id}/follow`);
       }
-    } catch (error) {
-      console.error(error);
-
+    } catch {
       setRestaurant((prev) =>
         prev
           ? {
               ...prev,
               isFollowing: wasFollowing,
-              followersCount: wasFollowing
-                ? prev.followersCount + 1
-                : prev.followersCount - 1,
+              followersCount: prev.followersCount + (wasFollowing ? 1 : -1),
             }
           : prev,
       );
@@ -132,19 +126,26 @@ export default function RestaurantScreen() {
     if (!restaurant) return;
 
     try {
-      await api.post(`/restaurants/${restaurant.id}/claim`, {
-        evidenceText: "Claim requested from restaurant profile",
-      });
+      await api.post(`/restaurants/${restaurant.id}/start-claim`);
+
+      setRestaurant((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: "PENDING",
+            }
+          : prev,
+      );
 
       Alert.alert(
         "Request sent",
-        "Your claim request was sent. We’ll review it soon.",
+        "Your request was sent. We’ll review it soon.",
       );
     } catch (error: any) {
       console.error(error.response?.data ?? error);
       Alert.alert(
         "Error",
-        error.response?.data?.message ?? "Could not send claim request",
+        error.response?.data?.message ?? "Could not send request",
       );
     }
   }
@@ -184,17 +185,14 @@ export default function RestaurantScreen() {
   return (
     <ScrollView className="flex-1 bg-white">
       <RestaurantHeader restaurant={restaurant} onToggleFollow={toggleFollow} />
-      {!restaurant && (
+      {restaurant.status !== "CLAIMED" && (
         <View className="px-6 pt-4">
           <TouchableOpacity
             onPress={claimRestaurant}
-            className="rounded-2xl border border-gray-200 bg-[#F5F4F5] px-4 py-4"
+            className="rounded-2xl border border-[#F7D786] bg-[#FFFBEA] px-4 py-4"
           >
-            <Text className="text-center font-bold text-black">
-              Claim this restaurant
-            </Text>
-            <Text className="mt-1 text-center text-sm text-gray-500">
-              Are you the owner? Request access to manage this profile.
+            <Text className="mt-1 text-center text-sm text-gray-600">
+              Request access to manage this restaurant.
             </Text>
           </TouchableOpacity>
         </View>
