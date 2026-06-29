@@ -1,5 +1,4 @@
 import { Post } from "./post";
-import { BusinessRestaurant } from "./restaurant";
 import { User } from "./user";
 
 export type Profile = User & {
@@ -8,5 +7,4 @@ export type Profile = User & {
   followingCount: number;
   isFollowing?: boolean;
   posts: Post[];
-  businessRestaurants?: BusinessRestaurant[];
 };

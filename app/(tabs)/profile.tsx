@@ -1,5 +1,4 @@
 import Text from "@/components/AppText";
-import BusinessProfileHeader from "@/components/profile/BusinessProfileHeader";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
 import Tabs from "@/components/Tabs";
@@ -45,16 +44,11 @@ export default function ProfileScreen() {
     );
   }
 
-  const isBusiness = profile.accountType === "BUSINESS";
   const isAdmin = profile.email === "yoni@gmail.com";
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      {isBusiness ? (
-        <BusinessProfileHeader profile={profile} />
-      ) : (
-        <PersonalProfileHeader profile={profile} />
-      )}
+      <PersonalProfileHeader profile={profile} />
 
       {isAdmin && (
         <View className="px-5 pb-4">

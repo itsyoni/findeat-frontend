@@ -38,7 +38,7 @@ export default function ContentFeedPost({
 }: Props) {
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
-  const isBusinessPost = post.user.accountType === "BUSINESS";
+  const isBusinessPost = false;
 
   const likeScale = useSharedValue(1);
 
@@ -94,27 +94,22 @@ export default function ContentFeedPost({
           className="mb-3 flex-row items-center gap-3"
           activeOpacity={0.8}
           onPress={() => {
-            if (post.user.accountType === "BUSINESS" && post.restaurant) {
-              router.push({
-                pathname: "/restaurants/[id]",
-                params: { id: post.restaurant.id },
-              });
-            } else {
-              router.push({
-                pathname: "/users/[id]",
-                params: { id: post.user.id },
-              });
-            }
+            router.push({
+              pathname: "/users/[id]",
+              params: { id: post.author.id },
+            });
           }}
         >
           <Avatar
-            uri={post.user.avatarUrl}
-            username={post.user.username}
+            uri={post.author.avatarUrl}
+            username={post.author.username}
             size={42}
           />
 
           <View>
-            <Text className="font-bold text-white">@{post.user.username}</Text>
+            <Text className="font-bold text-white">
+              @{post.author.username}
+            </Text>
 
             {isBusinessPost && (
               <Text className="mt-1 text-xs font-semibold text-[#F7D786]">

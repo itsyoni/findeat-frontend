@@ -61,13 +61,13 @@ export default function FeedPostCard({
     <View className="mb-6 bg-white pb-6">
       <View className="mb-3 flex-row items-center gap-3 px-4">
         <Avatar
-          uri={post.user.avatarUrl}
-          username={post.user.username}
+          uri={post.author.avatarUrl}
+          username={post.author.username}
           size={42}
         />
 
         <View>
-          <Text className="font-bold text-black">@{post.user.username}</Text>
+          <Text className="font-bold text-black">@{post.author.username}</Text>
           <Text className="text-xs text-gray-400">Content post</Text>
 
           {!!post.restaurant && (

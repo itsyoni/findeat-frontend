@@ -29,7 +29,7 @@ export default function RestaurantHeader({
       <View className="px-6 pb-10">
         <View className="-mt-12">
           <Avatar
-            uri={restaurant.avatarUrl}
+            uri={restaurant.logoUrl}
             username={restaurant.name}
             size={96}
           />
@@ -39,18 +39,15 @@ export default function RestaurantHeader({
           {restaurant.name}
         </Text>
 
-        {!!restaurant.account?.username && (
-          <Text className="mt-1 text-gray-500">
-            @{restaurant.account.username}
-          </Text>
+        {!!restaurant.name && (
+          <Text className="mt-1 text-gray-500">@{restaurant.name}</Text>
         )}
 
-        {restaurant.account?.id && (
+        {restaurant.id && (
           <RestaurantStats
-            accountId={restaurant.account.id}
+            accountId={restaurant.id}
             postsCount={restaurant.posts.length}
             followersCount={restaurant.followersCount}
-            followingCount={restaurant.followingCount}
           />
         )}
 
@@ -62,13 +59,13 @@ export default function RestaurantHeader({
           <Text className="mt-1 text-gray-500">{restaurant.city}</Text>
         )}
 
-        {!!restaurant.description && (
+        {!!restaurant.bio && (
           <Text className="mt-5 text-base leading-6 text-gray-700">
-            {restaurant.description}
+            {restaurant.bio}
           </Text>
         )}
 
-        {!!restaurant.account?.id && (
+        {!!restaurant.id && (
           <RestaurantFollowButton
             isFollowing={restaurant.isFollowing}
             onPress={onToggleFollow}

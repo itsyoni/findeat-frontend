@@ -39,7 +39,7 @@ export default function RestaurantScreen() {
   }
 
   async function toggleFollow() {
-    if (!restaurant?.account?.id) return;
+    if (!restaurant?.id) return;
 
     const wasFollowing = restaurant.isFollowing;
 
@@ -57,9 +57,9 @@ export default function RestaurantScreen() {
 
     try {
       if (wasFollowing) {
-        await api.delete(`/users/${restaurant.account.id}/follow`);
+        await api.delete(`/users/${restaurant.id}/follow`);
       } else {
-        await api.post(`/users/${restaurant.account.id}/follow`);
+        await api.post(`/users/${restaurant.id}/follow`);
       }
     } catch (error) {
       console.error(error);
@@ -184,7 +184,7 @@ export default function RestaurantScreen() {
   return (
     <ScrollView className="flex-1 bg-white">
       <RestaurantHeader restaurant={restaurant} onToggleFollow={toggleFollow} />
-      {!restaurant.account && (
+      {!restaurant && (
         <View className="px-6 pt-4">
           <TouchableOpacity
             onPress={claimRestaurant}

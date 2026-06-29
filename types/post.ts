@@ -22,7 +22,7 @@ export type Post = {
   createdAt: string;
   updatedAt: string;
 
-  user: UserSummary;
+  author: UserSummary;
 
   likesCount: number;
   commentsCount: number;

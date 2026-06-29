@@ -6,14 +6,12 @@ type Props = {
   accountId: string;
   postsCount: number;
   followersCount: number;
-  followingCount: number;
 };
 
 export default function RestaurantStats({
   accountId,
   postsCount,
   followersCount,
-  followingCount,
 }: Props) {
   return (
     <View className="mt-5 flex-row">
@@ -33,18 +31,6 @@ export default function RestaurantStats({
       >
         <Text className="text-xl font-bold">{followersCount}</Text>
         <Text className="text-gray-500">Followers</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: "/users/connections",
-            params: { id: accountId, type: "following" },
-          })
-        }
-      >
-        <Text className="text-xl font-bold">{followingCount}</Text>
-        <Text className="text-gray-500">Following</Text>
       </TouchableOpacity>
     </View>
   );

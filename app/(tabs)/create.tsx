@@ -3,12 +3,11 @@ import TextInput from "@/components/AppTextInput";
 import RestaurantSearch, {
   SelectedRestaurant,
 } from "@/components/restaurants/RestaurantSearch";
-import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Alert,
   Image,
@@ -24,10 +23,6 @@ import {
 type PostType = "CONTENT" | "REVIEW";
 
 export default function CreatePostScreen() {
-  const { user } = useAuth();
-
-  const isBusiness = user?.accountType === "BUSINESS";
-
   const [postType, setPostType] = useState<PostType>("CONTENT");
   const [description, setDescription] = useState("");
   const [rating, setRating] = useState("");
@@ -35,14 +30,6 @@ export default function CreatePostScreen() {
   const [imageUri, setImageUri] = useState<string>();
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<SelectedRestaurant | null>(null);
-
-  useEffect(() => {
-    if (isBusiness) {
-      setPostType("CONTENT");
-      setSelectedRestaurant(null);
-      setRating("");
-    }
-  }, [isBusiness]);
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -55,13 +42,32 @@ export default function CreatePostScreen() {
     }
   }
 
+  async function getRestaurantId() {
+    if (!selectedRestaurant) return undefined;
+
+    if (selectedRestaurant.source === "FINDEAT") {
+      return selectedRestaurant.restaurant.id;
+    }
+
+    const res = await api.post("/restaurants/from-google", {
+      name: selectedRestaurant.name,
+      address: selectedRestaurant.address,
+      city: selectedRestaurant.city,
+      latitude: selectedRestaurant.latitude,
+      longitude: selectedRestaurant.longitude,
+      googlePlaceId: selectedRestaurant.googlePlaceId,
+    });
+
+    return res.data.id as string;
+  }
+
   async function handleCreatePost() {
     if (!description.trim()) {
       Alert.alert("Missing text", "Please write something");
       return;
     }
 
-    if (!isBusiness && !selectedRestaurant) {
+    if (!selectedRestaurant) {
       Alert.alert("Missing restaurant", "Please choose a restaurant");
       return;
     }
@@ -93,26 +99,11 @@ export default function CreatePostScreen() {
         imageUrl = await uploadImageToCloudinary(imageUri);
       }
 
-      let restaurantId: string | undefined;
+      const restaurantId = await getRestaurantId();
 
-      if (!isBusiness && selectedRestaurant) {
-        if (selectedRestaurant.source === "FINDEAT") {
-          restaurantId = selectedRestaurant.restaurant.id;
-        }
-
-        if (selectedRestaurant.source === "GOOGLE") {
-          const res = await api.post("/restaurants/from-google", {
-            name: selectedRestaurant.name,
-            address: selectedRestaurant.address,
-            city: selectedRestaurant.city,
-            latitude: selectedRestaurant.latitude,
-            longitude: selectedRestaurant.longitude,
-            googlePlaceId: selectedRestaurant.googlePlaceId,
-            placeName: selectedRestaurant.address,
-          });
-
-          restaurantId = res.data.id;
-        }
+      if (!restaurantId) {
+        Alert.alert("Missing restaurant", "Please choose a restaurant");
+        return;
       }
 
       await api.post("/posts", {
@@ -120,7 +111,7 @@ export default function CreatePostScreen() {
         description: description.trim(),
         imageUrl,
         rating: postType === "REVIEW" ? Number(rating) : undefined,
-        restaurantId: isBusiness ? undefined : restaurantId,
+        restaurantId,
       });
 
       setDescription("");
@@ -157,43 +148,27 @@ export default function CreatePostScreen() {
             paddingBottom: 40,
           }}
         >
-          <Text className="text-3xl font-bold text-black">
-            {isBusiness ? "New business post" : "New Post"}
-          </Text>
+          <Text className="text-3xl font-bold text-black">New Post</Text>
 
-          {!isBusiness && (
-            <View className="mt-8 flex-row rounded-2xl bg-gray-100 p-1">
-              <TouchableOpacity
-                className={`flex-1 rounded-xl py-3 ${
-                  postType === "CONTENT" ? "bg-white" : ""
-                }`}
-                onPress={() => setPostType("CONTENT")}
-              >
-                <Text className="text-center font-bold text-black">
-                  Content
-                </Text>
-              </TouchableOpacity>
+          <View className="mt-8 flex-row rounded-2xl bg-gray-100 p-1">
+            <TouchableOpacity
+              className={`flex-1 rounded-xl py-3 ${
+                postType === "CONTENT" ? "bg-white" : ""
+              }`}
+              onPress={() => setPostType("CONTENT")}
+            >
+              <Text className="text-center font-bold text-black">Content</Text>
+            </TouchableOpacity>
 
-              <TouchableOpacity
-                className={`flex-1 rounded-xl py-3 ${
-                  postType === "REVIEW" ? "bg-white" : ""
-                }`}
-                onPress={() => setPostType("REVIEW")}
-              >
-                <Text className="text-center font-bold text-black">Review</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {isBusiness && (
-            <View className="mt-8 rounded-2xl bg-[#F5F4F5] p-4">
-              <Text className="font-bold text-black">Official content</Text>
-              <Text className="mt-1 text-gray-500">
-                Share updates, new dishes, offers, events, or behind-the-scenes
-                content from your restaurant.
-              </Text>
-            </View>
-          )}
+            <TouchableOpacity
+              className={`flex-1 rounded-xl py-3 ${
+                postType === "REVIEW" ? "bg-white" : ""
+              }`}
+              onPress={() => setPostType("REVIEW")}
+            >
+              <Text className="text-center font-bold text-black">Review</Text>
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity
             className="mt-6 items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 py-12"
@@ -210,14 +185,12 @@ export default function CreatePostScreen() {
             )}
           </TouchableOpacity>
 
-          {!isBusiness && (
-            <RestaurantSearch
-              selectedRestaurant={selectedRestaurant}
-              onSelect={setSelectedRestaurant}
-            />
-          )}
+          <RestaurantSearch
+            selectedRestaurant={selectedRestaurant}
+            onSelect={setSelectedRestaurant}
+          />
 
-          {postType === "REVIEW" && !isBusiness && (
+          {postType === "REVIEW" && (
             <TextInput
               className="mt-6 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
               placeholder="Rating 1-10"
@@ -231,11 +204,9 @@ export default function CreatePostScreen() {
           <TextInput
             className="mt-6 min-h-40 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
             placeholder={
-              isBusiness
-                ? "Share an update from your restaurant..."
-                : postType === "CONTENT"
-                  ? "Share something..."
-                  : "Write your review..."
+              postType === "CONTENT"
+                ? "Share something..."
+                : "Write your review..."
             }
             placeholderTextColor="#9CA3AF"
             value={description}

@@ -143,11 +143,7 @@ export default function MapScreen() {
   function renderRestaurant(restaurant: Restaurant) {
     return (
       <View className="flex-row items-center border-b border-gray-100 p-4">
-        <Avatar
-          uri={restaurant.avatarUrl}
-          username={restaurant.name}
-          size={56}
-        />
+        <Avatar uri={restaurant.logoUrl} username={restaurant.name} size={56} />
 
         <View className="ml-4 flex-1">
           <Text className="text-base font-bold text-black">
