@@ -17,7 +17,6 @@ export default function EditProfileScreen() {
   const [bio, setBio] = useState("");
 
   const [restaurantName, setRestaurantName] = useState("");
-  const [restaurantBio, setRestaurantBio] = useState("");
   const [restaurantAddress, setRestaurantAddress] = useState("");
   const [restaurantCity, setRestaurantCity] = useState("");
   const [restaurantPhone, setRestaurantPhone] = useState("");
@@ -47,22 +46,22 @@ export default function EditProfileScreen() {
     try {
       const res = await api.get("/users/me");
       const data: Profile = res.data;
+      const restaurant = data.businessRestaurants?.[0];
 
       setProfile(data);
 
       setAvatarUrl(data.avatarUrl ?? null);
+      setCoverUrl(data.coverUrl ?? null);
       setUsername(data.username ?? "");
       setBio(data.bio ?? "");
 
-      if (data.accountType === "BUSINESS" && data.businessRestaurant) {
-        setRestaurantName(data.businessRestaurant.name ?? "");
-        setRestaurantBio(data.bio ?? "");
-        setRestaurantAddress(data.businessRestaurant.address ?? "");
-        setRestaurantCity(data.businessRestaurant.city ?? "");
-        setRestaurantPhone(data.businessRestaurant.phone ?? "");
-        setRestaurantWebsite(data.businessRestaurant.website ?? "");
-        setRestaurantInstagram(data.businessRestaurant.instagram ?? "");
-        setCoverUrl(data.coverUrl ?? null);
+      if (data.accountType === "BUSINESS" && restaurant) {
+        setRestaurantName(restaurant.name ?? "");
+        setRestaurantAddress(restaurant.address ?? "");
+        setRestaurantCity(restaurant.city ?? "");
+        setRestaurantPhone(restaurant.phone ?? "");
+        setRestaurantWebsite(restaurant.website ?? "");
+        setRestaurantInstagram(restaurant.instagram ?? "");
       }
     } catch (error) {
       console.error(error);
@@ -103,7 +102,6 @@ export default function EditProfileScreen() {
       if (isBusiness) {
         await api.patch("/restaurants/me", {
           name: restaurantName.trim(),
-          bio: restaurantBio.trim() || null,
           address: restaurantAddress.trim() || null,
           city: restaurantCity.trim() || null,
           phone: restaurantPhone.trim() || null,
@@ -284,14 +282,6 @@ export default function EditProfileScreen() {
               value={restaurantName}
               onChangeText={setRestaurantName}
               placeholder="Restaurant name"
-            />
-
-            <FormInput
-              label="Bio"
-              value={restaurantBio}
-              onChangeText={setRestaurantBio}
-              placeholder="Tell people about the restaurant..."
-              multiline
             />
 
             <FormInput

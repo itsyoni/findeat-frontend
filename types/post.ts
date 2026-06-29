@@ -1,4 +1,5 @@
-import { Restaurant, UserSummary } from "./user";
+import { Restaurant } from "./restaurant";
+import { UserSummary } from "./user";
 
 export type PostType = "CONTENT" | "REVIEW";
 

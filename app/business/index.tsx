@@ -15,7 +15,7 @@ export default function BusinessDashboardScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const restaurant = profile?.businessRestaurant;
+  const restaurant = profile?.businessRestaurants?.[0];
 
   useFocusEffect(
     useCallback(() => {

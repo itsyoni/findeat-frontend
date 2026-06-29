@@ -5,9 +5,31 @@ import { TouchableOpacity, View } from "react-native";
 import Text from "../AppText";
 import TextInput from "../AppTextInput";
 
+export type GoogleRestaurantSuggestion = {
+  source: "GOOGLE";
+  googlePlaceId: string;
+  name: string;
+  address?: string | null;
+  city?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export type SelectedRestaurant =
+  | {
+      source: "FINDEAT";
+      restaurant: Restaurant;
+    }
+  | GoogleRestaurantSuggestion;
+
+type SearchResponse = {
+  findeat: Restaurant[];
+  google: GoogleRestaurantSuggestion[];
+};
+
 type Props = {
-  selectedRestaurant: Restaurant | null;
-  onSelect: (restaurant: Restaurant) => void;
+  selectedRestaurant: SelectedRestaurant | null;
+  onSelect: (restaurant: SelectedRestaurant) => void;
 };
 
 export default function RestaurantSearch({
@@ -15,37 +37,74 @@ export default function RestaurantSearch({
   onSelect,
 }: Props) {
   const [query, setQuery] = useState("");
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [findeatRestaurants, setFindeatRestaurants] = useState<Restaurant[]>(
+    [],
+  );
+  const [googleRestaurants, setGoogleRestaurants] = useState<
+    GoogleRestaurantSuggestion[]
+  >([]);
 
   async function searchRestaurants(text: string) {
     setQuery(text);
 
     if (!text.trim()) {
-      setRestaurants([]);
+      setFindeatRestaurants([]);
+      setGoogleRestaurants([]);
       return;
     }
 
-    const res = await api.get(`/restaurants/search?q=${text}`);
-    setRestaurants(res.data);
+    const res = await api.get<SearchResponse>(
+      `/restaurants/search?q=${encodeURIComponent(text)}`,
+    );
+
+    setFindeatRestaurants(res.data.findeat ?? []);
+    setGoogleRestaurants(res.data.google ?? []);
   }
+
+  const selectedName =
+    selectedRestaurant?.source === "FINDEAT"
+      ? selectedRestaurant.restaurant.name
+      : selectedRestaurant?.name;
+
+  const selectedCity =
+    selectedRestaurant?.source === "FINDEAT"
+      ? selectedRestaurant.restaurant.city
+      : selectedRestaurant?.city;
+
+  const selectedAddress =
+    selectedRestaurant?.source === "FINDEAT"
+      ? selectedRestaurant.restaurant.address
+      : selectedRestaurant?.address;
 
   if (selectedRestaurant) {
     return (
       <View className="mt-6 rounded-2xl border border-gray-200 p-4">
         <Text className="text-xs text-gray-400">Restaurant</Text>
+
         <Text className="mt-1 text-base font-bold text-black">
-          {selectedRestaurant.name}
+          {selectedName}
         </Text>
 
-        {!!selectedRestaurant.city && (
-          <Text className="mt-1 text-gray-500">{selectedRestaurant.city}</Text>
+        {!!selectedCity && (
+          <Text className="mt-1 text-gray-500">{selectedCity}</Text>
+        )}
+
+        {!!selectedAddress && (
+          <Text className="mt-1 text-gray-500">{selectedAddress}</Text>
+        )}
+
+        {selectedRestaurant.source === "GOOGLE" && (
+          <Text className="mt-2 text-xs text-gray-400">
+            This restaurant will be added to FindEat only after publishing.
+          </Text>
         )}
 
         <TouchableOpacity
           className="mt-3"
           onPress={() => {
             setQuery("");
-            setRestaurants([]);
+            setFindeatRestaurants([]);
+            setGoogleRestaurants([]);
           }}
         >
           <Text className="font-bold text-black">Change</Text>
@@ -64,16 +123,54 @@ export default function RestaurantSearch({
         onChangeText={searchRestaurants}
       />
 
-      {restaurants.map((restaurant) => (
+      {findeatRestaurants.length > 0 && (
+        <Text className="mt-4 text-xs font-bold text-gray-400">FindEat</Text>
+      )}
+
+      {findeatRestaurants.map((restaurant) => (
         <TouchableOpacity
           key={restaurant.id}
+          className="border-b border-gray-100 py-4"
+          onPress={() =>
+            onSelect({
+              source: "FINDEAT",
+              restaurant,
+            })
+          }
+        >
+          <Text className="font-bold text-black">{restaurant.name}</Text>
+
+          {!!restaurant.city && (
+            <Text className="mt-1 text-gray-500">{restaurant.city}</Text>
+          )}
+
+          {!!restaurant.address && (
+            <Text className="mt-1 text-gray-500">{restaurant.address}</Text>
+          )}
+        </TouchableOpacity>
+      ))}
+
+      {googleRestaurants.length > 0 && (
+        <Text className="mt-4 text-xs font-bold text-gray-400">
+          Google Places
+        </Text>
+      )}
+
+      {googleRestaurants.map((restaurant) => (
+        <TouchableOpacity
+          key={restaurant.googlePlaceId}
           className="border-b border-gray-100 py-4"
           onPress={() => onSelect(restaurant)}
         >
           <Text className="font-bold text-black">{restaurant.name}</Text>
-          {!!restaurant.city && (
-            <Text className="mt-1 text-gray-500">{restaurant.city}</Text>
+
+          {!!restaurant.address && (
+            <Text className="mt-1 text-gray-500">{restaurant.address}</Text>
           )}
+
+          <Text className="mt-1 text-xs text-gray-400">
+            Will be added only after publishing
+          </Text>
         </TouchableOpacity>
       ))}
     </View>

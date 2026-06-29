@@ -2,8 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
 // export const API_URL = "http://192.168.1.108:3000";
-// export const API_URL = "http://172.20.10.6:3000";
-export const API_URL = "http://172.20.10.3:3000";
+export const API_URL = "http://172.20.10.6:3000";
+// export const API_URL = "http://172.20.10.3:3000";
 // export const API_URL = "http://10.0.0.16:3000";
 // export const API_URL = "http://localhost:3000";
 

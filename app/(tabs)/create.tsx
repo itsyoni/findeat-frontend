@@ -1,10 +1,11 @@
 import Text from "@/components/AppText";
 import TextInput from "@/components/AppTextInput";
-import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
+import RestaurantSearch, {
+  SelectedRestaurant,
+} from "@/components/restaurants/RestaurantSearch";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
-import { Restaurant } from "@/types";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -33,7 +34,7 @@ export default function CreatePostScreen() {
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string>();
   const [selectedRestaurant, setSelectedRestaurant] =
-    useState<Restaurant | null>(null);
+    useState<SelectedRestaurant | null>(null);
 
   useEffect(() => {
     if (isBusiness) {
@@ -92,12 +93,34 @@ export default function CreatePostScreen() {
         imageUrl = await uploadImageToCloudinary(imageUri);
       }
 
+      let restaurantId: string | undefined;
+
+      if (!isBusiness && selectedRestaurant) {
+        if (selectedRestaurant.source === "FINDEAT") {
+          restaurantId = selectedRestaurant.restaurant.id;
+        }
+
+        if (selectedRestaurant.source === "GOOGLE") {
+          const res = await api.post("/restaurants/from-google", {
+            name: selectedRestaurant.name,
+            address: selectedRestaurant.address,
+            city: selectedRestaurant.city,
+            latitude: selectedRestaurant.latitude,
+            longitude: selectedRestaurant.longitude,
+            googlePlaceId: selectedRestaurant.googlePlaceId,
+            placeName: selectedRestaurant.address,
+          });
+
+          restaurantId = res.data.id;
+        }
+      }
+
       await api.post("/posts", {
         type: postType,
         description: description.trim(),
         imageUrl,
         rating: postType === "REVIEW" ? Number(rating) : undefined,
-        restaurantId: isBusiness ? undefined : selectedRestaurant?.id,
+        restaurantId: isBusiness ? undefined : restaurantId,
       });
 
       setDescription("");

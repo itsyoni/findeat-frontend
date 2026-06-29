@@ -9,6 +9,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   TouchableOpacity,
   View,
@@ -127,6 +128,27 @@ export default function RestaurantScreen() {
     }
   }
 
+  async function claimRestaurant() {
+    if (!restaurant) return;
+
+    try {
+      await api.post(`/restaurants/${restaurant.id}/claim`, {
+        evidenceText: "Claim requested from restaurant profile",
+      });
+
+      Alert.alert(
+        "Request sent",
+        "Your claim request was sent. We’ll review it soon.",
+      );
+    } catch (error: any) {
+      console.error(error.response?.data ?? error);
+      Alert.alert(
+        "Error",
+        error.response?.data?.message ?? "Could not send claim request",
+      );
+    }
+  }
+
   const featuredItems = useMemo(() => {
     if (!restaurant) return [];
 
@@ -162,6 +184,21 @@ export default function RestaurantScreen() {
   return (
     <ScrollView className="flex-1 bg-white">
       <RestaurantHeader restaurant={restaurant} onToggleFollow={toggleFollow} />
+      {!restaurant.account && (
+        <View className="px-6 pt-4">
+          <TouchableOpacity
+            onPress={claimRestaurant}
+            className="rounded-2xl border border-gray-200 bg-[#F5F4F5] px-4 py-4"
+          >
+            <Text className="text-center font-bold text-black">
+              Claim this restaurant
+            </Text>
+            <Text className="mt-1 text-center text-sm text-gray-500">
+              Are you the owner? Request access to manage this profile.
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View className="px-6 py-4">
         <View className="flex-row gap-3">

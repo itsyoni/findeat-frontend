@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function BusinessProfileHeader({ profile }: Props) {
-  const restaurant = profile.businessRestaurant;
+  const restaurant = profile.businessRestaurants?.[0];
 
   return (
     <View className="bg-white px-5 pb-5">

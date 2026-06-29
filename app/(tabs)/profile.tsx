@@ -1,3 +1,4 @@
+import Text from "@/components/AppText";
 import BusinessProfileHeader from "@/components/profile/BusinessProfileHeader";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
@@ -7,7 +8,7 @@ import { PostType } from "@/types/post";
 import { Profile } from "@/types/profile";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
@@ -45,6 +46,7 @@ export default function ProfileScreen() {
   }
 
   const isBusiness = profile.accountType === "BUSINESS";
+  const isAdmin = profile.email === "yoni@gmail.com";
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
@@ -52,6 +54,19 @@ export default function ProfileScreen() {
         <BusinessProfileHeader profile={profile} />
       ) : (
         <PersonalProfileHeader profile={profile} />
+      )}
+
+      {isAdmin && (
+        <View className="px-5 pb-4">
+          <TouchableOpacity
+            className="rounded-2xl bg-black py-4"
+            onPress={() => router.push("/admin/claims")}
+          >
+            <Text className="text-center font-bold text-white">
+              Restaurant Claims
+            </Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       <Tabs
