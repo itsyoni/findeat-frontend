@@ -1,4 +1,5 @@
 import SearchBar from "@/components/SearchBar";
+import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import {
   addRecentSearch,
@@ -27,10 +28,13 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
   const [query, setQuery] = useState("");
   const [users, setUsers] = useState<UserSummary[]>([]);
   const [recentSearches, setRecentSearches] = useState<RecentSearchItem[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    getRecentSearches().then(setRecentSearches);
-  }, []);
+    if (!user) return;
+
+    getRecentSearches(user.id).then(setRecentSearches);
+  }, [user]);
 
   async function searchUsers(text: string) {
     setQuery(text);
@@ -45,11 +49,13 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
   }
 
   async function handleUserPress(userId: string) {
+    if (!user) return;
+
     try {
       const selectedUser = users.find((u) => u.id === userId);
 
       if (selectedUser) {
-        const updated = await addRecentSearch({
+        const updated = await addRecentSearch(user.id, {
           id: selectedUser.id,
           type: "user",
           title: selectedUser.username,
@@ -80,7 +86,9 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
   }
 
   async function handleRemoveRecentSearch(item: RecentSearchItem) {
-    const updated = await removeRecentSearch(item.id, item.type);
+    if (!user) return;
+
+    const updated = await removeRecentSearch(user.id, item.id, item.type);
     setRecentSearches(updated);
   }
 

@@ -29,7 +29,8 @@ export default function Tabs<T extends string>({
             onPress={() => onChange(tab.value)}
           >
             <Text
-              className={`text-center font-bold ${
+              weight="bold"
+              className={`text-center ${
                 isActive ? "text-black" : "text-gray-400"
               }`}
             >

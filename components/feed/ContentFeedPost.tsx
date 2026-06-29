@@ -2,7 +2,7 @@ import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
 import { router } from "expo-router";
 import {
-  BookmarkSimpleIcon,
+  BookBookmarkIcon,
   ChatCircleIcon,
   HeartIcon,
   MapPinLineIcon,
@@ -136,7 +136,7 @@ export default function ContentFeedPost({
         )}
       </View>
 
-      <View className="absolute bottom-10 right-4 items-center gap-5">
+      <View className="absolute bottom-26 right-4 items-center gap-5">
         <TouchableOpacity onPress={handleLike}>
           <Animated.View style={likeAnimatedStyle}>
             <HeartIcon
@@ -178,9 +178,12 @@ export default function ContentFeedPost({
             size={35}
             style={iconShadow}
           />
+          <Text className="text-center text-lg text-white">
+            {post.commentsCount}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleWantToTry}>
-          <BookmarkSimpleIcon
+          <BookBookmarkIcon
             weight="fill"
             color={isWantToTry ? "#F7D786" : "#FFFFFFCC"}
             size={35}

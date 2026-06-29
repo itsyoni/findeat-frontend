@@ -3,10 +3,16 @@ import FeedPostList from "@/components/feed/FeedPostList";
 import { api } from "@/lib/api";
 import { Post } from "@/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
+import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 
-export default function ProfileReviewsFeedScreen() {
+export default function UserReviewsFeedScreen() {
+  const { userId } = useLocalSearchParams<{
+    userId: string;
+    postId?: string;
+  }>();
+
   const commentsSheetRef = useRef<BottomSheet>(null);
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -15,8 +21,10 @@ export default function ProfileReviewsFeedScreen() {
 
   async function loadPosts() {
     try {
-      const res = await api.get("/users/me");
+      const res = await api.get(`/users/${userId}`);
       setPosts(res.data.posts.filter((post: Post) => post.type === "REVIEW"));
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -30,11 +38,6 @@ export default function ProfileReviewsFeedScreen() {
     }
 
     await loadPosts();
-  }
-
-  function openComments(postId: string) {
-    setSelectedPostId(postId);
-    commentsSheetRef.current?.snapToIndex(0);
   }
 
   async function toggleWantToTry(
@@ -51,6 +54,11 @@ export default function ProfileReviewsFeedScreen() {
     }
 
     await loadPosts();
+  }
+
+  function openComments(postId: string) {
+    setSelectedPostId(postId);
+    commentsSheetRef.current?.snapToIndex(0);
   }
 
   useEffect(() => {

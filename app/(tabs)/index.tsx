@@ -8,16 +8,14 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { Post, PostType } from "@/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const { user, isLoading: authLoading } = useAuth();
-  const { refresh } = useLocalSearchParams();
-
   const commentsSheetRef = useRef<BottomSheet>(null);
 
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
@@ -62,15 +60,19 @@ export default function HomeScreen() {
     restaurantId: string,
     isWantToTry: boolean,
   ) {
-    if (isWantToTry) {
-      await api.delete(`/restaurants/${restaurantId}/want-to-try`);
-    } else {
-      await api.post(`/restaurants/${restaurantId}/want-to-try`, {
-        savedFromPostId: postId,
-      });
-    }
+    try {
+      if (isWantToTry) {
+        await api.delete(`/restaurants/${restaurantId}/want-to-try`);
+      } else {
+        await api.post(`/restaurants/${restaurantId}/want-to-try`, {
+          savedFromPostId: postId,
+        });
+      }
 
-    await loadPosts();
+      await loadPosts();
+    } catch (error) {
+      console.error("toggle want to try failed", error);
+    }
   }
 
   function openComments(postId: string) {
@@ -78,12 +80,14 @@ export default function HomeScreen() {
     commentsSheetRef.current?.snapToIndex(0);
   }
 
-  useEffect(() => {
-    if (authLoading || !user) return;
+  useFocusEffect(
+    useCallback(() => {
+      if (authLoading || !user) return;
 
-    setLoading(true);
-    loadPosts();
-  }, [refresh, authLoading, user, loadPosts]);
+      setLoading(true);
+      loadPosts();
+    }, [authLoading, user, loadPosts]),
+  );
 
   if (authLoading || loading) {
     return (

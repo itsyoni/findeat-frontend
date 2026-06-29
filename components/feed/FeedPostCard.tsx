@@ -1,7 +1,7 @@
 import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
 import {
-  BookmarkSimpleIcon,
+  BookBookmarkIcon,
   ChatCircleIcon,
   HeartIcon,
   ShareFatIcon,
@@ -58,7 +58,7 @@ export default function FeedPostCard({
   }
 
   return (
-    <View className="mb-6 border-b border-gray-100 bg-white pb-6">
+    <View className="mb-6 bg-white pb-6">
       <View className="mb-3 flex-row items-center gap-3 px-4">
         <Avatar
           uri={post.user.avatarUrl}
@@ -101,7 +101,7 @@ export default function FeedPostCard({
           >
             <Animated.View style={likeAnimatedStyle}>
               <HeartIcon
-                weight="fill"
+                weight={post.isLiked ? "fill" : "regular"}
                 color={post.isLiked ? "#FF3040" : "#212121"}
                 size={28}
               />
@@ -114,13 +114,13 @@ export default function FeedPostCard({
             onPress={() => onOpenComments(post.id)}
             className="flex-col items-center gap-1"
           >
-            <ChatCircleIcon weight="fill" color="#212121" size={28} />
+            <ChatCircleIcon weight="regular" color="#212121" size={28} />
 
             <Text className="text-base text-black">{post.commentsCount}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
-            <ShareFatIcon weight="fill" color="#212121" size={35} />
+          <TouchableOpacity className="flex-col items-center gap-1">
+            <ShareFatIcon weight="regular" color="#212121" size={28} />
             <Text className="text-base text-black">{post.commentsCount}</Text>
           </TouchableOpacity>
 
@@ -128,15 +128,11 @@ export default function FeedPostCard({
             onPress={handleWantToTry}
             className="flex-col items-center gap-1"
           >
-            <BookmarkSimpleIcon
-              weight="fill"
+            <BookBookmarkIcon
+              weight={isWantToTry ? "fill" : "regular"}
               color={isWantToTry ? "#F7D786" : "#212121"}
               size={28}
             />
-
-            <Text className="text-base text-black">
-              {isWantToTry ? "Saved" : "Save"}
-            </Text>
           </TouchableOpacity>
         </View>
 

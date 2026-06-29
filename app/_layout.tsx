@@ -66,10 +66,22 @@ function RootNavigator() {
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+
+        <Stack.Screen
+          name="users/content-feed"
+          options={{ headerShown: false }}
+        />
+
+        <Stack.Screen
+          name="profile/content-feed"
+          options={{ headerShown: false }}
+        />
+
         <Stack.Screen
           name="modal"
           options={{ presentation: "modal", title: "Modal" }}
         />
+
         <Stack.Screen name="business/index" />
       </Stack>
 

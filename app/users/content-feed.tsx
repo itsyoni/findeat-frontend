@@ -16,8 +16,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const { height } = Dimensions.get("window");
 
-export default function ProfileContentFeedScreen() {
-  const { postId } = useLocalSearchParams<{ postId: string }>();
+export default function UserContentFeedScreen() {
+  const { userId, postId } = useLocalSearchParams<{
+    userId: string;
+    postId: string;
+  }>();
+
   const commentsSheetRef = useRef<BottomSheet>(null);
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -33,8 +37,10 @@ export default function ProfileContentFeedScreen() {
 
   async function loadPosts() {
     try {
-      const res = await api.get("/users/me");
+      const res = await api.get(`/users/${userId}`);
       setPosts(res.data.posts.filter((post: Post) => post.type === "CONTENT"));
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -48,11 +54,6 @@ export default function ProfileContentFeedScreen() {
     }
 
     await loadPosts();
-  }
-
-  function openComments(postId: string) {
-    setSelectedPostId(postId);
-    commentsSheetRef.current?.snapToIndex(0);
   }
 
   async function toggleWantToTry(
@@ -69,6 +70,11 @@ export default function ProfileContentFeedScreen() {
     }
 
     await loadPosts();
+  }
+
+  function openComments(postId: string) {
+    setSelectedPostId(postId);
+    commentsSheetRef.current?.snapToIndex(0);
   }
 
   useEffect(() => {
@@ -102,6 +108,7 @@ export default function ProfileContentFeedScreen() {
           <CaretLeftIcon size={24} color="white" />
         </TouchableOpacity>
       </SafeAreaView>
+
       <ContentFeedList
         posts={posts}
         height={height}
@@ -109,8 +116,8 @@ export default function ProfileContentFeedScreen() {
         onRefresh={loadPosts}
         onToggleLike={toggleLike}
         onOpenComments={openComments}
-        initialIndex={initialIndex}
         onToggleWantToTry={toggleWantToTry}
+        initialIndex={initialIndex}
       />
 
       <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />

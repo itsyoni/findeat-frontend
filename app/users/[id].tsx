@@ -1,23 +1,30 @@
 import Text from "@/components/AppText";
+import Avatar from "@/components/Avatar";
+import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
+import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
 import { Profile } from "@/types";
+import { PostType } from "@/types/post";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
-  Image,
   Pressable,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
   const [user, setUser] = useState<Profile | null>(null);
+  const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+
+  const posts = useMemo(() => {
+    return user?.posts?.filter((post) => post.type === activeFeed) ?? [];
+  }, [user, activeFeed]);
 
   const loadUser = useCallback(async () => {
     try {
@@ -33,12 +40,6 @@ export default function UserProfileScreen() {
   useEffect(() => {
     loadUser();
   }, [loadUser]);
-
-  async function onRefresh() {
-    setRefreshing(true);
-    await loadUser();
-    setRefreshing(false);
-  }
 
   async function toggleFollow() {
     if (!user) return;
@@ -71,16 +72,12 @@ export default function UserProfileScreen() {
     }
   }
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <View className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator />
       </View>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (
@@ -91,11 +88,7 @@ export default function UserProfileScreen() {
           headerBackVisible: false,
           headerLeft: () => (
             <Pressable
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                paddingRight: 10,
-              }}
+              className="flex-row items-center pr-3"
               onPress={() => {
                 if (router.canGoBack()) {
                   router.back();
@@ -110,105 +103,99 @@ export default function UserProfileScreen() {
           ),
         }}
       />
-      <View className="flex-1 bg-white">
-        <FlatList
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          data={user.posts}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{
-            paddingHorizontal: 24,
-            paddingTop: 24,
-          }}
-          ListHeaderComponent={
-            <View>
-              {user.avatarUrl ? (
-                <Image
-                  source={{ uri: user.avatarUrl }}
-                  className="h-20 w-20 rounded-full"
-                />
-              ) : (
-                <View className="h-20 w-20 items-center justify-center rounded-full bg-black">
-                  <Text className="text-3xl font-bold text-white">
-                    {user.username?.charAt(0).toUpperCase() || "?"}
-                  </Text>
-                </View>
-              )}
 
-              <Text className="mt-5 text-3xl font-bold text-black">
-                @{user.username}
-              </Text>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+        <View className="px-6 pt-6">
+          <Avatar uri={user.avatarUrl} username={user.username} size={86} />
 
-              <Text className="mt-2 text-gray-500">{user.email}</Text>
+          <Text className="mt-5 text-3xl font-bold text-black">
+            @{user.username}
+          </Text>
 
-              <View className="mt-6 flex-row">
-                <View className="mr-8">
-                  <Text className="text-xl font-bold">{user.posts.length}</Text>
-                  <Text className="text-gray-500">Posts</Text>
-                </View>
-
-                <TouchableOpacity
-                  className="mr-8"
-                  onPress={() =>
-                    router.push({
-                      pathname: "/users/connections",
-                      params: { id: user.id, type: "followers" },
-                    })
-                  }
-                >
-                  <Text className="text-xl font-bold">
-                    {user.followersCount}
-                  </Text>
-                  <Text className="text-gray-500">Followers</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: "/users/connections",
-                      params: { id: user.id, type: "following" },
-                    })
-                  }
-                >
-                  <Text className="text-xl font-bold">
-                    {user.followingCount}
-                  </Text>
-                  <Text className="text-gray-500">Following</Text>
-                </TouchableOpacity>
-              </View>
-
-              <TouchableOpacity
-                className="mt-6 rounded-2xl bg-black py-4"
-                onPress={toggleFollow}
-              >
-                <Text className="text-center font-bold text-white">
-                  {user.isFollowing ? "Following" : "Follow"}
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                className="mt-3 rounded-2xl border border-gray-200 py-4"
-                onPress={startChat}
-              >
-                <Text className="text-center font-bold text-black">
-                  Message
-                </Text>
-              </TouchableOpacity>
-
-              <Text className="mt-8 mb-4 text-xl font-bold">Posts</Text>
-            </View>
-          }
-          renderItem={({ item }) => (
-            <View className="mb-4 rounded-2xl border border-gray-200 p-4">
-              <Text className="text-lg font-bold">{item.title}</Text>
-
-              {!!item.description && (
-                <Text className="mt-2 text-gray-600">{item.description}</Text>
-              )}
-            </View>
+          {!!user.email && (
+            <Text className="mt-2 text-gray-500">{user.email}</Text>
           )}
+
+          {!!user.bio && <Text className="mt-3 text-black">{user.bio}</Text>}
+
+          <View className="mt-6 flex-row">
+            <View className="mr-8">
+              <Text className="text-xl font-bold">{user.posts.length}</Text>
+              <Text className="text-gray-500">Posts</Text>
+            </View>
+
+            <TouchableOpacity
+              className="mr-8"
+              onPress={() =>
+                router.push({
+                  pathname: "/users/connections",
+                  params: { id: user.id, type: "followers" },
+                })
+              }
+            >
+              <Text className="text-xl font-bold">{user.followersCount}</Text>
+              <Text className="text-gray-500">Followers</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "/users/connections",
+                  params: { id: user.id, type: "following" },
+                })
+              }
+            >
+              <Text className="text-xl font-bold">{user.followingCount}</Text>
+              <Text className="text-gray-500">Following</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="mt-6 flex-row gap-3">
+            <TouchableOpacity
+              className="flex-1 rounded-2xl bg-black py-4"
+              onPress={toggleFollow}
+            >
+              <Text className="text-center font-bold text-white">
+                {user.isFollowing ? "Following" : "Follow"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              className="flex-1 rounded-2xl border border-gray-200 py-4"
+              onPress={startChat}
+            >
+              <Text className="text-center font-bold text-black">Message</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <Tabs
+          activeTab={activeFeed}
+          onChange={setActiveFeed}
+          tabs={[
+            { label: "Content", value: "CONTENT" },
+            { label: "Reviews", value: "REVIEW" },
+          ]}
         />
-      </View>
+
+        <View style={{ flex: 1 }}>
+          <ProfilePostGrid
+            posts={posts}
+            onPressPost={(postId) => {
+              router.push({
+                pathname:
+                  activeFeed === "CONTENT"
+                    ? "/users/content-feed"
+                    : "/users/reviews-feed",
+                params: {
+                  userId: user.id,
+                  postId,
+                },
+              });
+            }}
+          />
+        </View>
+      </SafeAreaView>
     </>
   );
 }

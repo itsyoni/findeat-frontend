@@ -101,7 +101,7 @@ export default function MapScreen() {
         600,
       );
     } catch (error) {
-      console.log("Could not get current location:", error);
+      console.error("Could not get current location:", error);
     }
   }
 
