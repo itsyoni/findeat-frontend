@@ -21,10 +21,11 @@ export type Post = {
 
   createdAt: string;
   updatedAt: string;
-
+  isOfficial: boolean;
   author: UserSummary;
 
   likesCount: number;
+  restaurantSavesCount: number;
   commentsCount: number;
   isLiked: boolean;
 };

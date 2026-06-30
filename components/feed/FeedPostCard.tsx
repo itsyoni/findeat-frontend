@@ -1,5 +1,6 @@
 import Avatar from "@/components/Avatar";
 import { Post } from "@/types/post";
+import { router } from "expo-router";
 import {
   BookBookmarkIcon,
   ChatCircleIcon,
@@ -60,29 +61,42 @@ export default function FeedPostCard({
   return (
     <View className="mb-6 bg-white pb-6">
       <View className="mb-3 flex-row items-center gap-3 px-4">
-        <Avatar
-          uri={post.author.avatarUrl}
-          username={post.author.username}
-          size={42}
-        />
+        <TouchableOpacity
+          className="mb-3 flex-row items-center gap-3 px-4"
+          activeOpacity={0.8}
+          onPress={() =>
+            router.push({
+              pathname: "/users/[id]",
+              params: { id: post.author.id },
+            })
+          }
+        >
+          <Avatar
+            uri={post.author.avatarUrl}
+            username={post.author.username}
+            size={42}
+          />
 
-        <View>
-          <Text className="font-bold text-black">@{post.author.username}</Text>
-          <Text className="text-xs text-gray-400">Content post</Text>
-
-          {!!post.restaurant && (
-            <Text className="text-xs text-gray-500">
-              📍 {post.restaurant.name}
-              {post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
+          <View>
+            <Text className="font-bold text-black">
+              @{post.author.username}
             </Text>
-          )}
+            <Text className="text-xs text-gray-400">Review</Text>
 
-          {post.type === "REVIEW" && post.rating != null && (
-            <Text className="mt-2 text-lg font-bold text-black">
-              ⭐ {post.rating}/10
-            </Text>
-          )}
-        </View>
+            {!!post.restaurant && (
+              <Text className="text-xs text-gray-500">
+                📍 {post.restaurant.name}
+                {post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
+              </Text>
+            )}
+
+            {post.type === "REVIEW" && post.rating != null && (
+              <Text className="mt-2 text-lg font-bold text-black">
+                ⭐ {post.rating}/10
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
       </View>
 
       {!!post.imageUrl && (
@@ -124,15 +138,16 @@ export default function FeedPostCard({
             <Text className="text-base text-black">{post.commentsCount}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={handleWantToTry}
-            className="flex-col items-center gap-1"
-          >
+          <TouchableOpacity onPress={handleWantToTry}>
             <BookBookmarkIcon
               weight={isWantToTry ? "fill" : "regular"}
               color={isWantToTry ? "#F7D786" : "#212121"}
-              size={28}
+              size={35}
             />
+
+            <Text className="text-center text-lg text-black">
+              {post.restaurantSavesCount}
+            </Text>
           </TouchableOpacity>
         </View>
 

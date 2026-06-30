@@ -1,7 +1,14 @@
-export type RecentSearchItem = {
+export type SearchEntityType = "USER" | "RESTAURANT" | "DISH";
+
+export type UserRelationship = "NONE" | "FOLLOWING" | "FOLLOWED_BY" | "FRIENDS";
+
+export type SearchResultItem = {
   id: string;
-  type: "user" | "restaurant" | "dish";
+  type: SearchEntityType;
   title: string;
-  avatarUrl?: string | null;
   subtitle?: string;
+  imageUrl?: string | null;
+  relationship?: UserRelationship;
 };
+
+export type RecentSearchItem = SearchResultItem;

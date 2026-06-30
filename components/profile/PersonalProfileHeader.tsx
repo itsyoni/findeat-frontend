@@ -3,6 +3,7 @@ import { Profile } from "@/types/profile";
 import { router } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../AppText";
+import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 
 type Props = {
   profile: Profile;
@@ -17,6 +18,12 @@ export default function PersonalProfileHeader({ profile }: Props) {
         <Text className="mt-2 text-2xl font-bold text-black">
           {profile.username}
         </Text>
+
+        <View className="w-full">
+          <ProfileManagedRestaurants
+            memberships={profile.restaurantMemberships}
+          />
+        </View>
 
         {!!profile.bio && (
           <Text className="mt-4 text-base text-black">{profile.bio}</Text>

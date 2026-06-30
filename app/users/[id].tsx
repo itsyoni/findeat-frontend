@@ -1,5 +1,6 @@
 import Text from "@/components/AppText";
 import Avatar from "@/components/Avatar";
+import ProfileManagedRestaurants from "@/components/profile/ProfileManagedRestaurants";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
 import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
@@ -45,13 +46,27 @@ export default function UserProfileScreen() {
     if (!user) return;
 
     try {
-      if (user.isFollowing) {
-        await api.delete(`/users/${user.id}/follow`);
-      } else {
-        await api.post(`/users/${user.id}/follow`);
-      }
+      const shouldUnfollow =
+        user.relationship === "FOLLOWING" || user.relationship === "FRIENDS";
 
-      await loadUser();
+      const res = shouldUnfollow
+        ? await api.delete(`/users/${user.id}/follow`)
+        : await api.post(`/users/${user.id}/follow`);
+
+      setUser((currentUser) =>
+        currentUser
+          ? {
+              ...currentUser,
+              relationship: res.data.relationship,
+              isFollowing:
+                res.data.relationship === "FOLLOWING" ||
+                res.data.relationship === "FRIENDS",
+              followersCount: shouldUnfollow
+                ? Math.max(0, currentUser.followersCount - 1)
+                : currentUser.followersCount + 1,
+            }
+          : currentUser,
+      );
     } catch (error) {
       console.error(error);
     }
@@ -69,6 +84,19 @@ export default function UserProfileScreen() {
       });
     } catch (error) {
       console.error(error);
+    }
+  }
+
+  function getFollowButtonText(relationship?: string) {
+    switch (relationship) {
+      case "FRIENDS":
+        return "Friends";
+      case "FOLLOWING":
+        return "Following";
+      case "FOLLOWED_BY":
+        return "Follow back";
+      default:
+        return "Follow";
     }
   }
 
@@ -112,6 +140,8 @@ export default function UserProfileScreen() {
             @{user.username}
           </Text>
 
+          <ProfileManagedRestaurants memberships={user.restaurantMemberships} />
+
           {!!user.email && (
             <Text className="mt-2 text-gray-500">{user.email}</Text>
           )}
@@ -152,11 +182,21 @@ export default function UserProfileScreen() {
 
           <View className="mt-6 flex-row gap-3">
             <TouchableOpacity
-              className="flex-1 rounded-2xl bg-black py-4"
+              className={`flex-1 rounded-2xl py-4 ${
+                user.relationship === "FRIENDS"
+                  ? "bg-[#F7D786]"
+                  : user.relationship === "FOLLOWING"
+                    ? "bg-gray-900"
+                    : "bg-black"
+              }`}
               onPress={toggleFollow}
             >
-              <Text className="text-center font-bold text-white">
-                {user.isFollowing ? "Following" : "Follow"}
+              <Text
+                className={`text-center font-bold ${
+                  user.relationship === "FRIENDS" ? "text-black" : "text-white"
+                }`}
+              >
+                {getFollowButtonText(user.relationship)}
               </Text>
             </TouchableOpacity>
 

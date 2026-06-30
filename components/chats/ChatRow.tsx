@@ -1,6 +1,7 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Chat } from "@/types/chat";
 import { router } from "expo-router";
+import { UsersThreeIcon } from "phosphor-react-native";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../AppText";
 import Avatar from "../Avatar";
@@ -11,13 +12,41 @@ type Props = {
 
 export default function ChatRow({ chat }: Props) {
   const { user } = useAuth();
+
   const otherUser = chat.participants.find((p) => p.userId !== user?.id)?.user;
+
+  const isGroupChat = chat.type === "GROUP";
+  const isRestaurantChat = chat.type === "RESTAURANT";
+
+  const title = isGroupChat
+    ? chat.title
+    : isRestaurantChat
+      ? chat.restaurant?.name
+      : otherUser?.username;
+
+  const imageUrl = isGroupChat
+    ? chat.imageUrl
+    : isRestaurantChat
+      ? chat.restaurant?.logoUrl
+      : otherUser?.avatarUrl;
+
+  const subtitle = isGroupChat
+    ? `${chat.participants.length} members`
+    : isRestaurantChat
+      ? "Restaurant chat"
+      : otherUser?.isOnline
+        ? "Online now"
+        : chat.lastMessage
+          ? null
+          : "No messages yet";
+
   const unreadCount = chat.unreadCount ?? 0;
   const hasUnread = unreadCount > 0;
   const isMine = chat.lastMessageSenderId === user?.id;
+
   const lastMessageText = chat.lastMessage
     ? `${isMine ? "You: " : ""}${chat.lastMessage}`
-    : "No messages yet";
+    : subtitle;
 
   return (
     <TouchableOpacity
@@ -29,26 +58,25 @@ export default function ChatRow({ chat }: Props) {
           pathname: "/chats/[id]",
           params: {
             id: chat.id,
-            title: otherUser?.username ?? "Chat",
-            avatarUrl: otherUser?.avatarUrl ?? "",
-            isOnline: String(otherUser?.isOnline ?? false),
-            lastSeenAt: otherUser?.lastSeenAt ?? "",
           },
         })
       }
     >
-      <Avatar
-        uri={otherUser?.avatarUrl}
-        username={otherUser?.username}
-        size={48}
-      />
+      {isGroupChat && !imageUrl ? (
+        <View className="h-14 w-14 items-center justify-center rounded-full bg-[#F5F4F5]">
+          <UsersThreeIcon size={26} color="#6B7280" weight="fill" />
+        </View>
+      ) : (
+        <Avatar uri={imageUrl} username={title ?? "Chat"} size={48} />
+      )}
+
       <View className="flex-1">
         <Text
           className={`text-lg text-black ${
             hasUnread ? "font-bold" : "font-semibold"
           }`}
         >
-          {otherUser?.username}
+          {title ?? "Chat"}
         </Text>
 
         <Text

@@ -5,9 +5,10 @@ import RestaurantSearch, {
 } from "@/components/restaurants/RestaurantSearch";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { ManagedRestaurant } from "@/types";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -28,8 +29,27 @@ export default function CreatePostScreen() {
   const [rating, setRating] = useState("");
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string>();
+  const [managedRestaurants, setManagedRestaurants] = useState<
+    ManagedRestaurant[]
+  >([]);
+  const [postingAs, setPostingAs] = useState<
+    { type: "USER" } | { type: "RESTAURANT"; restaurantId: string }
+  >({ type: "USER" });
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<SelectedRestaurant | null>(null);
+
+  useEffect(() => {
+    loadManagedRestaurants();
+  }, []);
+
+  async function loadManagedRestaurants() {
+    try {
+      const res = await api.get("/restaurants/me");
+      setManagedRestaurants(res.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -67,7 +87,9 @@ export default function CreatePostScreen() {
       return;
     }
 
-    if (!selectedRestaurant) {
+    const isPostingAsRestaurant = postingAs.type === "RESTAURANT";
+
+    if (!isPostingAsRestaurant && !selectedRestaurant) {
       Alert.alert("Missing restaurant", "Please choose a restaurant");
       return;
     }
@@ -99,20 +121,28 @@ export default function CreatePostScreen() {
         imageUrl = await uploadImageToCloudinary(imageUri);
       }
 
-      const restaurantId = await getRestaurantId();
+      if (postingAs.type === "RESTAURANT") {
+        await api.post(`/posts/restaurants/${postingAs.restaurantId}/posts`, {
+          type: "CONTENT",
+          description: description.trim(),
+          imageUrl,
+        });
+      } else {
+        const restaurantId = await getRestaurantId();
 
-      if (!restaurantId) {
-        Alert.alert("Missing restaurant", "Please choose a restaurant");
-        return;
+        if (!restaurantId) {
+          Alert.alert("Missing restaurant", "Please choose a restaurant");
+          return;
+        }
+
+        await api.post("/posts", {
+          type: postType,
+          description: description.trim(),
+          imageUrl,
+          rating: postType === "REVIEW" ? Number(rating) : undefined,
+          restaurantId,
+        });
       }
-
-      await api.post("/posts", {
-        type: postType,
-        description: description.trim(),
-        imageUrl,
-        rating: postType === "REVIEW" ? Number(rating) : undefined,
-        restaurantId,
-      });
 
       setDescription("");
       setRating("");
@@ -150,26 +180,102 @@ export default function CreatePostScreen() {
         >
           <Text className="text-3xl font-bold text-black">New Post</Text>
 
-          <View className="mt-8 flex-row rounded-2xl bg-gray-100 p-1">
-            <TouchableOpacity
-              className={`flex-1 rounded-xl py-3 ${
-                postType === "CONTENT" ? "bg-white" : ""
-              }`}
-              onPress={() => setPostType("CONTENT")}
-            >
-              <Text className="text-center font-bold text-black">Content</Text>
-            </TouchableOpacity>
+          {managedRestaurants.length > 0 && (
+            <View className="mt-6">
+              <Text className="mb-2 text-sm font-bold text-gray-500">
+                Posting as
+              </Text>
 
-            <TouchableOpacity
-              className={`flex-1 rounded-xl py-3 ${
-                postType === "REVIEW" ? "bg-white" : ""
-              }`}
-              onPress={() => setPostType("REVIEW")}
-            >
-              <Text className="text-center font-bold text-black">Review</Text>
-            </TouchableOpacity>
-          </View>
+              <View className="gap-3">
+                <TouchableOpacity
+                  className={`rounded-2xl border px-4 py-4 ${
+                    postingAs.type === "USER"
+                      ? "border-black bg-black"
+                      : "border-gray-200 bg-white"
+                  }`}
+                  onPress={() => {
+                    setPostingAs({ type: "USER" });
+                    setPostType("CONTENT");
+                  }}
+                >
+                  <Text
+                    className={`font-bold ${
+                      postingAs.type === "USER" ? "text-white" : "text-black"
+                    }`}
+                  >
+                    My personal profile
+                  </Text>
+                </TouchableOpacity>
 
+                {managedRestaurants.map((restaurant) => (
+                  <TouchableOpacity
+                    key={restaurant.id}
+                    className={`rounded-2xl border px-4 py-4 ${
+                      postingAs.type === "RESTAURANT" &&
+                      postingAs.restaurantId === restaurant.id
+                        ? "border-black bg-black"
+                        : "border-gray-200 bg-white"
+                    }`}
+                    onPress={() => {
+                      setPostingAs({
+                        type: "RESTAURANT",
+                        restaurantId: restaurant.id,
+                      });
+                      setPostType("CONTENT");
+                      setRating("");
+                      setSelectedRestaurant(null);
+                    }}
+                  >
+                    <Text
+                      className={`font-bold ${
+                        postingAs.type === "RESTAURANT" &&
+                        postingAs.restaurantId === restaurant.id
+                          ? "text-white"
+                          : "text-black"
+                      }`}
+                    >
+                      {restaurant.name}
+                    </Text>
+
+                    <Text
+                      className={`mt-1 text-sm ${
+                        postingAs.type === "RESTAURANT" &&
+                        postingAs.restaurantId === restaurant.id
+                          ? "text-white/70"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      Official restaurant post
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {postingAs.type === "USER" && (
+            <View className="mt-8 flex-row rounded-2xl bg-gray-100 p-1">
+              <TouchableOpacity
+                className={`flex-1 rounded-xl py-3 ${
+                  postType === "CONTENT" ? "bg-white" : ""
+                }`}
+                onPress={() => setPostType("CONTENT")}
+              >
+                <Text className="text-center font-bold text-black">
+                  Content
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className={`flex-1 rounded-xl py-3 ${
+                  postType === "REVIEW" ? "bg-white" : ""
+                }`}
+                onPress={() => setPostType("REVIEW")}
+              >
+                <Text className="text-center font-bold text-black">Review</Text>
+              </TouchableOpacity>
+            </View>
+          )}
           <TouchableOpacity
             className="mt-6 items-center justify-center rounded-2xl border border-gray-200 bg-gray-50 py-12"
             onPress={pickImage}
@@ -185,12 +291,14 @@ export default function CreatePostScreen() {
             )}
           </TouchableOpacity>
 
-          <RestaurantSearch
-            selectedRestaurant={selectedRestaurant}
-            onSelect={setSelectedRestaurant}
-          />
+          {postingAs.type === "USER" && (
+            <RestaurantSearch
+              selectedRestaurant={selectedRestaurant}
+              onSelect={setSelectedRestaurant}
+            />
+          )}
 
-          {postType === "REVIEW" && (
+          {postingAs.type === "USER" && postType === "REVIEW" && (
             <TextInput
               className="mt-6 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
               placeholder="Rating 1-10"

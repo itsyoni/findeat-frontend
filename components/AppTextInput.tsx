@@ -15,6 +15,22 @@ type Props = TextInputProps & {
   useBottomSheetInput?: boolean;
 };
 
+function startsWithRtl(text?: string) {
+  if (!text) return false;
+
+  for (const char of text.trim()) {
+    if (/[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(char)) {
+      return true;
+    }
+
+    if (/[A-Za-z0-9]/.test(char)) {
+      return false;
+    }
+  }
+
+  return false;
+}
+
 export default function TextInput({
   style,
   className,
@@ -28,7 +44,7 @@ export default function TextInput({
   ...props
 }: Props) {
   const [hidden, setHidden] = useState(isPassword);
-
+  const isRtl = startsWithRtl(value);
   const Input = useBottomSheetInput ? BottomSheetTextInput : RNTextInput;
 
   return (
@@ -43,6 +59,7 @@ export default function TextInput({
         onChangeText={onChangeText}
         secureTextEntry={isPassword && hidden}
         placeholderTextColor={placeholderTextColor ?? "#9CA3AF"}
+        textAlign={isRtl ? "right" : "left"}
         style={[
           {
             flex: 1,
@@ -50,6 +67,7 @@ export default function TextInput({
             fontSize: 16,
             color: "#000",
             fontFamily: "CabinetRegular",
+            writingDirection: isRtl ? "rtl" : "ltr",
           },
           style,
         ]}

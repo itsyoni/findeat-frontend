@@ -23,6 +23,19 @@ export type RestaurantPostPreview = {
   };
 };
 
+export type RestaurantMembership = {
+  role: "OWNER" | "MANAGER" | "STAFF";
+  restaurant: {
+    id: string;
+    name: string;
+    logoUrl: string | null;
+    city: string | null;
+    status: string;
+  };
+};
+
+export type ManagedRestaurant = Restaurant;
+
 export type Restaurant = {
   id: string;
   name: string;

@@ -1,6 +1,11 @@
 import SearchBar from "@/components/SearchBar";
-import { ReactNode, useMemo, useState } from "react";
-import { FlatList, TouchableOpacity } from "react-native";
+import { ReactNode, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -9,10 +14,11 @@ import Animated, {
 import Text from "../AppText";
 
 type Props<T> = {
-  data: T[];
+  data?: T[];
+  searchRequest?: (query: string) => Promise<T[]>;
   onCancel: () => void;
   onSelect: (item: T) => void;
-  searchFn: (query: string, item: T) => boolean;
+  searchFn?: (query: string, item: T) => boolean;
   keyExtractor: (item: T) => string;
   renderItem: (item: T) => ReactNode;
   placeholder?: string;
@@ -21,6 +27,7 @@ type Props<T> = {
 
 export default function SearchResultsView<T>({
   data,
+  searchRequest,
   onCancel,
   onSelect,
   searchFn,
@@ -30,11 +37,45 @@ export default function SearchResultsView<T>({
   emptyText = "No results found",
 }: Props<T>) {
   const [query, setQuery] = useState("");
+  const [remoteResults, setRemoteResults] = useState<T[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const results = useMemo(() => {
+  const isRemoteSearch = !!searchRequest;
+
+  useEffect(() => {
+    if (!isRemoteSearch) return;
+
+    const q = query.trim();
+
+    if (!q) {
+      setRemoteResults([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const results = await searchRequest(q);
+        setRemoteResults(results);
+      } catch (error) {
+        console.error("search failed", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 250);
+
+    return () => clearTimeout(timeout);
+  }, [query, searchRequest, isRemoteSearch]);
+
+  const localResults = useMemo(() => {
+    if (isRemoteSearch) return [];
     if (!query.trim()) return [];
+    if (!data || !searchFn) return [];
+
     return data.filter((item) => searchFn(query, item));
-  }, [query, data, searchFn]);
+  }, [query, data, searchFn, isRemoteSearch]);
+
+  const results = isRemoteSearch ? remoteResults : localResults;
 
   return (
     <>
@@ -49,29 +90,38 @@ export default function SearchResultsView<T>({
             onChangeText={setQuery}
             placeholder={placeholder}
             autoFocus
+            rightAccessory={
+              <TouchableOpacity className="px-2" onPress={onCancel}>
+                <Text className="font-semibold text-black">Cancel</Text>
+              </TouchableOpacity>
+            }
           />
         </Animated.View>
-
-        <TouchableOpacity className="pr-5" onPress={onCancel}>
-          <Text className="font-semibold text-black">Cancel</Text>
-        </TouchableOpacity>
       </Animated.View>
 
-      <FlatList
-        data={results}
-        keyExtractor={keyExtractor}
-        keyboardShouldPersistTaps="handled"
-        ListEmptyComponent={
-          query.trim() ? (
-            <Text className="mt-8 text-center text-gray-500">{emptyText}</Text>
-          ) : null
-        }
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onSelect(item)}>
-            {renderItem(item)}
-          </TouchableOpacity>
-        )}
-      />
+      {loading ? (
+        <View className="mt-10 items-center">
+          <ActivityIndicator />
+        </View>
+      ) : (
+        <FlatList
+          data={results}
+          keyExtractor={keyExtractor}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            query.trim() ? (
+              <Text className="mt-8 text-center text-gray-500">
+                {emptyText}
+              </Text>
+            ) : null
+          }
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => onSelect(item)}>
+              {renderItem(item)}
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </>
   );
 }

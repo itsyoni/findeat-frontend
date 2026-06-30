@@ -1,14 +1,17 @@
-import SearchUsersView from "@/components/chats/SearchUsersView";
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
 import ContentFeedList from "@/components/feed/ContentFeedList";
 import FeedPostList from "@/components/feed/FeedPostList";
+import SearchResultRow from "@/components/search/SearchResultRow";
+import SearchResultsView from "@/components/search/SearchResultsView";
 import SearchBar from "@/components/SearchBar";
 import Tabs from "@/components/Tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
+import { searchGlobal } from "@/lib/search";
 import { Post, PostType } from "@/types/post";
+import { SearchResultItem } from "@/types/search";
 import BottomSheet from "@gorhom/bottom-sheet";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -60,6 +63,33 @@ export default function HomeScreen() {
     restaurantId: string,
     isWantToTry: boolean,
   ) {
+    setPosts((prev) =>
+      prev.map((post) => {
+        if (post.restaurant?.id !== restaurantId) return post;
+
+        return {
+          ...post,
+          restaurantSavesCount: Math.max(
+            0,
+            post.restaurantSavesCount + (isWantToTry ? -1 : 1),
+          ),
+          restaurant: {
+            ...post.restaurant,
+            userSaves: isWantToTry
+              ? []
+              : [
+                  {
+                    id: "",
+                    wantToTry: true,
+                    visited: false,
+                    favorite: false,
+                  },
+                ],
+          },
+        };
+      }),
+    );
+
     try {
       if (isWantToTry) {
         await api.delete(`/restaurants/${restaurantId}/want-to-try`);
@@ -68,16 +98,32 @@ export default function HomeScreen() {
           savedFromPostId: postId,
         });
       }
-
-      await loadPosts();
     } catch (error) {
       console.error("toggle want to try failed", error);
+      await loadPosts();
     }
   }
 
   function openComments(postId: string) {
     setSelectedPostId(postId);
     commentsSheetRef.current?.snapToIndex(0);
+  }
+
+  function handleSearchSelect(item: SearchResultItem) {
+    setIsSearching(false);
+
+    if (item.type === "USER") {
+      router.push({
+        pathname: "/users/[id]",
+        params: { id: item.id },
+      });
+      return;
+    }
+
+    router.push({
+      pathname: "/restaurants/[id]",
+      params: { id: item.id },
+    });
   }
 
   useFocusEffect(
@@ -106,9 +152,12 @@ export default function HomeScreen() {
           exiting={FadeOut.duration(120)}
           className="flex-1"
         >
-          <SearchUsersView
-            mode="profile"
+          <SearchResultsView
+            searchRequest={searchGlobal}
             onCancel={() => setIsSearching(false)}
+            onSelect={handleSearchSelect}
+            keyExtractor={(item) => `${item.type}-${item.id}`}
+            renderItem={(item) => <SearchResultRow item={item} />}
           />
         </Animated.View>
       ) : (

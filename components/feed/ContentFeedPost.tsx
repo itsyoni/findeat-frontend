@@ -38,7 +38,15 @@ export default function ContentFeedPost({
 }: Props) {
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
-  const isBusinessPost = false;
+  const isOfficialPost = post.isOfficial && !!post.restaurant;
+
+  const displayAvatar = isOfficialPost
+    ? post.restaurant?.logoUrl
+    : post.author.avatarUrl;
+
+  const displayName = isOfficialPost
+    ? (post.restaurant?.name ?? "")
+    : post.author.username;
 
   const likeScale = useSharedValue(1);
 
@@ -53,7 +61,6 @@ export default function ContentFeedPost({
     shadowRadius: 4,
     elevation: 6,
   };
-
   function handleLike() {
     if (!post.isLiked) {
       likeScale.value = 1;
@@ -94,24 +101,28 @@ export default function ContentFeedPost({
           className="mb-3 flex-row items-center gap-3"
           activeOpacity={0.8}
           onPress={() => {
+            if (isOfficialPost && post.restaurant) {
+              router.push({
+                pathname: "/restaurants/[id]",
+                params: { id: post.restaurant.id },
+              });
+              return;
+            }
+
             router.push({
               pathname: "/users/[id]",
               params: { id: post.author.id },
             });
           }}
         >
-          <Avatar
-            uri={post.author.avatarUrl}
-            username={post.author.username}
-            size={42}
-          />
+          <Avatar uri={displayAvatar} username={displayName ?? ""} size={42} />
 
           <View>
             <Text className="font-bold text-white">
-              @{post.author.username}
+              {isOfficialPost ? displayName : `@${displayName}`}
             </Text>
 
-            {isBusinessPost && (
+            {isOfficialPost && (
               <Text className="mt-1 text-xs font-semibold text-[#F7D786]">
                 Official restaurant
               </Text>
@@ -184,6 +195,10 @@ export default function ContentFeedPost({
             size={35}
             style={iconShadow}
           />
+
+          <Text className="text-center text-lg text-white">
+            {post.restaurantSavesCount}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
