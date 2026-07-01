@@ -49,6 +49,8 @@ type ReviewSlide =
       dishName: string;
       price?: number | null;
       rating?: number | null;
+      menuItemId?: string | null;
+      isLinkedToMenu: boolean;
     };
 
 export default function ReviewPost({
@@ -78,6 +80,8 @@ export default function ReviewPost({
     ...items.map((item) => ({
       type: "DISH" as const,
       id: item.id,
+      menuItemId: item.menuItemId,
+      isLinkedToMenu: !!item.menuItemId,
       imageUrl: item.imageUrl,
       text: item.text,
       dishName: item.menuItem?.name ?? item.customDishName ?? "Dish",
@@ -247,6 +251,22 @@ export default function ReviewPost({
                     <Text className="text-2xl font-bold text-white">
                       {item.dishName}
                     </Text>
+
+                    {item.isLinkedToMenu && item.menuItemId && (
+                      <TouchableOpacity
+                        className="mt-2 self-start rounded-full bg-white/20 px-3 py-1"
+                        // onPress={() =>
+                        //   router.push({
+                        //     pathname: "/menu-items/[id]",
+                        //     params: { id: item.menuItemId },
+                        //   })
+                        // }
+                      >
+                        <Text className="text-xs font-bold text-white">
+                          ✓ Official menu item
+                        </Text>
+                      </TouchableOpacity>
+                    )}
 
                     {item.rating != null && (
                       <Text className="mt-1 font-bold text-white">

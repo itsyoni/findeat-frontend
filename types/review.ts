@@ -11,8 +11,11 @@ export type ReviewDishDraft = {
   id: string;
   menuItemId?: string;
   menuItemName?: string;
+  menuItemPrice?: number | null;
+
   customDishName?: string;
   customPrice?: number;
+
   imageUri?: string;
   rating?: number;
   text?: string;

@@ -18,7 +18,7 @@ export default function DishesStep({
   onNext,
 }: Props) {
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,

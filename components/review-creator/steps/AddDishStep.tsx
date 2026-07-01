@@ -1,8 +1,10 @@
 import Text from "@/components/AppText";
 import TextInput from "@/components/AppTextInput";
+import { api } from "@/lib/api";
+import { Dish, Restaurant } from "@/types";
 import { ReviewDishDraft } from "@/types/review";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -19,16 +21,35 @@ import PriceInput from "../components/PriceInput";
 import RatingPicker from "../components/RatingPicker";
 
 type Props = {
+  restaurant: Restaurant | null;
   onBack: () => void;
   onSave: (item: Omit<ReviewDishDraft, "id" | "order">) => void;
 };
 
-export default function AddDishStep({ onBack, onSave }: Props) {
+export default function AddDishStep({ restaurant, onBack, onSave }: Props) {
   const [dishName, setDishName] = useState("");
   const [price, setPrice] = useState<number>();
   const [imageUri, setImageUri] = useState<string>();
   const [rating, setRating] = useState<number>();
   const [text, setText] = useState("");
+  const [fullRestaurant, setFullRestaurant] = useState<Restaurant | null>(null);
+  const menuItems =
+    fullRestaurant?.menus?.flatMap((menu) => menu.items ?? []) ?? [];
+  const [selectedDish, setSelectedDish] = useState<Dish | null>(null);
+  const [mode, setMode] = useState<"MENU" | "CUSTOM">(
+    menuItems.length > 0 ? "MENU" : "CUSTOM",
+  );
+
+  useEffect(() => {
+    async function loadRestaurant() {
+      if (!restaurant?.id) return;
+
+      const res = await api.get(`/restaurants/${restaurant.id}`);
+      setFullRestaurant(res.data);
+    }
+
+    loadRestaurant();
+  }, [restaurant?.id]);
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -42,6 +63,24 @@ export default function AddDishStep({ onBack, onSave }: Props) {
   }
 
   function handleSave() {
+    if (mode === "MENU") {
+      if (!selectedDish) {
+        Alert.alert("Missing dish", "Please choose a dish from the menu");
+        return;
+      }
+
+      onSave({
+        menuItemId: selectedDish.id,
+        menuItemName: selectedDish.name,
+        menuItemPrice: selectedDish.price,
+        imageUri,
+        rating,
+        text: text.trim() || undefined,
+      });
+
+      return;
+    }
+
     if (!dishName.trim()) {
       Alert.alert("Missing dish name", "Please enter the dish name");
       return;
@@ -93,14 +132,94 @@ export default function AddDishStep({ onBack, onSave }: Props) {
             </TouchableOpacity>
 
             <View className="mt-8 gap-6">
-              <TextInput
-                className="rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
-                placeholder="Dish name"
-                value={dishName}
-                onChangeText={setDishName}
-              />
+              {menuItems.length > 0 && (
+                <View className="flex-row rounded-2xl bg-gray-100 p-1">
+                  <TouchableOpacity
+                    className={`flex-1 rounded-xl py-3 ${
+                      mode === "MENU" ? "bg-white" : ""
+                    }`}
+                    onPress={() => setMode("MENU")}
+                  >
+                    <Text className="text-center font-bold text-black">
+                      From menu
+                    </Text>
+                  </TouchableOpacity>
 
-              <PriceInput label="Price" value={price} onChange={setPrice} />
+                  <TouchableOpacity
+                    className={`flex-1 rounded-xl py-3 ${
+                      mode === "CUSTOM" ? "bg-white" : ""
+                    }`}
+                    onPress={() => setMode("CUSTOM")}
+                  >
+                    <Text className="text-center font-bold text-black">
+                      Custom
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {mode === "MENU" ? (
+                <View className="gap-3">
+                  {menuItems.map((dish) => {
+                    const isSelected = selectedDish?.id === dish.id;
+
+                    return (
+                      <TouchableOpacity
+                        key={dish.id}
+                        className={`rounded-2xl border p-4 ${
+                          isSelected
+                            ? "border-black bg-black"
+                            : "border-gray-200 bg-white"
+                        }`}
+                        onPress={() => setSelectedDish(dish)}
+                      >
+                        <View className="flex-row justify-between gap-3">
+                          <View className="flex-1">
+                            <Text
+                              className={`font-bold ${
+                                isSelected ? "text-white" : "text-black"
+                              }`}
+                            >
+                              {dish.name}
+                            </Text>
+
+                            {!!dish.description && (
+                              <Text
+                                className={`mt-1 text-sm ${
+                                  isSelected ? "text-white/70" : "text-gray-500"
+                                }`}
+                              >
+                                {dish.description}
+                              </Text>
+                            )}
+                          </View>
+
+                          {dish.price != null && (
+                            <Text
+                              className={`font-bold ${
+                                isSelected ? "text-white" : "text-black"
+                              }`}
+                            >
+                              ₪{dish.price}
+                            </Text>
+                          )}
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              ) : (
+                <>
+                  <TextInput
+                    className="rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
+                    placeholder="Dish name"
+                    value={dishName}
+                    onChangeText={setDishName}
+                  />
+
+                  <PriceInput label="Price" value={price} onChange={setPrice} />
+                </>
+              )}
 
               <RatingPicker
                 label="How was it?"

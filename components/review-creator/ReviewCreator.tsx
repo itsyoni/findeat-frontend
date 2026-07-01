@@ -41,6 +41,16 @@ export default function ReviewCreator() {
     return ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
   }
 
+  function getSelectedRestaurantId() {
+    if (!draft.restaurant) return undefined;
+
+    if (draft.restaurant.source === "FINDEAT") {
+      return draft.restaurant.restaurant.id;
+    }
+
+    return undefined;
+  }
+
   async function getRestaurantId() {
     if (!draft.restaurant) return undefined;
 
@@ -158,6 +168,11 @@ export default function ReviewCreator() {
 
       {step === "ADD_DISH" && (
         <AddDishStep
+          restaurant={
+            draft.restaurant?.source === "FINDEAT"
+              ? draft.restaurant.restaurant
+              : null
+          }
           onBack={() => setStep("DISHES")}
           onSave={(item) => {
             setDraft((current) => ({
