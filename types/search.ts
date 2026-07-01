@@ -1,6 +1,6 @@
-export type SearchEntityType = "USER" | "RESTAURANT" | "DISH";
+import { UserRelationship } from "./profile";
 
-export type UserRelationship = "NONE" | "FOLLOWING" | "FOLLOWED_BY" | "FRIENDS";
+export type SearchEntityType = "USER" | "RESTAURANT" | "DISH";
 
 export type SearchResultItem = {
   id: string;

@@ -1,31 +1,14 @@
 import { api } from "@/lib/api";
-import { Restaurant } from "@/types";
+import {
+  GoogleRestaurantSuggestion,
+  Restaurant,
+  RestaurantSearchResponse,
+  SelectedRestaurant,
+} from "@/types";
 import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../AppText";
 import TextInput from "../AppTextInput";
-
-export type GoogleRestaurantSuggestion = {
-  source: "GOOGLE";
-  googlePlaceId: string;
-  name: string;
-  address?: string | null;
-  city?: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
-};
-
-export type SelectedRestaurant =
-  | {
-      source: "FINDEAT";
-      restaurant: Restaurant;
-    }
-  | GoogleRestaurantSuggestion;
-
-type SearchResponse = {
-  findeat: Restaurant[];
-  google: GoogleRestaurantSuggestion[];
-};
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
@@ -53,7 +36,7 @@ export default function RestaurantSearch({
       return;
     }
 
-    const res = await api.get<SearchResponse>(
+    const res = await api.get<RestaurantSearchResponse>(
       `/restaurants/search?q=${encodeURIComponent(text)}`,
     );
 

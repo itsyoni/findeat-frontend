@@ -15,7 +15,7 @@ import Animated, {
   withSequence,
   withSpring,
 } from "react-native-reanimated";
-import Text from "../AppText";
+import Text from "../../AppText";
 
 type Props = {
   post: Post;
@@ -29,7 +29,7 @@ type Props = {
   ) => void;
 };
 
-export default function ContentFeedPost({
+export default function ContentPost({
   post,
   height,
   onToggleLike,
@@ -38,15 +38,20 @@ export default function ContentFeedPost({
 }: Props) {
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
-  const isOfficialPost = post.isOfficial && !!post.restaurant;
+  const content = post.contentPost;
+  const isRestaurantPost = !!post.authorRestaurantId && !!post.authorRestaurant;
+  const isOfficialPost = isRestaurantPost && !!post.restaurant;
 
-  const displayAvatar = isOfficialPost
-    ? post.restaurant?.logoUrl
-    : post.author.avatarUrl;
+  const displayAvatar = isRestaurantPost
+    ? post.authorRestaurant?.logoUrl
+    : post.author?.avatarUrl;
 
-  const displayName = isOfficialPost
-    ? (post.restaurant?.name ?? "")
-    : post.author.username;
+  const displayName = isRestaurantPost
+    ? (post.authorRestaurant?.name ?? "")
+    : (post.author?.username ?? "");
+
+  const imageUrl = content?.imageUrl;
+  const description = content?.description;
 
   const likeScale = useSharedValue(1);
 
@@ -82,16 +87,16 @@ export default function ContentFeedPost({
 
   return (
     <View style={{ height }}>
-      {post.imageUrl ? (
+      {imageUrl ? (
         <Image
-          source={{ uri: post.imageUrl }}
+          source={{ uri: imageUrl }}
           className="absolute inset-0 h-full w-full"
           resizeMode="cover"
         />
       ) : (
         <View className="absolute inset-0 items-center justify-center bg-gray-900">
           <Text className="px-8 text-center text-2xl font-bold text-white">
-            {post.description}
+            {description}
           </Text>
         </View>
       )}
@@ -108,6 +113,8 @@ export default function ContentFeedPost({
               });
               return;
             }
+
+            if (!post.author?.id) return;
 
             router.push({
               pathname: "/users/[id]",
@@ -137,8 +144,8 @@ export default function ContentFeedPost({
           </Text>
         )}
 
-        {!!post.description && (
-          <Text className="text-base text-white">{post.description}</Text>
+        {!!description && (
+          <Text className="text-base text-white">{description}</Text>
         )}
       </View>
 

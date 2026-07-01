@@ -57,9 +57,9 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
       if (selectedUser) {
         const updated = await addRecentSearch(user.id, {
           id: selectedUser.id,
-          type: "user",
+          type: "USER",
           title: selectedUser.username,
-          avatarUrl: selectedUser.avatarUrl,
+          imageUrl: selectedUser.avatarUrl,
         });
 
         setRecentSearches(updated);
@@ -130,14 +130,14 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
         />
       ) : (
         <FlatList
-          data={recentSearches.filter((item) => item.type === "user")}
+          data={recentSearches.filter((item) => item.type === "USER")}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
             <TouchableOpacity
               onPress={() => handleUserPress(item.id)}
               className="flex-row items-center gap-4 border-b border-gray-100 p-4"
             >
-              <Avatar uri={item.avatarUrl} username={item.title} size={44} />
+              <Avatar uri={item.imageUrl} username={item.title} size={44} />
 
               <Text className="flex-1 font-bold">@{item.title}</Text>
 

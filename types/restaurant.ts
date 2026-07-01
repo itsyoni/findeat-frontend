@@ -68,3 +68,25 @@ export type Restaurant = {
   menus: Menu[];
   posts: RestaurantPostPreview[];
 };
+
+export type GoogleRestaurantSuggestion = {
+  source: "GOOGLE";
+  googlePlaceId: string;
+  name: string;
+  address?: string | null;
+  city?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export type SelectedRestaurant =
+  | {
+      source: "FINDEAT";
+      restaurant: Restaurant;
+    }
+  | GoogleRestaurantSuggestion;
+
+export type RestaurantSearchResponse = {
+  findeat: Restaurant[];
+  google: GoogleRestaurantSuggestion[];
+};

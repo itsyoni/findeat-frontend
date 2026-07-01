@@ -1,5 +1,5 @@
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
-import FeedPostList from "@/components/feed/FeedPostList";
+import FeedPostList from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post } from "@/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";

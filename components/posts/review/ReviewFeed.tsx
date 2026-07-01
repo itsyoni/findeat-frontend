@@ -1,10 +1,9 @@
 import { Post } from "@/types/post";
 import { FlatList } from "react-native";
-import ContentFeedPost from "./ContentFeedPost";
+import ReviewPost from "./ReviewPost";
 
 type Props = {
   posts: Post[];
-  height: number;
   refreshing: boolean;
   onRefresh: () => void;
   onToggleLike: (postId: string, isLiked: boolean) => void;
@@ -14,18 +13,15 @@ type Props = {
     restaurantId: string,
     isWantToTry: boolean,
   ) => void;
-  initialIndex?: number;
 };
 
-export default function ContentFeedList({
+export default function ReviewFeed({
   posts,
-  height,
   refreshing,
   onRefresh,
   onToggleLike,
   onOpenComments,
   onToggleWantToTry,
-  initialIndex = 0,
 }: Props) {
   return (
     <FlatList
@@ -33,19 +29,9 @@ export default function ContentFeedList({
       keyExtractor={(item) => item.id}
       refreshing={refreshing}
       onRefresh={onRefresh}
-      pagingEnabled
-      showsVerticalScrollIndicator={false}
-      decelerationRate="fast"
-      initialScrollIndex={initialIndex}
-      getItemLayout={(_, index) => ({
-        length: height,
-        offset: height * index,
-        index,
-      })}
       renderItem={({ item }) => (
-        <ContentFeedPost
+        <ReviewPost
           post={item}
-          height={height}
           onToggleLike={onToggleLike}
           onOpenComments={onOpenComments}
           onToggleWantToTry={onToggleWantToTry}

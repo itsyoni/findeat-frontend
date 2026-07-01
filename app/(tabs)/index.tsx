@@ -1,6 +1,6 @@
 import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
-import ContentFeedList from "@/components/feed/ContentFeedList";
-import FeedPostList from "@/components/feed/FeedPostList";
+import ContentFeedList from "@/components/posts/content/ContentFeed";
+import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import SearchBar from "@/components/SearchBar";
@@ -198,7 +198,7 @@ export default function HomeScreen() {
                   onToggleWantToTry={toggleWantToTry}
                 />
               ) : (
-                <FeedPostList
+                <ReviewFeed
                   posts={posts}
                   refreshing={refreshing}
                   onRefresh={onRefresh}
