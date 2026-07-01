@@ -1,7 +1,7 @@
-import Text from "@/components/AppText";
+import Text from "@/components/common/AppText";
+import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
-import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
 import { PostType } from "@/types/post";
 import { Profile } from "@/types/profile";

@@ -1,6 +1,6 @@
-import Text from "@/components/AppText";
-import Avatar from "@/components/Avatar";
-import FormInput from "@/components/FormInput";
+import Text from "@/components/common/AppText";
+import Avatar from "@/components/common/Avatar";
+import FormInput from "@/components/forms/FormInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";

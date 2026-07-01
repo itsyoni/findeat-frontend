@@ -1,4 +1,4 @@
-import Text from "@/components/AppText";
+import Text from "@/components/common/AppText";
 import { ReviewDishDraft } from "@/types/review";
 import { Image, View } from "react-native";
 

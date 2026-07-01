@@ -1,8 +1,8 @@
-import Avatar from "@/components/Avatar";
+import Avatar from "@/components/common/Avatar";
 import { Profile } from "@/types/profile";
 import { router } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
-import Text from "../AppText";
+import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 
 type Props = {

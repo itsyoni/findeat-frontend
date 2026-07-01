@@ -1,6 +1,6 @@
 import { Restaurant } from "@/types";
 import { Image, View } from "react-native";
-import Text from "../AppText";
+import Text from "../common/AppText";
 
 type Props = {
   post: Restaurant["posts"][number];

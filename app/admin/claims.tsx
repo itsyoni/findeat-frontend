@@ -1,4 +1,4 @@
-import Text from "@/components/AppText";
+import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";

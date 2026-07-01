@@ -1,5 +1,5 @@
-import Text from "@/components/AppText";
-import TextInput from "@/components/AppTextInput";
+import Text from "@/components/common/AppText";
+import TextInput from "@/components/common/AppTextInput";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 
 import { api } from "@/lib/api";
@@ -100,25 +100,32 @@ export default function CreateContentScreen() {
         imageUrl = await uploadImageToCloudinary(imageUri);
       }
 
-      if (postingAs.type === "RESTAURANT") {
-        await api.post(`/posts/restaurants/${postingAs.restaurantId}/posts`, {
-          description: description.trim(),
-          imageUrl,
-        });
-      } else {
-        const restaurantId = await getRestaurantId();
+      const restaurantId =
+        postingAs.type === "USER" ? await getRestaurantId() : undefined;
 
-        if (!restaurantId) {
-          Alert.alert("Missing restaurant", "Please choose a restaurant");
-          return;
-        }
-
-        await api.post("/posts/content", {
-          description: description.trim(),
-          imageUrl,
-          restaurantId,
-        });
+      if (postingAs.type === "USER" && !restaurantId) {
+        Alert.alert("Missing restaurant", "Please choose a restaurant");
+        return;
       }
+
+      const createdPost =
+        postingAs.type === "RESTAURANT"
+          ? (
+              await api.post(
+                `/posts/restaurants/${postingAs.restaurantId}/posts`,
+                {
+                  description: description.trim(),
+                  imageUrl,
+                },
+              )
+            ).data
+          : (
+              await api.post("/posts/content", {
+                description: description.trim(),
+                imageUrl,
+                restaurantId,
+              })
+            ).data;
 
       setDescription("");
       setImageUri(undefined);
@@ -126,10 +133,15 @@ export default function CreateContentScreen() {
 
       router.replace({
         pathname: "/(tabs)",
-        params: { refresh: Date.now().toString() },
+        params: {
+          feed: createdPost.type,
+          postId: createdPost.id,
+          refresh: Date.now().toString(),
+        },
       });
     } catch (error: any) {
       console.error(error.response?.data ?? error);
+
       Alert.alert(
         "Error",
         error.response?.data?.message ?? "Could not create post",

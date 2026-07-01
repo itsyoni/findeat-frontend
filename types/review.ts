@@ -4,7 +4,9 @@ export type CreateReviewStep =
   | "RESTAURANT"
   | "COVER"
   | "DISHES"
-  | "ADD_DISH"
+  | "DISH_SOURCE"
+  | "SELECT_MENU_DISH"
+  | "ADD_DISH_DETAILS"
   | "PREVIEW";
 
 export type ReviewDishDraft = {
@@ -12,10 +14,9 @@ export type ReviewDishDraft = {
   menuItemId?: string;
   menuItemName?: string;
   menuItemPrice?: number | null;
-
   customDishName?: string;
   customPrice?: number;
-
+  fallbackImageUrl?: string | null;
   imageUri?: string;
   rating?: number;
   text?: string;

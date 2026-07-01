@@ -1,5 +1,5 @@
-import Text from "@/components/AppText";
-import Avatar from "@/components/Avatar";
+import Text from "@/components/common/AppText";
+import Avatar from "@/components/common/Avatar";
 import { api } from "@/lib/api";
 import { Chat } from "@/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";

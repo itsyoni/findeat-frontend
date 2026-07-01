@@ -1,5 +1,5 @@
-import Text from "@/components/AppText";
-import TextInput from "@/components/AppTextInput";
+import Text from "@/components/common/AppText";
+import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
 import * as ImagePicker from "expo-image-picker";

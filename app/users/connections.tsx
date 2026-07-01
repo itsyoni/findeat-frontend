@@ -1,4 +1,4 @@
-import Text from "@/components/AppText";
+import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { ConnectionItem } from "@/types";
 import { router, useLocalSearchParams } from "expo-router";

@@ -1,4 +1,4 @@
-import Text from "@/components/AppText";
+import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Menu } from "@/types";
 import { router, useFocusEffect } from "expo-router";

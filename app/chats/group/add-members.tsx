@@ -1,5 +1,5 @@
-import Text from "@/components/AppText";
-import Avatar from "@/components/Avatar";
+import Text from "@/components/common/AppText";
+import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";

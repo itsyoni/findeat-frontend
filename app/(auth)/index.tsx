@@ -1,6 +1,6 @@
-import Text from "@/components/AppText";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
+import Text from "@/components/common/AppText";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useRef, useState } from "react";

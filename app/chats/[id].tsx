@@ -1,6 +1,6 @@
-import Text from "@/components/AppText";
-import TextInput from "@/components/AppTextInput";
-import Avatar from "@/components/Avatar";
+import Text from "@/components/common/AppText";
+import TextInput from "@/components/common/AppTextInput";
+import Avatar from "@/components/common/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
 import { Chat, Message } from "@/types/chat";

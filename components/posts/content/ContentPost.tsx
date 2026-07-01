@@ -1,4 +1,5 @@
-import Avatar from "@/components/Avatar";
+import Text from "@/components/common/AppText";
+import Avatar from "@/components/common/Avatar";
 import { Post } from "@/types/post";
 import { router } from "expo-router";
 import {
@@ -15,7 +16,6 @@ import Animated, {
   withSequence,
   withSpring,
 } from "react-native-reanimated";
-import Text from "../../AppText";
 
 type Props = {
   post: Post;

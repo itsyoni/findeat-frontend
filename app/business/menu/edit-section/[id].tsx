@@ -1,5 +1,5 @@
-import Text from "@/components/AppText";
-import TextInput from "@/components/AppTextInput";
+import Text from "@/components/common/AppText";
+import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";

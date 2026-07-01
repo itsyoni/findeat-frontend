@@ -1,4 +1,4 @@
-import Text from "@/components/AppText";
+import Text from "@/components/common/AppText";
 import { ReviewDishDraft } from "@/types/review";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

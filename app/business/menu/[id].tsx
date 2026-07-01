@@ -1,7 +1,9 @@
-import Text from "@/components/AppText";
-import TextInput from "@/components/AppTextInput";
+import Text from "@/components/common/AppText";
+import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
+import { uploadImageToCloudinary } from "@/lib/uploadImage";
 import { Menu } from "@/types";
+import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -20,7 +22,7 @@ export default function ManageMenuScreen() {
   const [menu, setMenu] = useState<Menu | null>(null);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-
+  const [dishImageUri, setDishImageUri] = useState<string>();
   const [dishName, setDishName] = useState("");
   const [dishDescription, setDishDescription] = useState("");
   const [dishPrice, setDishPrice] = useState("");
@@ -45,6 +47,9 @@ export default function ManageMenuScreen() {
     }
 
     const parsedPrice = dishPrice.trim() ? Number(dishPrice) : undefined;
+    const imageUrl = dishImageUri
+      ? await uploadImageToCloudinary(dishImageUri)
+      : undefined;
 
     if (dishPrice.trim() && Number.isNaN(parsedPrice)) {
       Alert.alert("Invalid price", "Price must be a number");
@@ -58,11 +63,13 @@ export default function ManageMenuScreen() {
         name: dishName.trim(),
         description: dishDescription.trim() || undefined,
         price: parsedPrice,
+        imageUrl,
       });
 
       setDishName("");
       setDishDescription("");
       setDishPrice("");
+      setDishImageUri(undefined);
 
       await loadMenu();
     } catch (error) {
@@ -70,6 +77,17 @@ export default function ManageMenuScreen() {
       Alert.alert("Error", "Could not add dish");
     } finally {
       setCreating(false);
+    }
+  }
+
+  async function pickDishImage() {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images"],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setDishImageUri(result.assets[0].uri);
     }
   }
 
@@ -113,6 +131,21 @@ export default function ManageMenuScreen() {
 
             <View className="mt-6 rounded-2xl bg-[#F5F4F5] p-4">
               <Text className="text-lg font-bold text-black">Add dish</Text>
+
+              <TouchableOpacity
+                className="mt-4 items-center justify-center rounded-2xl bg-white py-8"
+                onPress={pickDishImage}
+              >
+                {dishImageUri ? (
+                  <Image
+                    source={{ uri: dishImageUri }}
+                    className="h-40 w-full rounded-2xl"
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <Text className="text-gray-500">+ Add dish photo</Text>
+                )}
+              </TouchableOpacity>
 
               <TextInput
                 className="mt-4 rounded-2xl bg-white px-4 py-4 text-base text-black"

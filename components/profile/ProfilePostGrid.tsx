@@ -1,6 +1,6 @@
 import { Post } from "@/types/post";
 import { Image, Pressable, View } from "react-native";
-import Text from "../AppText";
+import Text from "../common/AppText";
 
 type Props = {
   posts: Post[];
@@ -37,11 +37,27 @@ export default function ProfilePostGrid({ posts, onPressPost }: Props) {
             className="aspect-square w-1/3 border border-white bg-gray-200"
           >
             {imageUrl ? (
-              <Image
-                source={{ uri: imageUrl }}
-                className="h-full w-full"
-                resizeMode="cover"
-              />
+              <>
+                <Image
+                  source={{ uri: imageUrl }}
+                  className="h-full w-full"
+                  resizeMode="cover"
+                />
+
+                {post.type === "REVIEW" && (
+                  <>
+                    {/* Dark overlay */}
+                    <View className="absolute inset-0 bg-[#0000004D]" />
+
+                    {/* Rating badge */}
+                    <View className="absolute right-2 top-2 rounded-full bg-[#00000099] px-3 py-1">
+                      <Text className="text-xs font-bold text-white">
+                        ⭐ {post.reviewPost?.overallRating}
+                      </Text>
+                    </View>
+                  </>
+                )}
+              </>
             ) : (
               <View className="h-full w-full items-center justify-center bg-gray-900 px-2">
                 <Text

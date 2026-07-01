@@ -1,5 +1,5 @@
-import Text from "@/components/AppText";
-import Tabs from "@/components/Tabs";
+import Text from "@/components/common/AppText";
+import Tabs from "@/components/common/Tabs";
 import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
 import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSection";
 import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSection";

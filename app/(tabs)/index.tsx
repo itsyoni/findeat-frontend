@@ -1,10 +1,10 @@
-import { CommentsBottomSheet } from "@/components/CommentsBottomSheet";
+import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
+import SearchBar from "@/components/common/SearchBar";
+import Tabs from "@/components/common/Tabs";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
-import SearchBar from "@/components/SearchBar";
-import Tabs from "@/components/Tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { searchGlobal } from "@/lib/search";

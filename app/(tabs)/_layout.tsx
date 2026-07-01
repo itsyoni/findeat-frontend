@@ -1,5 +1,5 @@
-import Avatar from "@/components/Avatar";
-import { HapticTab } from "@/components/haptic-tab";
+import Avatar from "@/components/common/Avatar";
+import { HapticTab } from "@/components/ui/haptic-tab";
 import { Colors } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
 import { useColorScheme } from "@/hooks/use-color-scheme";

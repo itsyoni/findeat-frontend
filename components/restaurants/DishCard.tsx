@@ -1,6 +1,6 @@
 import { Restaurant } from "@/types";
 import { Image, View } from "react-native";
-import Text from "../AppText";
+import Text from "../common/AppText";
 
 type Props = {
   item: Restaurant["menus"][number]["items"][number];
@@ -19,11 +19,11 @@ export default function DishCard({ item }: Props) {
         {item.imageUrl ? (
           <Image
             source={{ uri: item.imageUrl }}
-            className="h-20 w-20 rounded-2xl bg-gray-100"
+            className="h-20 w-30 rounded-2xl bg-gray-100"
             resizeMode="cover"
           />
         ) : (
-          <View className="h-20 w-20 items-center justify-center rounded-2xl bg-gray-100">
+          <View className="h-20 w-30 items-center justify-center rounded-2xl bg-gray-100">
             <Text className="text-2xl">🍽️</Text>
           </View>
         )}

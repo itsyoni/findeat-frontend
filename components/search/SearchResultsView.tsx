@@ -1,4 +1,4 @@
-import SearchBar from "@/components/SearchBar";
+import SearchBar from "@/components/common/SearchBar";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -11,7 +11,7 @@ import Animated, {
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
-import Text from "../AppText";
+import Text from "../common/AppText";
 
 type Props<T> = {
   data?: T[];

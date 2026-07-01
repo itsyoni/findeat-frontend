@@ -1,8 +1,8 @@
-import Text from "@/components/AppText";
-import Avatar from "@/components/Avatar";
+import Text from "@/components/common/AppText";
+import Avatar from "@/components/common/Avatar";
+import Tabs from "@/components/common/Tabs";
 import ProfileManagedRestaurants from "@/components/profile/ProfileManagedRestaurants";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
-import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
 import { Profile } from "@/types";
 import { PostType } from "@/types/post";

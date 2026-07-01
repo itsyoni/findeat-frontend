@@ -1,8 +1,8 @@
-import Text from "@/components/AppText";
-import Avatar from "@/components/Avatar";
+import Text from "@/components/common/AppText";
+import Avatar from "@/components/common/Avatar";
+import SearchBar from "@/components/common/SearchBar";
+import Tabs from "@/components/common/Tabs";
 import SearchResultsView from "@/components/search/SearchResultsView";
-import SearchBar from "@/components/SearchBar";
-import Tabs from "@/components/Tabs";
 import { api } from "@/lib/api";
 import { Restaurant } from "@/types";
 import { MapType } from "@/types/map";

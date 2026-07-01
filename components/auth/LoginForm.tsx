@@ -1,5 +1,5 @@
-import Text from "@/components/AppText";
-import TextInput from "@/components/AppTextInput";
+import Text from "@/components/common/AppText";
+import TextInput from "@/components/common/AppTextInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginFormData, loginSchema } from "@/lib/validation/auth";
 import { EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";

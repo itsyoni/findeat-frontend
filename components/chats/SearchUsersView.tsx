@@ -1,4 +1,4 @@
-import SearchBar from "@/components/SearchBar";
+import SearchBar from "@/components/common/SearchBar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import {
@@ -16,8 +16,8 @@ import Animated, {
   FadeOut,
   LinearTransition,
 } from "react-native-reanimated";
-import Text from "../AppText";
-import Avatar from "../Avatar";
+import Text from "../common/AppText";
+import Avatar from "../common/Avatar";
 
 type Props = {
   onCancel: () => void;

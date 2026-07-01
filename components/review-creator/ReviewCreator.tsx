@@ -1,14 +1,17 @@
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { Dish } from "@/types";
 import { CreateReviewDraft, CreateReviewStep } from "@/types/review";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, View } from "react-native";
-import AddDishStep from "./steps/AddDishStep";
+import AddDishDetailsStep from "./steps/AddDishDetailsStep";
 import CoverStep from "./steps/CoverStep";
 import DishesStep from "./steps/DishesStep";
+import DishSourceStep from "./steps/DishSourceStep";
 import PreviewStep from "./steps/PreviewStep";
 import RestaurantStep from "./steps/RestaurantStep";
+import SelectMenuDishStep from "./steps/SelectMenuDishStep";
 
 const initialDraft: CreateReviewDraft = {
   restaurant: null,
@@ -20,6 +23,7 @@ export default function ReviewCreator() {
   const [step, setStep] = useState<CreateReviewStep>("RESTAURANT");
   const [draft, setDraft] = useState<CreateReviewDraft>(initialDraft);
   const [loading, setLoading] = useState(false);
+  const [selectedMenuDish, setSelectedMenuDish] = useState<Dish | null>(null);
 
   function updateDraft(update: Partial<CreateReviewDraft>) {
     setDraft((current) => ({
@@ -39,16 +43,6 @@ export default function ReviewCreator() {
     if (ratings.length === 0) return undefined;
 
     return ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
-  }
-
-  function getSelectedRestaurantId() {
-    if (!draft.restaurant) return undefined;
-
-    if (draft.restaurant.source === "FINDEAT") {
-      return draft.restaurant.restaurant.id;
-    }
-
-    return undefined;
   }
 
   async function getRestaurantId() {
@@ -104,14 +98,14 @@ export default function ReviewCreator() {
           customPrice: item.customPrice,
           imageUrl: item.imageUri
             ? await uploadImageToCloudinary(item.imageUri)
-            : undefined,
+            : item.fallbackImageUrl,
           rating: item.rating,
           text: item.text,
           order: item.order,
         })),
       );
 
-      await api.post("/posts/review", {
+      const res = await api.post("/posts/review", {
         restaurantId,
         coverImageUrl,
         overallRating,
@@ -119,13 +113,18 @@ export default function ReviewCreator() {
         atmosphereRating: draft.atmosphereRating,
         serviceRating: draft.serviceRating,
         valueRating: draft.valueRating,
-        totalPrice: draft.totalPrice,
         items: uploadedItems,
       });
 
+      const createdPost = res.data;
+
       router.replace({
         pathname: "/(tabs)",
-        params: { refresh: Date.now().toString() },
+        params: {
+          feed: createdPost.type,
+          postId: createdPost.id,
+          refresh: Date.now().toString(),
+        },
       });
     } catch (error: any) {
       console.error(error.response?.data ?? error);
@@ -161,19 +160,45 @@ export default function ReviewCreator() {
         <DishesStep
           items={draft.items}
           onBack={() => setStep("COVER")}
-          onAddDish={() => setStep("ADD_DISH")}
+          onAddDish={() => setStep("DISH_SOURCE")}
           onNext={() => setStep("PREVIEW")}
         />
       )}
 
-      {step === "ADD_DISH" && (
-        <AddDishStep
+      {step === "DISH_SOURCE" && (
+        <DishSourceStep
+          onBack={() => setStep("DISHES")}
+          onCustom={() => {
+            setSelectedMenuDish(null);
+            setStep("ADD_DISH_DETAILS");
+          }}
+          onFromMenu={() => setStep("SELECT_MENU_DISH")}
+        />
+      )}
+
+      {step === "SELECT_MENU_DISH" && (
+        <SelectMenuDishStep
           restaurant={
             draft.restaurant?.source === "FINDEAT"
               ? draft.restaurant.restaurant
               : null
           }
-          onBack={() => setStep("DISHES")}
+          onBack={() => setStep("DISH_SOURCE")}
+          onSelect={(dish) => {
+            setSelectedMenuDish(dish);
+            setStep("ADD_DISH_DETAILS");
+          }}
+        />
+      )}
+
+      {step === "ADD_DISH_DETAILS" && (
+        <AddDishDetailsStep
+          selectedDish={selectedMenuDish}
+          onBack={() =>
+            selectedMenuDish
+              ? setStep("SELECT_MENU_DISH")
+              : setStep("DISH_SOURCE")
+          }
           onSave={(item) => {
             setDraft((current) => ({
               ...current,
@@ -187,6 +212,7 @@ export default function ReviewCreator() {
               ],
             }));
 
+            setSelectedMenuDish(null);
             setStep("DISHES");
           }}
         />

@@ -77,11 +77,6 @@ function RootNavigator() {
           options={{ headerShown: false }}
         />
 
-        <Stack.Screen
-          name="modal"
-          options={{ presentation: "modal", title: "Modal" }}
-        />
-
         <Stack.Screen name="business/index" />
       </Stack>
 

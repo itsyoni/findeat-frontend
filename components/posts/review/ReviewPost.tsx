@@ -1,4 +1,5 @@
-import Avatar from "@/components/Avatar";
+import Text from "@/components/common/AppText";
+import Avatar from "@/components/common/Avatar";
 import { Post } from "@/types/post";
 import { router } from "expo-router";
 import {
@@ -21,7 +22,6 @@ import Animated, {
   withSequence,
   withSpring,
 } from "react-native-reanimated";
-import Text from "../../AppText";
 
 type Props = {
   post: Post;
@@ -255,12 +255,12 @@ export default function ReviewPost({
                     {item.isLinkedToMenu && item.menuItemId && (
                       <TouchableOpacity
                         className="mt-2 self-start rounded-full bg-white/20 px-3 py-1"
-                        // onPress={() =>
-                        //   router.push({
-                        //     pathname: "/menu-items/[id]",
-                        //     params: { id: item.menuItemId },
-                        //   })
-                        // }
+                        onPress={() =>
+                          router.push({
+                            pathname: "/menu-items/[id]",
+                            params: { id: item.menuItemId },
+                          })
+                        }
                       >
                         <Text className="text-xs font-bold text-white">
                           ✓ Official menu item

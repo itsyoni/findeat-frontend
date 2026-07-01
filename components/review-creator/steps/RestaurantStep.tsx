@@ -1,4 +1,4 @@
-import Text from "@/components/AppText";
+import Text from "@/components/common/AppText";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 import { SelectedRestaurant } from "@/types/restaurant";
 import { TouchableOpacity, View } from "react-native";

@@ -3,8 +3,8 @@ import { Chat } from "@/types/chat";
 import { router } from "expo-router";
 import { UsersThreeIcon } from "phosphor-react-native";
 import { TouchableOpacity, View } from "react-native";
-import Text from "../AppText";
-import Avatar from "../Avatar";
+import Text from "../common/AppText";
+import Avatar from "../common/Avatar";
 
 type Props = {
   chat: Chat;
