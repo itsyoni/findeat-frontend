@@ -6,15 +6,10 @@ import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
 import { api } from "@/lib/api";
 import { Profile } from "@/types";
 import { PostType } from "@/types/post";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserProfileScreen() {
@@ -109,33 +104,47 @@ export default function UserProfileScreen() {
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          title: "",
-          headerBackVisible: false,
-          headerLeft: () => (
-            <Pressable
-              className="flex-row items-center pr-3"
-              onPress={() => {
-                if (router.canGoBack()) {
-                  router.back();
-                } else {
-                  router.replace("/(tabs)");
-                }
+    <View className="flex-1 bg-white">
+      <View>
+        <View>
+          <View className="relative">
+            <Image
+              source={{ uri: user.coverUrl ?? "fallback" }}
+              className="h-70 w-full bg-gray-200"
+              resizeMode="cover"
+            />
+
+            <SafeAreaView
+              edges={["top"]}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
               }}
             >
-              <CaretLeftIcon size={24} color="black" />
-              <Text className="text-lg text-black">Back</Text>
-            </Pressable>
-          ),
-        }}
-      />
-
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-        <View className="px-6 pt-6">
-          <Avatar uri={user.avatarUrl} username={user.username} size={86} />
-
+              <TouchableOpacity
+                className="ml-4 mt-2 h-11 w-11 items-center justify-center rounded-full bg-black/30"
+                onPress={() => router.back()}
+              >
+                <CaretLeftIcon size={24} color="white" />
+              </TouchableOpacity>
+            </SafeAreaView>
+          </View>
+          <View className="-mt-15 px-5">
+            <Avatar
+              uri={user.avatarUrl}
+              username={user.username}
+              size={100}
+              style={{
+                outlineStyle: "solid",
+                outlineWidth: 5,
+                outlineColor: "white",
+              }}
+            />
+          </View>
+        </View>
+        <View className="px-5">
           <Text className="mt-5 text-3xl font-bold text-black">
             @{user.username}
           </Text>
@@ -235,7 +244,7 @@ export default function UserProfileScreen() {
             }}
           />
         </View>
-      </SafeAreaView>
-    </>
+      </View>
+    </View>
   );
 }

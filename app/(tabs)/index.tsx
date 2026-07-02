@@ -114,7 +114,7 @@ export default function HomeScreen() {
 
     if (item.type === "USER") {
       router.push({
-        pathname: "/users/[id]",
+        pathname: "/(users)/[id]",
         params: { id: item.id },
       });
       return;

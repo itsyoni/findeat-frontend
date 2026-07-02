@@ -106,9 +106,10 @@ export default function EditProfileScreen() {
         return;
       }
 
-      const result = await ImagePicker.launchCameraAsync({
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
         allowsEditing: true,
-        aspect,
+        aspect: [16, 9],
         quality: 0.8,
       });
 

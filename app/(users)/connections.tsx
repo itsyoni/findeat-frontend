@@ -159,7 +159,7 @@ export default function ConnectionsScreen() {
               className="mb-5 flex-row items-center justify-between"
               onPress={() =>
                 router.push({
-                  pathname: "/users/[id]",
+                  pathname: "/(users)/[id]",
                   params: { id: user.id },
                 })
               }

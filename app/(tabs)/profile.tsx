@@ -9,7 +9,6 @@ import { ManagedRestaurant } from "@/types/restaurant";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -61,7 +60,7 @@ export default function ProfileScreen() {
   const isAdmin = profile.email === "yoni@gmail.com";
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <View style={{ flex: 1, backgroundColor: "white" }}>
       <PersonalProfileHeader profile={profile} />
 
       {isAdmin && (
@@ -113,6 +112,6 @@ export default function ProfileScreen() {
           }}
         />
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

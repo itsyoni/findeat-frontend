@@ -144,7 +144,7 @@ export default function ContentPost({
             if (!post.author?.id) return;
 
             router.push({
-              pathname: "/users/[id]",
+              pathname: "/(users)/[id]",
               params: { id: post.author.id },
             });
           }}

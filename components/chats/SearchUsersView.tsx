@@ -77,7 +77,7 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
       }
 
       router.push({
-        pathname: "/users/[id]",
+        pathname: "/(users)/[id]",
         params: { id: userId },
       });
     } catch (error) {

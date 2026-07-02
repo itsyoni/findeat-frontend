@@ -249,7 +249,7 @@ export default function ChatScreen() {
                   if (!otherUser?.id) return;
 
                   router.push({
-                    pathname: "/users/[id]",
+                    pathname: "/(users)/[id]",
                     params: { id: otherUser.id },
                   });
                 }}

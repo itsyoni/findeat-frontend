@@ -1,7 +1,7 @@
 import Avatar from "@/components/common/Avatar";
 import { Profile } from "@/types/profile";
 import { router } from "expo-router";
-import { TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 
@@ -11,9 +11,25 @@ type Props = {
 
 export default function PersonalProfileHeader({ profile }: Props) {
   return (
-    <View className="bg-white px-5 pb-5">
+    <View className="bg-white pb-5">
       <View className="items-center">
-        <Avatar uri={profile.avatarUrl} username={profile.username} size={96} />
+        <Image
+          source={{ uri: profile.coverUrl ?? "fallback" }}
+          className="h-70 w-full bg-gray-200"
+          resizeMode="cover"
+        />
+        <View className="-mt-15 px-5">
+          <Avatar
+            uri={profile.avatarUrl}
+            username={profile.username}
+            size={100}
+            style={{
+              outlineStyle: "solid",
+              outlineWidth: 5,
+              outlineColor: "white",
+            }}
+          />
+        </View>
 
         <Text className="mt-2 text-2xl font-bold text-black">
           {profile.username}

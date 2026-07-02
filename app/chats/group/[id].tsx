@@ -104,7 +104,7 @@ export default function GroupDetailsScreen() {
               className="flex-row items-center border-b border-gray-100 px-5 py-4"
               onPress={() =>
                 router.push({
-                  pathname: "/users/[id]",
+                  pathname: "/(users)/[id]",
                   params: { id: item.userId },
                 })
               }
