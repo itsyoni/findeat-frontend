@@ -59,7 +59,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
             className="flex-1"
             onPress={() =>
               router.push({
-                pathname: "/users/connections",
+                pathname: "/(users)/connections",
                 params: { id: profile.id, type: "followers" },
               })
             }
@@ -76,7 +76,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
             className="flex-1"
             onPress={() =>
               router.push({
-                pathname: "/users/connections",
+                pathname: "/(users)/connections",
                 params: { id: profile.id, type: "following" },
               })
             }
@@ -92,7 +92,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
 
         <TouchableOpacity
           className="mt-5 rounded-lg py-2 bg-[#F5F4F5] w-40"
-          onPress={() => router.push("/edit-profile")}
+          onPress={() => router.push("/(profile)/edit-profile")}
         >
           <Text className="text-center text-black">Edit Profile</Text>
         </TouchableOpacity>

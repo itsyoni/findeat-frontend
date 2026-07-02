@@ -1,4 +1,4 @@
-export type UserRelationship = "NONE" | "FOLLOWING" | "FOLLOWED_BY" | "FRIENDS";
+import { UserRelationship } from "./profile";
 
 export type ConnectionUser = {
   id: string;

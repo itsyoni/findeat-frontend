@@ -167,7 +167,7 @@ export default function UserProfileScreen() {
               className="mr-8"
               onPress={() =>
                 router.push({
-                  pathname: "/users/connections",
+                  pathname: "/(users)/connections",
                   params: { id: user.id, type: "followers" },
                 })
               }
@@ -179,7 +179,7 @@ export default function UserProfileScreen() {
             <TouchableOpacity
               onPress={() =>
                 router.push({
-                  pathname: "/users/connections",
+                  pathname: "/(users)/connections",
                   params: { id: user.id, type: "following" },
                 })
               }
@@ -234,8 +234,8 @@ export default function UserProfileScreen() {
               router.push({
                 pathname:
                   activeFeed === "CONTENT"
-                    ? "/users/content-feed"
-                    : "/users/reviews-feed",
+                    ? "/(users)/content-feed"
+                    : "/(users)/reviews-feed",
                 params: {
                   userId: user.id,
                   postId,

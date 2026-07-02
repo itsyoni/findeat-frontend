@@ -105,8 +105,8 @@ export default function ProfileScreen() {
             router.push({
               pathname:
                 activeFeed === "CONTENT"
-                  ? "/profile/content-feed"
-                  : "/profile/reviews-feed",
+                  ? "/(profile)/content-feed"
+                  : "/(profile)/reviews-feed",
               params: { postId },
             });
           }}

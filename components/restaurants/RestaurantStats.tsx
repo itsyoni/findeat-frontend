@@ -24,7 +24,7 @@ export default function RestaurantStats({
         className="mr-8"
         onPress={() =>
           router.push({
-            pathname: "/users/connections",
+            pathname: "/(users)/connections",
             params: { id: accountId, type: "followers" },
           })
         }
