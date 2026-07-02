@@ -8,11 +8,16 @@ import { Profile } from "@/types/profile";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
 
 export default function EditProfileScreen() {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [newCoverUri, setNewCoverUri] = useState<string | null>(null);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -35,6 +40,9 @@ export default function EditProfileScreen() {
       setAvatarUrl(data.avatarUrl ?? null);
       setUsername(data.username ?? "");
       setBio(data.bio ?? "");
+      setDisplayName(data.displayName ?? "");
+      setCoverUrl(data.coverUrl ?? null);
+      setEmail(data.email ?? "");
     } catch (error) {
       console.error(error);
     }
@@ -44,6 +52,17 @@ export default function EditProfileScreen() {
     if (!username.trim()) {
       Alert.alert("Missing username", "Username cannot be empty");
       return;
+    }
+
+    if (!displayName.trim()) {
+      Alert.alert("Missing display name", "Display name cannot be empty");
+      return;
+    }
+
+    let finalCoverUrl = coverUrl;
+
+    if (newCoverUri) {
+      finalCoverUrl = await uploadImageToCloudinary(newCoverUri);
     }
 
     try {
@@ -56,9 +75,13 @@ export default function EditProfileScreen() {
       }
 
       await api.patch("/users/me", {
+        displayName: displayName.trim(),
         username: username.trim(),
+        email: email.trim(),
+        password: password.trim() || undefined,
         bio: bio.trim() || null,
         avatarUrl: finalAvatarUrl,
+        coverUrl: finalCoverUrl,
       });
 
       await refreshUser();
@@ -155,6 +178,22 @@ export default function EditProfileScreen() {
   return (
     <ScrollView className="flex-1 bg-white">
       <View className="px-5 pb-10">
+        <TouchableOpacity
+          onPress={() => pickImage([3, 1], setNewCoverUri)}
+          className="mt-6 h-40 overflow-hidden rounded-3xl bg-gray-100"
+        >
+          {newCoverUri || coverUrl ? (
+            <Image
+              source={{ uri: newCoverUri ?? coverUrl ?? "" }}
+              className="h-full w-full"
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="h-full w-full items-center justify-center">
+              <Text className="text-gray-500">+ Add cover photo</Text>
+            </View>
+          )}
+        </TouchableOpacity>
         <TouchableOpacity onPress={pickAvatar} className={"mt-8 items-center"}>
           <Avatar uri={displayedAvatar} username={username} size={96} />
 
@@ -164,6 +203,13 @@ export default function EditProfileScreen() {
         </TouchableOpacity>
 
         <SectionTitle title={"Account"} />
+
+        <FormInput
+          label="Display name"
+          value={displayName}
+          onChangeText={setDisplayName}
+          placeholder="Display name"
+        />
 
         <FormInput
           label="Username"
@@ -179,6 +225,23 @@ export default function EditProfileScreen() {
           onChangeText={setBio}
           placeholder={"Tell people about yourself..."}
           multiline
+        />
+
+        <FormInput
+          label="Email"
+          value={email}
+          onChangeText={setEmail}
+          placeholder="Email"
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
+
+        <FormInput
+          label="New password"
+          value={password}
+          onChangeText={setPassword}
+          placeholder="Leave empty to keep current password"
+          isPassword
         />
 
         <TouchableOpacity

@@ -1,6 +1,7 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import { Post } from "@/types/post";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {
   BookBookmarkIcon,
@@ -66,6 +67,13 @@ export default function ContentPost({
     shadowRadius: 4,
     elevation: 6,
   };
+
+  const textShadow = {
+    textShadowColor: "#00000080",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
+  };
+
   function handleLike() {
     if (!post.isLiked) {
       likeScale.value = 1;
@@ -95,11 +103,30 @@ export default function ContentPost({
         />
       ) : (
         <View className="absolute inset-0 items-center justify-center bg-gray-900">
-          <Text className="px-8 text-center text-2xl font-bold text-white">
+          <Text
+            style={textShadow}
+            className="px-8 text-center text-2xl font-bold text-white"
+          >
             {description}
           </Text>
         </View>
       )}
+
+      <LinearGradient
+        colors={[
+          "transparent",
+          "rgba(0,0,0,0.01)",
+          "rgba(0,0,0,0.05)",
+          "rgba(0,0,0,0.1)",
+        ]}
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 280,
+        }}
+      />
 
       <View className="absolute bottom-8 left-4 right-20">
         <TouchableOpacity
@@ -137,11 +164,24 @@ export default function ContentPost({
           </View>
         </TouchableOpacity>
 
-        {!!post.restaurant?.name && (
-          <Text className="mb-2 text-sm font-semibold text-white">
-            <MapPinLineIcon size={20} color="#212121" weight="fill" />
-            {post.restaurant.name}
-          </Text>
+        {!!post.restaurant && (
+          <TouchableOpacity
+            className="mb-3 self-start rounded-full bg-[#00000080] px-3 py-2"
+            activeOpacity={0.8}
+            onPress={() =>
+              router.push({
+                pathname: "/restaurants/[id]",
+                params: { id: post.restaurant!.id },
+              })
+            }
+          >
+            <View className="flex-row items-center">
+              <MapPinLineIcon size={16} color="white" weight="fill" />
+              <Text className="ml-2 font-semibold text-white">
+                {post.restaurant.name}
+              </Text>
+            </View>
+          </TouchableOpacity>
         )}
 
         {!!description && (
@@ -167,7 +207,7 @@ export default function ContentPost({
             />
           </Animated.View>
 
-          <Text className="text-center text-lg text-white">
+          <Text style={textShadow} className="text-center text-lg text-white">
             {post.likesCount}
           </Text>
         </TouchableOpacity>
@@ -179,7 +219,7 @@ export default function ContentPost({
             size={35}
             style={iconShadow}
           />
-          <Text className="text-center text-lg text-white">
+          <Text style={textShadow} className="text-center text-lg text-white">
             {post.commentsCount}
           </Text>
         </TouchableOpacity>
@@ -191,7 +231,7 @@ export default function ContentPost({
             size={35}
             style={iconShadow}
           />
-          <Text className="text-center text-lg text-white">
+          <Text style={textShadow} className="text-center text-lg text-white">
             {post.commentsCount}
           </Text>
         </TouchableOpacity>
@@ -203,7 +243,7 @@ export default function ContentPost({
             style={iconShadow}
           />
 
-          <Text className="text-center text-lg text-white">
+          <Text style={textShadow} className="text-center text-lg text-white">
             {post.restaurantSavesCount}
           </Text>
         </TouchableOpacity>

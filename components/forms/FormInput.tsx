@@ -1,24 +1,17 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
+import type { TextInputProps } from "react-native";
 
-type Props = {
+type Props = TextInputProps & {
   label: string;
-  value: string;
-  onChangeText: (value: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-  autoCapitalize?: "none" | "sentences" | "words" | "characters";
-  keyboardType?: "default" | "phone-pad" | "url" | "email-address";
+  isPassword?: boolean;
 };
 
 export default function FormInput({
   label,
-  value,
-  onChangeText,
-  placeholder,
   multiline,
-  autoCapitalize,
-  keyboardType,
+  isPassword,
+  ...props
 }: Props) {
   return (
     <>
@@ -27,13 +20,9 @@ export default function FormInput({
       </Text>
 
       <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
+        {...props}
         multiline={multiline}
-        textAlignVertical={multiline ? "top" : "center"}
-        autoCapitalize={autoCapitalize}
-        keyboardType={keyboardType}
+        isPassword={isPassword}
         className={`border-0 bg-[#f8f8f8] ${multiline ? "min-h-32" : ""}`}
       />
     </>

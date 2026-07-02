@@ -46,12 +46,17 @@ export default function TextInput({
   const [hidden, setHidden] = useState(isPassword);
   const isRtl = startsWithRtl(value);
   const Input = useBottomSheetInput ? BottomSheetTextInput : RNTextInput;
+  const isMultiline = !!props.multiline;
 
   return (
     <View
-      className={`flex-row items-center rounded-2xl border border-gray-300 px-4 ${className ?? ""}`}
+      className={`flex-row rounded-2xl border border-gray-300 px-4 ${
+        isMultiline ? "items-start" : "items-center"
+      } ${className ?? ""}`}
     >
-      {leftIcon && <View className="mr-3">{leftIcon}</View>}
+      {leftIcon && (
+        <View className={`${isMultiline ? "mt-4" : ""} mr-3`}>{leftIcon}</View>
+      )}
 
       <Input
         {...props}
@@ -60,6 +65,7 @@ export default function TextInput({
         secureTextEntry={isPassword && hidden}
         placeholderTextColor={placeholderTextColor ?? "#9CA3AF"}
         textAlign={isRtl ? "right" : "left"}
+        textAlignVertical={isMultiline ? "top" : "center"}
         style={[
           {
             flex: 1,
@@ -68,6 +74,7 @@ export default function TextInput({
             color: "#000",
             fontFamily: "CabinetRegular",
             writingDirection: isRtl ? "rtl" : "ltr",
+            minHeight: isMultiline ? 120 : undefined,
           },
           style,
         ]}

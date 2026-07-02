@@ -258,7 +258,7 @@ export default function ReviewPost({
                         onPress={() =>
                           router.push({
                             pathname: "/menu-items/[id]",
-                            params: { id: item.menuItemId },
+                            params: { id: item.menuItemId as string },
                           })
                         }
                       >
@@ -301,40 +301,42 @@ export default function ReviewPost({
       )}
 
       <View className="px-4 pt-3">
-        <View className="flex-row items-center gap-5">
-          <TouchableOpacity
-            onPress={handleLike}
-            className="flex-col items-center gap-1"
-          >
-            <Animated.View style={likeAnimatedStyle}>
-              <HeartIcon
-                weight={post.isLiked ? "fill" : "regular"}
-                color={post.isLiked ? "#FF3040" : "#212121"}
-                size={28}
-              />
-            </Animated.View>
+        <View className="flex-row justify-between gap-5">
+          <View className="flex-row items-center gap-5">
+            <TouchableOpacity
+              onPress={handleLike}
+              className="flex-col items-center gap-1"
+            >
+              <Animated.View style={likeAnimatedStyle}>
+                <HeartIcon
+                  weight={post.isLiked ? "fill" : "regular"}
+                  color={post.isLiked ? "#FF3040" : "#212121"}
+                  size={28}
+                />
+              </Animated.View>
 
-            <Text className="text-base text-black">{post.likesCount}</Text>
-          </TouchableOpacity>
+              <Text className="text-base text-black">{post.likesCount}</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => onOpenComments(post.id)}
-            className="flex-col items-center gap-1"
-          >
-            <ChatCircleIcon weight="regular" color="#212121" size={28} />
-            <Text className="text-base text-black">{post.commentsCount}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => onOpenComments(post.id)}
+              className="flex-col items-center gap-1"
+            >
+              <ChatCircleIcon weight="regular" color="#212121" size={28} />
+              <Text className="text-base text-black">{post.commentsCount}</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity className="flex-col items-center gap-1">
-            <ShareFatIcon weight="regular" color="#212121" size={28} />
-            <Text className="text-base text-black">{post.commentsCount}</Text>
-          </TouchableOpacity>
+            <TouchableOpacity className="flex-col items-center gap-1">
+              <ShareFatIcon weight="regular" color="#212121" size={28} />
+              <Text className="text-base text-black">{post.commentsCount}</Text>
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity onPress={handleWantToTry}>
             <BookBookmarkIcon
               weight={isWantToTry ? "fill" : "regular"}
               color={isWantToTry ? "#F7D786" : "#212121"}
-              size={35}
+              size={28}
             />
 
             <Text className="text-center text-lg text-black">
