@@ -2,7 +2,7 @@ import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import Tabs from "@/components/common/Tabs";
 import { api } from "@/lib/api";
-import { ConnectionItem } from "@/types";
+import { ConnectionItem } from "@findeat/types";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import {

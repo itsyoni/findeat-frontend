@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
-import { SearchResultItem } from "@/types/search";
+import { SearchResultItem } from "@findeat/types/search";
 import { View } from "react-native";
 
 type Props = {

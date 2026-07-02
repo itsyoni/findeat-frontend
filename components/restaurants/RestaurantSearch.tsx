@@ -4,7 +4,7 @@ import {
   Restaurant,
   RestaurantSearchResponse,
   SelectedRestaurant,
-} from "@/types";
+} from "@findeat/types";
 import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";

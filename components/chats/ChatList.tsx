@@ -1,4 +1,4 @@
-import { Chat } from "@/types/chat";
+import { Chat } from "@findeat/types/chat";
 import { FlatList } from "react-native";
 import ChatRow from "./ChatRow";
 

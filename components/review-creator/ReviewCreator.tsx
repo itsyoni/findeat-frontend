@@ -1,7 +1,7 @@
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
-import { Dish } from "@/types";
-import { CreateReviewDraft, CreateReviewStep } from "@/types/review";
+import { Dish } from "@findeat/types";
+import { CreateReviewDraft, CreateReviewStep } from "@findeat/types/review";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, View } from "react-native";

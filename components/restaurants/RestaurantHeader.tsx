@@ -1,5 +1,5 @@
 import Avatar from "@/components/common/Avatar";
-import { Restaurant } from "@/types";
+import { Restaurant } from "@findeat/types";
 import { Image, View } from "react-native";
 import Text from "../common/AppText";
 import RestaurantFollowButton from "./RestaurantFollowButton";

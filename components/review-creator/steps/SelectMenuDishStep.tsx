@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
-import { Dish, Restaurant } from "@/types";
+import { Dish, Restaurant } from "@findeat/types";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,

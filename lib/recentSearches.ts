@@ -1,4 +1,4 @@
-import { RecentSearchItem } from "@/types";
+import { RecentSearchItem } from "@findeat/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const MAX_RECENT_SEARCHES = 10;

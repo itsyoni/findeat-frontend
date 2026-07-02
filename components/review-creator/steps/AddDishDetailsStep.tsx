@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
-import { Dish } from "@/types";
-import { ReviewDishDraft } from "@/types/review";
+import { Dish } from "@findeat/types";
+import { ReviewDishDraft } from "@findeat/types/review";
 import * as ImagePicker from "expo-image-picker";
 import { useState } from "react";
 import {

@@ -4,7 +4,7 @@ import FormInput from "@/components/forms/FormInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
-import { Profile } from "@/types/profile";
+import { Profile } from "@findeat/types/profile";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";

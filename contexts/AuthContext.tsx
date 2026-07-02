@@ -1,4 +1,4 @@
-import { AuthContextType, User } from "@/types";
+import { AuthContextType, User } from "@findeat/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../lib/api";

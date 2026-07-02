@@ -4,7 +4,7 @@ import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
-import { ManagedRestaurant, SelectedRestaurant } from "@/types";
+import { ManagedRestaurant, SelectedRestaurant } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";

@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
-import { Dish } from "@/types";
+import { Dish } from "@findeat/types";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, View } from "react-native";

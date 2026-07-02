@@ -1,4 +1,4 @@
-import { Post } from "@/types/post";
+import { Post } from "@findeat/types/post";
 import { FlatList } from "react-native";
 import ContentPost from "./ContentPost";
 

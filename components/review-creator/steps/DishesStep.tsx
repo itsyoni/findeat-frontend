@@ -1,5 +1,5 @@
 import Text from "@/components/common/AppText";
-import { ReviewDishDraft } from "@/types/review";
+import { ReviewDishDraft } from "@findeat/types/review";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import DishCard from "../components/DishCard";

@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
-import { SelectedRestaurant } from "@/types/restaurant";
+import { SelectedRestaurant } from "@findeat/types/restaurant";
 import { TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 

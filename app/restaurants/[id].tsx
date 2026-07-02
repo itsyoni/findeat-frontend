@@ -4,7 +4,7 @@ import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
 import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSection";
 import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSection";
 import { api } from "@/lib/api";
-import { Restaurant } from "@/types";
+import { Restaurant } from "@findeat/types";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import {

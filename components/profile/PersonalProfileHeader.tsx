@@ -1,5 +1,5 @@
 import Avatar from "@/components/common/Avatar";
-import { Profile } from "@/types/profile";
+import { Profile } from "@findeat/types/profile";
 import { router } from "expo-router";
 import { Image, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";

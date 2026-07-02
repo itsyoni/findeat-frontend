@@ -1,5 +1,5 @@
 import { useAuth } from "@/contexts/AuthContext";
-import { Chat } from "@/types/chat";
+import { Chat } from "@findeat/types/chat";
 import { router } from "expo-router";
 import { UsersThreeIcon } from "phosphor-react-native";
 import { TouchableOpacity, View } from "react-native";

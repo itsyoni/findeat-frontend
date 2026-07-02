@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
-import { Post } from "@/types/post";
+import { Post } from "@findeat/types/post";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {

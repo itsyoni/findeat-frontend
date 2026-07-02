@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
-import { Menu } from "@/types";
+import { Menu } from "@findeat/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {

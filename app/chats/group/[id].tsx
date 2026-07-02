@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import { api } from "@/lib/api";
-import { Chat } from "@/types/chat";
+import { Chat } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";

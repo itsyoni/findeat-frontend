@@ -1,5 +1,5 @@
 import Text from "@/components/common/AppText";
-import { ReviewDishDraft } from "@/types/review";
+import { ReviewDishDraft } from "@findeat/types/review";
 import { Image, View } from "react-native";
 
 type Props = {

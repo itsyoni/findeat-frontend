@@ -1,4 +1,4 @@
-import { Restaurant } from "@/types";
+import { Restaurant } from "@findeat/types";
 import { Image, View } from "react-native";
 import Text from "../common/AppText";
 

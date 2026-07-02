@@ -3,7 +3,7 @@ import TextInput from "@/components/common/AppTextInput";
 import Avatar from "@/components/common/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
-import { Chat, Message } from "@/types/chat";
+import { Chat, Message } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, PaperPlaneTiltIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";

@@ -5,7 +5,7 @@ import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
 import { searchFriends } from "@/lib/search";
-import { SearchResultItem } from "@/types/search";
+import { SearchResultItem } from "@findeat/types/search";
 import { router, Stack } from "expo-router";
 import { CaretLeftIcon, CheckIcon } from "phosphor-react-native";
 import { useState } from "react";

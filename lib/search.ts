@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { SearchResultItem } from "@/types/search";
+import { SearchResultItem } from "@findeat/types/search";
 
 function sortSearchResults(items: SearchResultItem[]) {
   const priority = {

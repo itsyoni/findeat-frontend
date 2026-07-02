@@ -1,7 +1,7 @@
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { api } from "@/lib/api";
-import { Post } from "@/types/post";
+import { Post } from "@findeat/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";

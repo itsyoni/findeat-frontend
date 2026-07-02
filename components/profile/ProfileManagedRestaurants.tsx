@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
-import { Profile } from "@/types/profile";
+import { Profile } from "@findeat/types/profile";
 import { router } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
 

@@ -5,7 +5,11 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@findeat/types": ["../../packages/types/index.ts"],
+      "@findeat/types/*": ["../../packages/types/*"],
+      "@findeat/utils/*": ["../../packages/utils/*"],
+      "@findeat/api/*": ["../../packages/api/*"]
     }
   },
   "include": [

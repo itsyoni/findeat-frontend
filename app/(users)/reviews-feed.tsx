@@ -1,7 +1,7 @@
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import FeedPostList from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
-import { Post } from "@/types/post";
+import { Post } from "@findeat/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState } from "react";

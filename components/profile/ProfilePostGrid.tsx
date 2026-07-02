@@ -1,4 +1,4 @@
-import { Post } from "@/types/post";
+import { Post } from "@findeat/types/post";
 import { Image, Pressable, View } from "react-native";
 import Text from "../common/AppText";
 

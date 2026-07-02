@@ -6,7 +6,7 @@ import {
   getRecentSearches,
   removeRecentSearch,
 } from "@/lib/recentSearches";
-import { RecentSearchItem, UserSummary } from "@/types";
+import { RecentSearchItem, UserSummary } from "@findeat/types";
 import { router } from "expo-router";
 import { XIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";

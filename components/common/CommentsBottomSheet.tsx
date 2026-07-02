@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { Comment } from "@/types";
+import { Comment } from "@findeat/types";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
