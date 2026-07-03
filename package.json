@@ -1,0 +1,15 @@
+{
+  "name": "findeat-frontend",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "mobile": "npm --workspace apps/mobile run start",
+    "web": "npm --workspace apps/web run dev",
+    "build:web": "npm --workspace apps/web run build",
+    "typecheck:mobile": "npm --workspace apps/mobile run typecheck",
+    "typecheck:web": "npm --workspace apps/web run typecheck"
+}
+}
