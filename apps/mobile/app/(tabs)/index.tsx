@@ -7,7 +7,7 @@ import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { searchGlobal } from "@/lib/search";
+import { searchGlobal } from "@/services/search";
 import { Post, PostType } from "@findeat/types/post";
 import { SearchResultItem } from "@findeat/types/search";
 import BottomSheet from "@gorhom/bottom-sheet";

@@ -1,5 +1,6 @@
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
+import { getErrorMessage, removeById } from "@findeat/utils";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import {
@@ -37,9 +38,9 @@ export default function AdminClaimsScreen() {
     try {
       const claims = await api.restaurants.pendingClaims();
       setClaims(claims);
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert("Error", "Could not load claims");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not load claims"));
     } finally {
       setLoading(false);
     }
@@ -48,21 +49,20 @@ export default function AdminClaimsScreen() {
   async function approveClaim(claimId: string) {
     try {
       await api.restaurants.approveClaim(claimId);
-      setClaims((prev) => prev.filter((claim) => claim.id !== claimId));
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert("Error", "Could not approve claim");
+      setClaims((prev) => removeById(prev, claimId));
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not approve claim"));
     }
   }
 
   async function rejectClaim(claimId: string) {
     try {
       await api.restaurants.rejectClaim(claimId, "Rejected by admin");
-
-      setClaims((prev) => prev.filter((claim) => claim.id !== claimId));
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert("Error", "Could not reject claim");
+      setClaims((prev) => removeById(prev, claimId));
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not reject claim"));
     }
   }
 

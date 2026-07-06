@@ -1,6 +1,7 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
+import { getErrorMessage } from "@findeat/utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
@@ -33,7 +34,7 @@ export default function CreateMenuScreen() {
       router.back();
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not create menu");
+      Alert.alert("Error", getErrorMessage(error, "Could not create menu"));
     } finally {
       setLoading(false);
     }

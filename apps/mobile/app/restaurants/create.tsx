@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -51,11 +51,11 @@ export default function CreateRestaurantScreen() {
       let coverUrl: string | undefined;
 
       if (avatarUri) {
-        avatarUrl = await uploadImageToCloudinary(avatarUri);
+        avatarUrl = await uploadImage(avatarUri);
       }
 
       if (coverUri) {
-        coverUrl = await uploadImageToCloudinary(coverUri);
+        coverUrl = await uploadImage(coverUri);
       }
 
       await api.restaurants.create({

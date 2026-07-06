@@ -3,7 +3,7 @@ import TextInput from "@/components/common/AppTextInput";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { ManagedRestaurant, SelectedRestaurant } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -93,7 +93,7 @@ export default function CreateContentScreen() {
       let imageUrl: string | undefined;
 
       if (imageUri) {
-        imageUrl = await uploadImageToCloudinary(imageUri);
+        imageUrl = await uploadImage(imageUri);
       }
 
       const restaurantId =
@@ -128,13 +128,10 @@ export default function CreateContentScreen() {
           refresh: Date.now().toString(),
         },
       });
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
+    } catch (error) {
+      console.error(error);
 
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not create post",
-      );
+      Alert.alert("Error", getErrorMessage(error, "Could not create post"));
     } finally {
       setLoading(false);
     }

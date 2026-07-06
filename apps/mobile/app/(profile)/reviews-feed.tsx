@@ -2,6 +2,7 @@ import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import FeedPostList from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";
+import { filterPostsByType } from "@findeat/utils/posts";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
@@ -17,7 +18,7 @@ export default function ProfileReviewsFeedScreen() {
     try {
       const profile = await api.users.me();
 
-      setPosts(profile.posts.filter((post: Post) => post.type === "REVIEW"));
+      setPosts(filterPostsByType(profile.posts, "REVIEW"));
     } finally {
       setLoading(false);
     }

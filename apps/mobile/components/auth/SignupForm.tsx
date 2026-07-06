@@ -3,6 +3,7 @@ import TextInput from "@/components/common/AppTextInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { SignupFormData, signupSchema } from "@/lib/validation/auth";
+import { getErrorMessage } from "@findeat/utils/index";
 import { AtIcon, EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
@@ -59,16 +60,13 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         data.password,
         `${data.firstName} ${data.lastName}`.trim(),
       );
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof ZodError) {
         Alert.alert("Invalid details", error.issues[0]?.message);
         return;
       }
 
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not create account",
-      );
+      Alert.alert("Error", getErrorMessage(error, "Could not create account"));
     } finally {
       setLoading(false);
     }

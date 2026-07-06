@@ -1,6 +1,7 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
+import { getErrorMessage } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
@@ -41,12 +42,9 @@ export default function EditMenuSectionScreen() {
       });
 
       router.back();
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not update section",
-      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not update section"));
     } finally {
       setLoading(false);
     }
@@ -76,11 +74,11 @@ export default function EditMenuSectionScreen() {
               await api.menu.deleteMenu(params.id);
 
               router.back();
-            } catch (error: any) {
-              console.error(error.response?.data ?? error);
+            } catch (error) {
+              console.error(error);
               Alert.alert(
                 "Error",
-                error.response?.data?.message ?? "Could not delete section",
+                getErrorMessage(error, "Could not delete section"),
               );
             } finally {
               setLoading(false);

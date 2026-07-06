@@ -6,6 +6,13 @@ import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
 import { api } from "@/lib/api";
 import { Profile } from "@findeat/types";
 import { PostType } from "@findeat/types/post";
+import {
+  filterPostsByType,
+  getRelationshipButtonColor,
+  getRelationshipButtonText,
+  isFollowingRelationship,
+  isFriendRelationship,
+} from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -18,9 +25,10 @@ export default function UserProfileScreen() {
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [loading, setLoading] = useState(true);
 
-  const posts = useMemo(() => {
-    return user?.posts?.filter((post) => post.type === activeFeed) ?? [];
-  }, [user, activeFeed]);
+  const posts = useMemo(
+    () => filterPostsByType(user?.posts, activeFeed),
+    [user, activeFeed],
+  );
 
   const loadUser = useCallback(async () => {
     try {
@@ -41,8 +49,7 @@ export default function UserProfileScreen() {
     if (!user) return;
 
     try {
-      const shouldUnfollow =
-        user.relationship === "FOLLOWING" || user.relationship === "FRIENDS";
+      const shouldUnfollow = isFollowingRelationship(user.relationship);
 
       const result = shouldUnfollow
         ? await api.users.unfollow(user.id)
@@ -53,9 +60,7 @@ export default function UserProfileScreen() {
           ? {
               ...currentUser,
               relationship: result.relationship,
-              isFollowing:
-                result.relationship === "FOLLOWING" ||
-                result.relationship === "FRIENDS",
+              isFollowing: isFollowingRelationship(result.relationship),
               followersCount: shouldUnfollow
                 ? Math.max(0, currentUser.followersCount - 1)
                 : currentUser.followersCount + 1,
@@ -79,19 +84,6 @@ export default function UserProfileScreen() {
       });
     } catch (error) {
       console.error(error);
-    }
-  }
-
-  function getFollowButtonText(relationship?: string) {
-    switch (relationship) {
-      case "FRIENDS":
-        return "Friends";
-      case "FOLLOWING":
-        return "Following";
-      case "FOLLOWED_BY":
-        return "Follow back";
-      default:
-        return "Follow";
     }
   }
 
@@ -191,21 +183,19 @@ export default function UserProfileScreen() {
 
           <View className="mt-6 flex-row gap-3">
             <TouchableOpacity
-              className={`flex-1 rounded-2xl py-4 ${
-                user.relationship === "FRIENDS"
-                  ? "bg-[#F7D786]"
-                  : user.relationship === "FOLLOWING"
-                    ? "bg-gray-900"
-                    : "bg-black"
-              }`}
+              className={`flex-1 rounded-2xl py-4 ${getRelationshipButtonColor(
+                user.relationship,
+              )}`}
               onPress={toggleFollow}
             >
               <Text
                 className={`text-center font-bold ${
-                  user.relationship === "FRIENDS" ? "text-black" : "text-white"
+                  isFriendRelationship(user.relationship)
+                    ? "text-black"
+                    : "text-white"
                 }`}
               >
-                {getFollowButtonText(user.relationship)}
+                {getRelationshipButtonText(user.relationship)}
               </Text>
             </TouchableOpacity>
 

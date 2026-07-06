@@ -3,7 +3,7 @@ import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
-import { searchFriends } from "@/lib/search";
+import { searchFriends } from "@/services/search";
 import { SearchResultItem } from "@findeat/types/search";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";

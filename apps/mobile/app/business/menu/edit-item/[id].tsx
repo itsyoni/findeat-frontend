@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -74,7 +74,7 @@ export default function EditMenuItemScreen() {
       let finalImageUrl = imageUrl;
 
       if (newImageUri) {
-        finalImageUrl = await uploadImageToCloudinary(newImageUri);
+        finalImageUrl = await uploadImage(newImageUri);
       }
 
       await api.menu.updateDish(params.id, {
@@ -88,12 +88,10 @@ export default function EditMenuItemScreen() {
       });
 
       router.back();
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not update dish",
-      );
+    } catch (error) {
+      console.error(error);
+
+      Alert.alert("Error", getErrorMessage(error, "Could not update dish"));
     } finally {
       setLoading(false);
     }
@@ -112,9 +110,12 @@ export default function EditMenuItemScreen() {
             await api.menu.deleteDish(params.id);
 
             router.back();
-          } catch (error: any) {
-            console.error(error.response?.data ?? error);
-            Alert.alert("Error", "Could not delete dish");
+          } catch (error) {
+            console.error(error);
+            Alert.alert(
+              "Error",
+              getErrorMessage(error, "Could not delete dish"),
+            );
           } finally {
             setLoading(false);
           }

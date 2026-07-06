@@ -6,6 +6,7 @@ import { api } from "@/lib/api";
 import { PostType } from "@findeat/types/post";
 import { Profile } from "@findeat/types/profile";
 import { ManagedRestaurant } from "@findeat/types/restaurant";
+import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
@@ -18,9 +19,10 @@ export default function ProfileScreen() {
     ManagedRestaurant[]
   >([]);
 
-  const posts = useMemo(() => {
-    return profile?.posts?.filter((post) => post.type === activeFeed) ?? [];
-  }, [profile, activeFeed]);
+  const posts = useMemo(
+    () => filterPostsByType(profile?.posts, activeFeed),
+    [profile?.posts, activeFeed],
+  );
 
   useFocusEffect(
     useCallback(() => {

@@ -5,6 +5,7 @@ import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSectio
 import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSection";
 import { api } from "@/lib/api";
 import { Restaurant } from "@findeat/types";
+import { filterPostsByType, getErrorMessage } from "@findeat/utils";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -141,12 +142,9 @@ export default function RestaurantScreen() {
         "Request sent",
         "Your request was sent. We’ll review it soon.",
       );
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not send request",
-      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not send request"));
     }
   }
 
@@ -158,13 +156,15 @@ export default function RestaurantScreen() {
       .filter((item) => item.isFeatured);
   }, [restaurant]);
 
-  const contentPosts = useMemo(() => {
-    return restaurant?.posts.filter((post) => post.type === "CONTENT") ?? [];
-  }, [restaurant]);
+  const contentPosts = useMemo(
+    () => filterPostsByType(restaurant?.posts, "CONTENT"),
+    [restaurant?.posts],
+  );
 
-  const reviewPosts = useMemo(() => {
-    return restaurant?.posts.filter((post) => post.type === "REVIEW") ?? [];
-  }, [restaurant]);
+  const reviewPosts = useMemo(
+    () => filterPostsByType(restaurant?.posts, "REVIEW"),
+    [restaurant?.posts],
+  );
 
   if (loading) {
     return (

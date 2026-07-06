@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { Menu } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
@@ -55,9 +55,7 @@ export default function ManageMenuScreen() {
       return;
     }
 
-    const imageUrl = dishImageUri
-      ? await uploadImageToCloudinary(dishImageUri)
-      : undefined;
+    const imageUrl = dishImageUri ? await uploadImage(dishImageUri) : undefined;
 
     try {
       setCreating(true);
@@ -77,7 +75,7 @@ export default function ManageMenuScreen() {
       await loadMenu();
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not add dish");
+      Alert.alert("Error", getErrorMessage(error, "Could not add dish"));
     } finally {
       setCreating(false);
     }

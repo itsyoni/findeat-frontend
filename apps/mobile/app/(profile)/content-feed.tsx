@@ -2,6 +2,7 @@ import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";
+import { filterPostsByType } from "@findeat/utils/posts";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
@@ -35,7 +36,7 @@ export default function ProfileContentFeedScreen() {
     try {
       const profile = await api.users.me();
 
-      setPosts(profile.posts.filter((post: Post) => post.type === "CONTENT"));
+      setPosts(filterPostsByType(profile.posts, "CONTENT"));
     } finally {
       setLoading(false);
     }

@@ -3,7 +3,7 @@ import Avatar from "@/components/common/Avatar";
 import FormInput from "@/components/forms/FormInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -61,11 +61,10 @@ export default function EditProfileScreen() {
       setLoading(true);
 
       const finalCoverUrl = newCoverUri
-        ? await uploadImageToCloudinary(newCoverUri)
+        ? await uploadImage(newCoverUri)
         : coverUrl;
-
       const finalAvatarUrl = newAvatarUri
-        ? await uploadImageToCloudinary(newAvatarUri)
+        ? await uploadImage(newAvatarUri)
         : avatarUrl;
 
       await api.users.updateMe({
@@ -82,7 +81,8 @@ export default function EditProfileScreen() {
       router.back();
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not update profile");
+
+      Alert.alert("Error", getErrorMessage(error, "Could not update profile"));
     } finally {
       setLoading(false);
     }
@@ -141,7 +141,10 @@ export default function EditProfileScreen() {
         setNewAvatarUri(null);
       } catch (error) {
         console.error(error);
-        Alert.alert("Error", "Could not remove profile picture.");
+        Alert.alert(
+          "Error",
+          getErrorMessage(error, "Could not remove profile picture."),
+        );
       }
     }
 
