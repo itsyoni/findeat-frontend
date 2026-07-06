@@ -25,7 +25,7 @@ export default function CreateMenuScreen() {
     try {
       setLoading(true);
 
-      await api.post("/business/menus", {
+      await api.menu.createMenu({
         title: title.trim(),
         description: description.trim() || undefined,
       });

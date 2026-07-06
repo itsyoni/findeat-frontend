@@ -7,7 +7,7 @@ import { searchFriends } from "@/lib/search";
 import { SearchResultItem } from "@findeat/types/search";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -24,16 +24,12 @@ export default function AddGroupMembersScreen() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
 
-  useEffect(() => {
-    loadGroup();
-  }, [id]);
-
-  async function loadGroup() {
+  const loadGroup = useCallback(async () => {
     try {
-      const res = await api.get(`/chats/${id}`);
+      const chat = await api.chats.get(id);
 
       setExistingMemberIds(
-        res.data.participants.map((participant: { userId: string }) => {
+        chat.participants.map((participant: { userId: string }) => {
           return participant.userId;
         }),
       );
@@ -42,7 +38,11 @@ export default function AddGroupMembersScreen() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    void loadGroup();
+  }, [loadGroup]);
 
   async function searchAvailableFriends(query: string) {
     const friends = await searchFriends(query);
@@ -73,9 +73,10 @@ export default function AddGroupMembersScreen() {
     try {
       setAdding(true);
 
-      await api.post(`/chats/${id}/members`, {
-        participantIds: selectedUsers.map((user) => user.id),
-      });
+      await api.chats.addMembers(
+        id,
+        selectedUsers.map((user) => user.id),
+      );
 
       router.back();
     } catch (error) {

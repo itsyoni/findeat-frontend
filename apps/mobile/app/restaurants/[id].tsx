@@ -6,7 +6,7 @@ import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSect
 import { api } from "@/lib/api";
 import { Restaurant } from "@findeat/types";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -23,20 +23,20 @@ export default function RestaurantScreen() {
   const [activeTab, setActiveTab] = useState<RestaurantTab>("CONTENT");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadRestaurant();
-  }, [id]);
-
-  async function loadRestaurant() {
+  const loadRestaurant = useCallback(async () => {
     try {
-      const res = await api.get(`/restaurants/${id}`);
-      setRestaurant(res.data);
+      const restaurant = await api.restaurants.get(id);
+      setRestaurant(restaurant);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    void loadRestaurant();
+  }, [loadRestaurant]);
 
   async function toggleFollow() {
     if (!restaurant) return;
@@ -55,9 +55,9 @@ export default function RestaurantScreen() {
 
     try {
       if (wasFollowing) {
-        await api.delete(`/restaurants/${restaurant.id}/follow`);
+        await api.restaurants.unfollow(restaurant.id);
       } else {
-        await api.post(`/restaurants/${restaurant.id}/follow`);
+        await api.restaurants.follow(restaurant.id);
       }
     } catch {
       setRestaurant((prev) =>
@@ -96,7 +96,7 @@ export default function RestaurantScreen() {
   async function markVisited() {
     if (!restaurant) return;
 
-    await api.post(`/restaurants/${restaurant.id}/visited`);
+    await api.restaurants.visited(restaurant.id);
 
     updateRestaurantStatus({
       visited: true,
@@ -110,10 +110,10 @@ export default function RestaurantScreen() {
     const isFavorite = restaurant.userRestaurant?.favorite === true;
 
     if (isFavorite) {
-      await api.delete(`/restaurants/${restaurant.id}/favorite`);
+      await api.restaurants.removeFavorite(restaurant.id);
       updateRestaurantStatus({ favorite: false });
     } else {
-      await api.post(`/restaurants/${restaurant.id}/favorite`);
+      await api.restaurants.favorite(restaurant.id);
       updateRestaurantStatus({
         favorite: true,
         visited: true,
@@ -126,7 +126,7 @@ export default function RestaurantScreen() {
     if (!restaurant) return;
 
     try {
-      await api.post(`/restaurants/${restaurant.id}/start-claim`);
+      await api.restaurants.startClaim(restaurant.id);
 
       setRestaurant((prev) =>
         prev

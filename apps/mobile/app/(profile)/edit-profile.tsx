@@ -4,7 +4,6 @@ import FormInput from "@/components/forms/FormInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { uploadImageToCloudinary } from "@/lib/uploadImage";
-import { Profile } from "@findeat/types/profile";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
@@ -34,8 +33,7 @@ export default function EditProfileScreen() {
 
   async function loadProfile() {
     try {
-      const res = await api.get("/users/me");
-      const data: Profile = res.data;
+      const data = await api.users.me();
 
       setAvatarUrl(data.avatarUrl ?? null);
       setUsername(data.username ?? "");
@@ -59,28 +57,24 @@ export default function EditProfileScreen() {
       return;
     }
 
-    let finalCoverUrl = coverUrl;
-
-    if (newCoverUri) {
-      finalCoverUrl = await uploadImageToCloudinary(newCoverUri);
-    }
-
     try {
       setLoading(true);
 
-      let finalAvatarUrl = avatarUrl;
+      const finalCoverUrl = newCoverUri
+        ? await uploadImageToCloudinary(newCoverUri)
+        : coverUrl;
 
-      if (newAvatarUri) {
-        finalAvatarUrl = await uploadImageToCloudinary(newAvatarUri);
-      }
+      const finalAvatarUrl = newAvatarUri
+        ? await uploadImageToCloudinary(newAvatarUri)
+        : avatarUrl;
 
-      await api.patch("/users/me", {
+      await api.users.updateMe({
         displayName: displayName.trim(),
         username: username.trim(),
         email: email.trim(),
         password: password.trim() || undefined,
         bio: bio.trim() || null,
-        avatarUrl: finalAvatarUrl,
+        avatarUrl: finalAvatarUrl ?? undefined,
         coverUrl: finalCoverUrl,
       });
 
@@ -141,9 +135,9 @@ export default function EditProfileScreen() {
 
     async function removeProfilePicture() {
       try {
-        const res = await api.delete("/users/me/avatar");
+        const result = await api.users.removeAvatar();
 
-        setAvatarUrl(res.data.avatarUrl);
+        setAvatarUrl(result.avatarUrl);
         setNewAvatarUri(null);
       } catch (error) {
         console.error(error);

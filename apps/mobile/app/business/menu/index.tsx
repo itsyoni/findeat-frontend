@@ -15,22 +15,22 @@ export default function BusinessMenuScreen() {
   const [loading, setLoading] = useState(true);
   const [menus, setMenus] = useState<Menu[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadBusiness();
-    }, []),
-  );
-
-  async function loadBusiness() {
+  const loadBusiness = useCallback(async () => {
     try {
-      const res = await api.get("/business/menus");
-      setMenus(res.data);
+      const menus = await api.menu.myMenus();
+      setMenus(menus);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadBusiness();
+    }, [loadBusiness]),
+  );
 
   if (loading) {
     return (

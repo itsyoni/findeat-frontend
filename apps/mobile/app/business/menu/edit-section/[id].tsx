@@ -35,7 +35,7 @@ export default function EditMenuSectionScreen() {
     try {
       setLoading(true);
 
-      await api.patch(`/business/menus/${params.id}`, {
+      await api.menu.updateMenu(params.id, {
         title: title.trim(),
         description: description.trim() || null,
       });
@@ -72,7 +72,9 @@ export default function EditMenuSectionScreen() {
           onPress: async () => {
             try {
               setLoading(true);
-              await api.delete(`/business/menus/${params.id}`);
+
+              await api.menu.deleteMenu(params.id);
+
               router.back();
             } catch (error: any) {
               console.error(error.response?.data ?? error);

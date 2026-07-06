@@ -24,8 +24,8 @@ export default function UserProfileScreen() {
 
   const loadUser = useCallback(async () => {
     try {
-      const res = await api.get(`/users/${id}`);
-      setUser(res.data);
+      const user = await api.users.get(id as string);
+      setUser(user);
     } catch (error) {
       console.error(error);
     } finally {
@@ -44,18 +44,18 @@ export default function UserProfileScreen() {
       const shouldUnfollow =
         user.relationship === "FOLLOWING" || user.relationship === "FRIENDS";
 
-      const res = shouldUnfollow
-        ? await api.delete(`/users/${user.id}/follow`)
-        : await api.post(`/users/${user.id}/follow`);
+      const result = shouldUnfollow
+        ? await api.users.unfollow(user.id)
+        : await api.users.follow(user.id);
 
       setUser((currentUser) =>
         currentUser
           ? {
               ...currentUser,
-              relationship: res.data.relationship,
+              relationship: result.relationship,
               isFollowing:
-                res.data.relationship === "FOLLOWING" ||
-                res.data.relationship === "FRIENDS",
+                result.relationship === "FOLLOWING" ||
+                result.relationship === "FRIENDS",
               followersCount: shouldUnfollow
                 ? Math.max(0, currentUser.followersCount - 1)
                 : currentUser.followersCount + 1,
@@ -71,11 +71,11 @@ export default function UserProfileScreen() {
     if (!user) return;
 
     try {
-      const res = await api.post(`/chats/start/${user.id}`);
+      const chat = await api.chats.startDirectConversation(user.id);
 
       router.push({
         pathname: "/chats/[id]",
-        params: { id: res.data.id },
+        params: { id: chat.id },
       });
     } catch (error) {
       console.error(error);

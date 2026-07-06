@@ -31,8 +31,8 @@ export default function ManageMenuScreen() {
     if (!id) return;
 
     try {
-      const res = await api.get(`/business/menus/${id}`);
-      setMenu(res.data);
+      const menu = await api.menu.getMenu(id);
+      setMenu(menu);
     } catch (error) {
       console.error(error);
     } finally {
@@ -41,25 +41,28 @@ export default function ManageMenuScreen() {
   }, [id]);
 
   async function addDish() {
+    if (!id) return;
+
     if (!dishName.trim()) {
       Alert.alert("Missing name", "Dish name is required");
       return;
     }
 
     const parsedPrice = dishPrice.trim() ? Number(dishPrice) : undefined;
-    const imageUrl = dishImageUri
-      ? await uploadImageToCloudinary(dishImageUri)
-      : undefined;
 
     if (dishPrice.trim() && Number.isNaN(parsedPrice)) {
       Alert.alert("Invalid price", "Price must be a number");
       return;
     }
 
+    const imageUrl = dishImageUri
+      ? await uploadImageToCloudinary(dishImageUri)
+      : undefined;
+
     try {
       setCreating(true);
 
-      await api.post(`/business/menus/${id}/dishes`, {
+      await api.menu.createDish(id, {
         name: dishName.trim(),
         description: dishDescription.trim() || undefined,
         price: parsedPrice,

@@ -15,8 +15,9 @@ export default function ProfileReviewsFeedScreen() {
 
   async function loadPosts() {
     try {
-      const res = await api.get("/users/me");
-      setPosts(res.data.posts.filter((post: Post) => post.type === "REVIEW"));
+      const profile = await api.users.me();
+
+      setPosts(profile.posts.filter((post: Post) => post.type === "REVIEW"));
     } finally {
       setLoading(false);
     }
@@ -24,9 +25,9 @@ export default function ProfileReviewsFeedScreen() {
 
   async function toggleLike(postId: string, isLiked: boolean) {
     if (isLiked) {
-      await api.delete(`/posts/${postId}/like`);
+      await api.posts.unlike(postId);
     } else {
-      await api.post(`/posts/${postId}/like`);
+      await api.posts.like(postId);
     }
 
     await loadPosts();
@@ -43,11 +44,9 @@ export default function ProfileReviewsFeedScreen() {
     isWantToTry: boolean,
   ) {
     if (isWantToTry) {
-      await api.delete(`/restaurants/${restaurantId}/want-to-try`);
+      await api.restaurants.removeWantToTry(restaurantId);
     } else {
-      await api.post(`/restaurants/${restaurantId}/want-to-try`, {
-        savedFromPostId: postId,
-      });
+      await api.restaurants.wantToTry(restaurantId, postId);
     }
 
     await loadPosts();

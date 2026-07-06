@@ -27,8 +27,8 @@ export default function ChatsScreen() {
 
   async function loadChats() {
     try {
-      const res = await api.get("/chats");
-      setChats(res.data);
+      const chats = await api.chats.list();
+      setChats(chats);
     } catch (error) {
       console.error(error);
     } finally {

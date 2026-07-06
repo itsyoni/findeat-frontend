@@ -1,0 +1,162 @@
+import type {
+  ManagedRestaurant,
+  Restaurant,
+  RestaurantSearchResponse,
+} from "@findeat/types";
+import type { AxiosInstance } from "axios";
+
+export function createRestaurantsApi(api: AxiosInstance) {
+  return {
+    async mine() {
+      const { data } = await api.get<ManagedRestaurant[]>("/restaurants/me");
+      return data;
+    },
+
+    async create(payload: {
+      name: string;
+      city?: string | null;
+      address?: string | null;
+      description?: string | null;
+      avatarUrl?: string | null;
+      coverUrl?: string | null;
+    }) {
+      const { data } = await api.post<Restaurant>("/restaurants", payload);
+      return data;
+    },
+
+    async updateMine(payload: {
+      name?: string;
+      address?: string | null;
+      city?: string | null;
+      coverUrl?: string | null;
+      phone?: string | null;
+      website?: string | null;
+      instagram?: string | null;
+    }) {
+      const { data } = await api.patch<Restaurant>("/restaurants/me", payload);
+      return data;
+    },
+
+    async search(query: string) {
+      const { data } = await api.get<RestaurantSearchResponse>(
+        "/restaurants/search",
+        { params: { q: query } },
+      );
+
+      return data;
+    },
+
+    async searchFindEat(query: string) {
+      const { data } = await api.get<Restaurant[]>(
+        "/restaurants/search/findeat",
+        {
+          params: { q: query },
+        },
+      );
+
+      return data;
+    },
+
+    async savedMine() {
+      const { data } = await api.get("/restaurants/saved/me");
+      return data;
+    },
+
+    async allWithLocation() {
+      const { data } = await api.get<Restaurant[]>("/restaurants");
+      return data;
+    },
+
+    async follow(id: string) {
+      const { data } = await api.post(`/restaurants/${id}/follow`);
+      return data;
+    },
+
+    async unfollow(id: string) {
+      const { data } = await api.delete(`/restaurants/${id}/follow`);
+      return data;
+    },
+
+    async fromGoogle(payload: {
+      name: string;
+      address?: string | null;
+      city?: string | null;
+      latitude?: number | null;
+      longitude?: number | null;
+      googlePlaceId: string;
+    }) {
+      const { data } = await api.post<Restaurant>(
+        "/restaurants/from-google",
+        payload,
+      );
+
+      return data;
+    },
+
+    async pendingClaims() {
+      const { data } = await api.get("/restaurants/claims/pending");
+      return data;
+    },
+
+    async approveClaim(claimId: string) {
+      const { data } = await api.post(`/restaurants/claims/${claimId}/approve`);
+      return data;
+    },
+
+    async rejectClaim(claimId: string, reason?: string) {
+      const { data } = await api.post(`/restaurants/claims/${claimId}/reject`, {
+        reason,
+      });
+
+      return data;
+    },
+
+    async startClaim(id: string) {
+      const { data } = await api.post(`/restaurants/${id}/start-claim`);
+      return data;
+    },
+
+    async get(id: string) {
+      const { data } = await api.get<Restaurant>(`/restaurants/${id}`);
+      return data;
+    },
+
+    async wantToTry(id: string, savedFromPostId?: string) {
+      const { data } = await api.post(`/restaurants/${id}/want-to-try`, {
+        savedFromPostId,
+      });
+
+      return data;
+    },
+
+    async removeWantToTry(id: string) {
+      const { data } = await api.delete(`/restaurants/${id}/want-to-try`);
+      return data;
+    },
+
+    async visited(id: string) {
+      const { data } = await api.post(`/restaurants/${id}/visited`);
+      return data;
+    },
+
+    async favorite(id: string) {
+      const { data } = await api.post(`/restaurants/${id}/favorite`);
+      return data;
+    },
+
+    async removeFavorite(id: string) {
+      const { data } = await api.delete(`/restaurants/${id}/favorite`);
+      return data;
+    },
+
+    async toggleWantToTry(
+      id: string,
+      isWantToTry: boolean,
+      savedFromPostId?: string,
+    ) {
+      return isWantToTry
+        ? this.removeWantToTry(id)
+        : this.wantToTry(id, savedFromPostId);
+    },
+  };
+}

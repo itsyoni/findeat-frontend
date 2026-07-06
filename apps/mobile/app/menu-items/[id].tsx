@@ -2,7 +2,7 @@ import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Dish } from "@findeat/types";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,20 +11,20 @@ export default function MenuItemScreen() {
   const [dish, setDish] = useState<Dish | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDish();
-  }, [id]);
-
-  async function loadDish() {
+  const loadDish = useCallback(async () => {
     try {
-      const res = await api.get(`/menu-items/${id}`);
-      setDish(res.data);
+      const dish = await api.menu.getDish(id);
+      setDish(dish);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    void loadDish();
+  }, [loadDish]);
 
   if (loading) {
     return (

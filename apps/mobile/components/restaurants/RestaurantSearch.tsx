@@ -2,7 +2,6 @@ import { api } from "@/lib/api";
 import {
   GoogleRestaurantSuggestion,
   Restaurant,
-  RestaurantSearchResponse,
   SelectedRestaurant,
 } from "@findeat/types";
 import { useState } from "react";
@@ -36,12 +35,10 @@ export default function RestaurantSearch({
       return;
     }
 
-    const res = await api.get<RestaurantSearchResponse>(
-      `/restaurants/search?q=${encodeURIComponent(text)}`,
-    );
+    const results = await api.restaurants.search(text);
 
-    setFindeatRestaurants(res.data.findeat ?? []);
-    setGoogleRestaurants(res.data.google ?? []);
+    setFindeatRestaurants(results.findeat ?? []);
+    setGoogleRestaurants(results.google ?? []);
   }
 
   const selectedName =

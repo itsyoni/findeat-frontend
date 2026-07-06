@@ -21,44 +21,46 @@ function sortSearchResults(items: SearchResultItem[]) {
 export async function searchFriends(
   query: string,
 ): Promise<SearchResultItem[]> {
-  const res = await api.get(
-    `/users/friends/search?q=${encodeURIComponent(query)}`,
-  );
+  const users = await api.users.searchFriends(query);
 
-  return res.data.map((user: any) => ({
-    id: user.id,
-    type: "USER",
-    title: `@${user.username}`,
-    subtitle: user.displayName,
-    imageUrl: user.avatarUrl,
-    relationship: "FRIENDS",
-  }));
+  return users.map(
+    (user): SearchResultItem => ({
+      id: user.id,
+      type: "USER",
+      title: `@${user.username}`,
+      subtitle: user.displayName ?? undefined,
+      imageUrl: user.avatarUrl ?? null,
+      relationship: "FRIENDS",
+    }),
+  );
 }
 
 export async function searchGlobal(query: string): Promise<SearchResultItem[]> {
-  const [usersRes, restaurantsRes] = await Promise.all([
-    api.get(`/users/search?q=${encodeURIComponent(query)}`),
-    api.get(`/restaurants/search/findeat?q=${encodeURIComponent(query)}`),
+  const [users, restaurants] = await Promise.all([
+    api.users.search(query),
+    api.restaurants.searchFindEat(query),
   ]);
 
-  const users: SearchResultItem[] = usersRes.data.map((user: any) => ({
-    id: user.id,
-    type: "USER",
-    title: `@${user.username}`,
-    subtitle: user.displayName,
-    imageUrl: user.avatarUrl,
-    relationship: user.relationship,
-  }));
-
-  const restaurants: SearchResultItem[] = restaurantsRes.data.map(
-    (restaurant: any) => ({
-      id: restaurant.id,
-      type: "RESTAURANT",
-      title: restaurant.name,
-      subtitle: restaurant.address || restaurant.city,
-      imageUrl: restaurant.logoUrl,
+  const mappedUsers: SearchResultItem[] = users.map(
+    (user): SearchResultItem => ({
+      id: user.id,
+      type: "USER",
+      title: `@${user.username}`,
+      subtitle: user.displayName ?? undefined,
+      imageUrl: user.avatarUrl ?? null,
+      relationship: user.relationship,
     }),
   );
 
-  return [...sortSearchResults(users), ...restaurants];
+  const mappedRestaurants: SearchResultItem[] = restaurants.map(
+    (restaurant): SearchResultItem => ({
+      id: restaurant.id,
+      type: "RESTAURANT",
+      title: restaurant.name,
+      subtitle: restaurant.address ?? restaurant.city ?? undefined,
+      imageUrl: restaurant.logoUrl ?? null,
+    }),
+  );
+
+  return [...sortSearchResults(mappedUsers), ...mappedRestaurants];
 }

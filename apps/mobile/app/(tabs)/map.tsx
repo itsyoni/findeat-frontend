@@ -54,10 +54,10 @@ export default function MapScreen() {
 
   async function loadRestaurants() {
     try {
-      const res = await api.get("/restaurants/saved/me");
+      const restaurants = await api.restaurants.savedMine();
 
       setRestaurants(
-        res.data.map((item: any) => ({
+        restaurants.map((item: any) => ({
           ...item.restaurant,
           userRestaurant: {
             wantToTry: item.wantToTry,

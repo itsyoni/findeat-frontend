@@ -85,14 +85,12 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
       }
 
       try {
-        const res = await api.get("/auth/check-availability", {
-          params: {
-            username: username.trim() || undefined,
-            email: email.trim() || undefined,
-          },
+        const availability = await api.auth.checkAvailability({
+          username: username.trim() || undefined,
+          email: email.trim() || undefined,
         });
 
-        setAvailability(res.data);
+        setAvailability(availability);
       } catch {
         setAvailability({
           usernameAvailable: null,

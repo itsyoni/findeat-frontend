@@ -1,0 +1,10 @@
+{
+  "name": "@findeat/api",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.ts",
+  "types": "index.ts",
+  "dependencies": {
+    "axios": "^1.10.0"
+  }
+}

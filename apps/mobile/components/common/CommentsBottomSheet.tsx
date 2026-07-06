@@ -6,7 +6,7 @@ import BottomSheet, {
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { forwardRef, useEffect, useMemo, useState } from "react";
+import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Text from "./AppText";
 
@@ -21,23 +21,21 @@ export const CommentsBottomSheet = forwardRef<BottomSheet, Props>(
     const [comments, setComments] = useState<Comment[]>([]);
     const [content, setContent] = useState("");
 
-    useEffect(() => {
-      if (postId) {
-        loadComments();
-      }
+    const loadComments = useCallback(async () => {
+      if (!postId) return;
+
+      const comments = await api.posts.comments(postId);
+      setComments(comments);
     }, [postId]);
 
-    async function loadComments() {
-      const res = await api.get(`/posts/${postId}/comments`);
-      setComments(res.data);
-    }
+    useEffect(() => {
+      void loadComments();
+    }, [loadComments]);
 
     async function submitComment() {
       if (!postId || !content.trim()) return;
 
-      await api.post(`/posts/${postId}/comments`, {
-        content: content.trim(),
-      });
+      await api.posts.addComment(postId, content.trim());
 
       setContent("");
       await loadComments();

@@ -52,7 +52,7 @@ export default function ReviewCreator() {
       return draft.restaurant.restaurant.id;
     }
 
-    const res = await api.post("/restaurants/from-google", {
+    const restaurant = await api.restaurants.fromGoogle({
       name: draft.restaurant.name,
       address: draft.restaurant.address,
       city: draft.restaurant.city,
@@ -61,7 +61,7 @@ export default function ReviewCreator() {
       googlePlaceId: draft.restaurant.googlePlaceId,
     });
 
-    return res.data.id as string;
+    return restaurant.id;
   }
 
   async function publishReview() {
@@ -105,7 +105,7 @@ export default function ReviewCreator() {
         })),
       );
 
-      const res = await api.post("/posts/review", {
+      const createdPost = await api.posts.createReview({
         restaurantId,
         coverImageUrl,
         overallRating,
@@ -115,8 +115,6 @@ export default function ReviewCreator() {
         valueRating: draft.valueRating,
         items: uploadedItems,
       });
-
-      const createdPost = res.data;
 
       router.replace({
         pathname: "/(tabs)",

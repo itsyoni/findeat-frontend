@@ -47,8 +47,8 @@ export default function CreateRestaurantScreen() {
     try {
       setLoading(true);
 
-      let avatarUrl;
-      let coverUrl;
+      let avatarUrl: string | undefined;
+      let coverUrl: string | undefined;
 
       if (avatarUri) {
         avatarUrl = await uploadImageToCloudinary(avatarUri);
@@ -58,7 +58,7 @@ export default function CreateRestaurantScreen() {
         coverUrl = await uploadImageToCloudinary(coverUri);
       }
 
-      await api.post("/restaurants", {
+      await api.restaurants.create({
         name,
         city,
         address,

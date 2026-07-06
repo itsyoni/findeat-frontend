@@ -31,8 +31,8 @@ export default function ProfileScreen() {
 
   async function loadProfile() {
     try {
-      const res = await api.get("/users/me");
-      setProfile(res.data);
+      const profile = await api.users.me();
+      setProfile(profile);
     } catch (error) {
       console.error(error);
     } finally {
@@ -42,8 +42,8 @@ export default function ProfileScreen() {
 
   async function loadManagedRestaurants() {
     try {
-      const res = await api.get("/restaurants/me");
-      setManagedRestaurants(res.data);
+      const managedRestaurants = await api.restaurants.mine();
+      setManagedRestaurants(managedRestaurants);
     } catch (error) {
       console.error(error);
     }

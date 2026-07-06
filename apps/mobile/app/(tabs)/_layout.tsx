@@ -15,7 +15,7 @@ import { View } from "react-native";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const { user, isLoading } = useAuth();
+  const { user } = useAuth();
 
   return (
     <Tabs

@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import { Chat } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -20,20 +20,20 @@ export default function GroupDetailsScreen() {
   const [chat, setChat] = useState<Chat | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadGroup();
-  }, [id]);
-
-  async function loadGroup() {
+  const loadGroup = useCallback(async () => {
     try {
-      const res = await api.get(`/chats/${id}`);
-      setChat(res.data);
+      const chat = await api.chats.get(id);
+      setChat(chat);
     } catch (error) {
       console.error("load group failed", error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
+
+  useEffect(() => {
+    void loadGroup();
+  }, [loadGroup]);
 
   if (loading || !chat) {
     return (

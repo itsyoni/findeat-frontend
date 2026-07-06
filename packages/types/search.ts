@@ -11,4 +11,12 @@ export type SearchResultItem = {
   relationship?: UserRelationship;
 };
 
+export type UserSearchResult = {
+  id: string;
+  username: string;
+  displayName?: string | null;
+  avatarUrl?: string | null;
+  relationship?: UserRelationship;
+};
+
 export type RecentSearchItem = SearchResultItem;

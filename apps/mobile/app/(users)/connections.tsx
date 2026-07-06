@@ -4,7 +4,7 @@ import Tabs from "@/components/common/Tabs";
 import { api } from "@/lib/api";
 import { ConnectionItem } from "@findeat/types";
 import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -27,28 +27,30 @@ export default function ConnectionsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadConnections();
-  }, [id, activeTab]);
-
   async function onRefresh() {
     setRefreshing(true);
     await loadConnections();
     setRefreshing(false);
   }
 
-  async function loadConnections() {
+  const loadConnections = useCallback(async () => {
     try {
       setLoading(true);
 
-      const res = await api.get(`/users/${id}/${activeTab}`);
-      setItems(res.data);
+      const connections =
+        activeTab === "followers"
+          ? await api.users.followers(id)
+          : activeTab === "following"
+            ? await api.users.following(id)
+            : await api.users.friends(id);
+
+      setItems(connections);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [id, activeTab]);
 
   async function toggleFollow(targetUserId: string, relationship?: string) {
     const isFollowing =
@@ -87,11 +89,7 @@ export default function ConnectionsScreen() {
       }),
     );
 
-    if (isFollowing) {
-      await api.delete(`/users/${targetUserId}/follow`);
-    } else {
-      await api.post(`/users/${targetUserId}/follow`);
-    }
+    await api.users.toggleFollow(targetUserId, isFollowing);
 
     await loadConnections();
   }
@@ -100,6 +98,10 @@ export default function ConnectionsScreen() {
     if (activeTab === "following") return item.following;
     return item.follower;
   }
+
+  useEffect(() => {
+    loadConnections();
+  }, [loadConnections]);
 
   if (loading) {
     return (
@@ -142,8 +144,6 @@ export default function ConnectionsScreen() {
           if (!user) return null;
 
           const relationship = user.relationship;
-          const isFollowing =
-            relationship === "FOLLOWING" || relationship === "FRIENDS";
 
           const buttonText =
             relationship === "FRIENDS"

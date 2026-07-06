@@ -77,7 +77,7 @@ export default function EditMenuItemScreen() {
         finalImageUrl = await uploadImageToCloudinary(newImageUri);
       }
 
-      await api.patch(`/business/menus/dishes/${params.id}`, {
+      await api.menu.updateDish(params.id, {
         name: name.trim(),
         description: description.trim() || null,
         price: parsedPrice,
@@ -108,7 +108,9 @@ export default function EditMenuItemScreen() {
         onPress: async () => {
           try {
             setLoading(true);
-            await api.delete(`/business/menus/dishes/${params.id}`);
+
+            await api.menu.deleteDish(params.id);
+
             router.back();
           } catch (error: any) {
             console.error(error.response?.data ?? error);
