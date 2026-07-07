@@ -12,9 +12,11 @@ import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, TouchableOpacity, View } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Mapbox from "@rnmapbox/maps";
+
+Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "");
 
 export default function MapScreen() {
   const { t } = useTranslation(["common", "map"]);
@@ -26,7 +28,8 @@ export default function MapScreen() {
     string | null
   >(null);
 
-  const mapRef = useRef<MapView>(null);
+  const cameraRef = useRef<Mapbox.Camera>(null);
+
   const [userLocation, setUserLocation] =
     useState<Location.LocationObject | null>(null);
 
@@ -39,6 +42,27 @@ export default function MapScreen() {
       typeof restaurant.latitude === "number" &&
       typeof restaurant.longitude === "number",
   );
+
+  const restaurantsGeoJson = {
+    type: "FeatureCollection" as const,
+    features: restaurantsWithLocation.map((restaurant) => ({
+      type: "Feature" as const,
+      id: restaurant.id,
+      properties: {
+        id: restaurant.id,
+        name: restaurant.name,
+        favorite: !!restaurant.userRestaurant?.favorite,
+        visited: !!restaurant.userRestaurant?.visited,
+      },
+      geometry: {
+        type: "Point" as const,
+        coordinates: [
+          restaurant.longitude as number,
+          restaurant.latitude as number,
+        ],
+      },
+    })),
+  };
 
   useEffect(() => {
     loadUserLocation();
@@ -89,15 +113,11 @@ export default function MapScreen() {
 
       setUserLocation(location);
 
-      mapRef.current?.animateToRegion(
-        {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-          latitudeDelta: 0.03,
-          longitudeDelta: 0.03,
-        },
-        600,
-      );
+      cameraRef.current?.setCamera({
+        centerCoordinate: [location.coords.longitude, location.coords.latitude],
+        zoomLevel: 14,
+        animationDuration: 600,
+      });
     } catch (error) {
       console.error("Could not get current location:", error);
     }
@@ -116,15 +136,14 @@ export default function MapScreen() {
     }
 
     setTimeout(() => {
-      mapRef.current?.animateToRegion(
-        {
-          latitude: restaurant.latitude as number,
-          longitude: restaurant.longitude as number,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        },
-        600,
-      );
+      cameraRef.current?.setCamera({
+        centerCoordinate: [
+          restaurant.longitude as number,
+          restaurant.latitude as number,
+        ],
+        zoomLevel: 15,
+        animationDuration: 600,
+      });
     }, 100);
   }
 
@@ -205,45 +224,50 @@ export default function MapScreen() {
           />
 
           {viewMode === "MAP" ? (
-            <MapView
-              ref={mapRef}
-              style={{ flex: 1 }}
-              showsUserLocation
-              showsMyLocationButton
-              initialRegion={{
-                latitude: userLocation?.coords.latitude ?? 32.0853,
-                longitude: userLocation?.coords.longitude ?? 34.7818,
-                latitudeDelta: 0.05,
-                longitudeDelta: 0.05,
-              }}
-            >
-              {restaurantsWithLocation.map((restaurant) => (
-                <Marker
-                  key={restaurant.id}
-                  coordinate={{
-                    latitude: restaurant.latitude as number,
-                    longitude: restaurant.longitude as number,
+            <Mapbox.MapView style={{ flex: 1 }}>
+              <Mapbox.Camera
+                ref={cameraRef}
+                zoomLevel={13}
+                centerCoordinate={[
+                  userLocation?.coords.longitude ?? 34.7818,
+                  userLocation?.coords.latitude ?? 32.0853,
+                ]}
+              />
+              <Mapbox.UserLocation visible />
+
+              <Mapbox.ShapeSource
+                id="restaurants"
+                shape={restaurantsGeoJson}
+                onPress={(event) => {
+                  const feature = event.features[0];
+                  const restaurantId = feature?.properties?.id;
+
+                  if (!restaurantId) return;
+
+                  router.push({
+                    pathname: "/restaurants/[id]",
+                    params: { id: restaurantId },
+                  });
+                }}
+              >
+                <Mapbox.CircleLayer
+                  id="restaurant-points"
+                  style={{
+                    circleRadius: 8,
+                    circleColor: [
+                      "case",
+                      ["==", ["get", "favorite"], true],
+                      "#EF4444",
+                      ["==", ["get", "visited"], true],
+                      "#22C55E",
+                      "#F7D786",
+                    ],
+                    circleStrokeWidth: 2,
+                    circleStrokeColor: "#FFFFFF",
                   }}
-                  tracksViewChanges={false}
-                  onPress={() =>
-                    router.push({
-                      pathname: "/restaurants/[id]",
-                      params: { id: restaurant.id },
-                    })
-                  }
-                >
-                  <View
-                    className={`h-5 w-5 rounded-full border-2 border-white ${
-                      restaurant.userRestaurant?.favorite
-                        ? "bg-red-500"
-                        : restaurant.userRestaurant?.visited
-                          ? "bg-green-500"
-                          : "bg-[#F7D786]"
-                    }`}
-                  />
-                </Marker>
-              ))}
-            </MapView>
+                />
+              </Mapbox.ShapeSource>
+            </Mapbox.MapView>
           ) : (
             <FlatList
               data={restaurants}
