@@ -224,50 +224,110 @@ export default function MapScreen() {
           />
 
           {viewMode === "MAP" ? (
-            <Mapbox.MapView style={{ flex: 1 }}>
-              <Mapbox.Camera
-                ref={cameraRef}
-                zoomLevel={13}
-                centerCoordinate={[
-                  userLocation?.coords.longitude ?? 34.7818,
-                  userLocation?.coords.latitude ?? 32.0853,
-                ]}
-              />
-              <Mapbox.UserLocation visible />
-
-              <Mapbox.ShapeSource
-                id="restaurants"
-                shape={restaurantsGeoJson}
-                onPress={(event) => {
-                  const feature = event.features[0];
-                  const restaurantId = feature?.properties?.id;
-
-                  if (!restaurantId) return;
-
-                  router.push({
-                    pathname: "/restaurants/[id]",
-                    params: { id: restaurantId },
-                  });
-                }}
-              >
-                <Mapbox.CircleLayer
-                  id="restaurant-points"
-                  style={{
-                    circleRadius: 8,
-                    circleColor: [
-                      "case",
-                      ["==", ["get", "favorite"], true],
-                      "#EF4444",
-                      ["==", ["get", "visited"], true],
-                      "#22C55E",
-                      "#F7D786",
-                    ],
-                    circleStrokeWidth: 2,
-                    circleStrokeColor: "#FFFFFF",
-                  }}
+            <View style={{ flex: 1 }}>
+              <Mapbox.MapView style={{ flex: 1 }}>
+                <Mapbox.Camera
+                  ref={cameraRef}
+                  zoomLevel={13}
+                  centerCoordinate={[
+                    userLocation?.coords.longitude ?? 34.7818,
+                    userLocation?.coords.latitude ?? 32.0853,
+                  ]}
                 />
-              </Mapbox.ShapeSource>
-            </Mapbox.MapView>
+                <Mapbox.UserLocation visible />
+
+                <Mapbox.ShapeSource
+                  id="restaurants"
+                  shape={restaurantsGeoJson}
+                  cluster
+                  clusterRadius={50}
+                  clusterMaxZoomLevel={14}
+                  onPress={(event) => {
+                    const feature = event.features[0];
+
+                    if (!feature) return;
+
+                    if (feature.properties?.cluster) {
+                      const coordinates = (feature.geometry as any)
+                        ?.coordinates;
+
+                      if (Array.isArray(coordinates)) {
+                        cameraRef.current?.setCamera({
+                          centerCoordinate: coordinates,
+                          zoomLevel: 15,
+                          animationDuration: 500,
+                        });
+                      }
+
+                      return;
+                    }
+
+                    const restaurantId = feature.properties?.id;
+
+                    if (!restaurantId) return;
+
+                    router.push({
+                      pathname: "/restaurants/[id]",
+                      params: { id: restaurantId },
+                    });
+                  }}
+                >
+                  <Mapbox.CircleLayer
+                    id="restaurant-clusters"
+                    filter={["has", "point_count"]}
+                    style={{
+                      circleRadius: [
+                        "step",
+                        ["get", "point_count"],
+                        18,
+                        10,
+                        24,
+                        50,
+                        32,
+                      ],
+                      circleColor: "#212121",
+                      circleStrokeWidth: 3,
+                      circleStrokeColor: "#FFFFFF",
+                    }}
+                  />
+
+                  <Mapbox.SymbolLayer
+                    id="restaurant-cluster-count"
+                    filter={["has", "point_count"]}
+                    style={{
+                      textField: ["get", "point_count_abbreviated"],
+                      textSize: 13,
+                      textColor: "#FFFFFF",
+                      textAllowOverlap: true,
+                    }}
+                  />
+                  <Mapbox.CircleLayer
+                    id="restaurant-points"
+                    filter={["!", ["has", "point_count"]]}
+                    style={{
+                      circleRadius: 8,
+                      circleColor: [
+                        "case",
+                        ["==", ["get", "favorite"], true],
+                        "#EF4444",
+                        ["==", ["get", "visited"], true],
+                        "#22C55E",
+                        "#F7D786",
+                      ],
+                      circleStrokeWidth: 2,
+                      circleStrokeColor: "#FFFFFF",
+                    }}
+                  />
+                </Mapbox.ShapeSource>
+              </Mapbox.MapView>
+
+              <TouchableOpacity
+                onPress={loadUserLocation}
+                className="absolute bottom-6 right-5 h-12 w-12 items-center justify-center rounded-full bg-white"
+              >
+                <Text>📍</Text>
+              </TouchableOpacity>
+            </View>
           ) : (
             <FlatList
               data={restaurants}
