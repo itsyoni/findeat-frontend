@@ -1,3 +1,5 @@
+import * as FileSystem from "expo-file-system";
+
 export async function uploadImage(uri: string): Promise<string> {
   const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
   const uploadPreset = process.env.EXPO_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
@@ -6,14 +8,13 @@ export async function uploadImage(uri: string): Promise<string> {
     throw new Error("Missing Cloudinary environment variables.");
   }
 
+  const base64 = await FileSystem.readAsStringAsync(uri, {
+    encoding: FileSystem.EncodingType.Base64,
+  });
+
   const formData = new FormData();
 
-  formData.append("file", {
-    uri,
-    type: "image/jpeg",
-    name: "image.jpg",
-  } as never);
-
+  formData.append("file", `data:image/jpeg;base64,${base64}`);
   formData.append("upload_preset", uploadPreset);
 
   const response = await fetch(
@@ -26,9 +27,7 @@ export async function uploadImage(uri: string): Promise<string> {
 
   const data = (await response.json()) as {
     secure_url?: string;
-    error?: {
-      message: string;
-    };
+    error?: { message: string };
   };
 
   if (!response.ok || !data.secure_url) {
