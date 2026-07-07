@@ -1,4 +1,4 @@
-import { AppButton } from "@/components/common";
+import { AppButton, IconButton } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import FormInput from "@/components/forms/FormInput";
@@ -7,8 +7,10 @@ import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
+import { CaretLeftIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfileScreen() {
   const [username, setUsername] = useState("");
@@ -175,91 +177,107 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="px-5 pb-10">
-        <TouchableOpacity
-          onPress={() => pickImage([3, 1], setNewCoverUri)}
-          className="mt-6 h-40 overflow-hidden rounded-3xl bg-gray-100"
-        >
-          {newCoverUri || coverUrl ? (
-            <Image
-              source={{ uri: newCoverUri ?? coverUrl ?? "" }}
-              className="h-full w-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="h-full w-full items-center justify-center">
-              <Text className="text-gray-500">+ Add cover photo</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity onPress={pickAvatar} className={"mt-8 items-center"}>
-          <Avatar uri={displayedAvatar} username={username} size={96} />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ScrollView className="flex-1 bg-white">
+        <View className="flex-row items-center px-5 pt-4">
+          <IconButton
+            icon={CaretLeftIcon}
+            variant="ghost"
+            onPress={() => router.back()}
+          />
 
-          <Text className="mt-3 font-semibold text-black">
-            {"Change profile photo"}
+          <Text className="ml-2 text-2xl font-bold text-black">
+            Edit profile
           </Text>
-        </TouchableOpacity>
+        </View>
+        <View className="px-5 pb-10">
+          <TouchableOpacity
+            onPress={() => pickImage([3, 1], setNewCoverUri)}
+            className="mt-6 h-40 overflow-hidden rounded-3xl bg-gray-100"
+          >
+            {newCoverUri || coverUrl ? (
+              <Image
+                source={{ uri: newCoverUri ?? coverUrl ?? "" }}
+                className="h-full w-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="h-full w-full items-center justify-center">
+                <Text className="text-gray-500">+ Add cover photo</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={pickAvatar}
+            className={"mt-8 items-center"}
+          >
+            <Avatar uri={displayedAvatar} username={username} size={96} />
 
-        <SectionTitle title={"Account"} />
+            <Text className="mt-3 font-semibold text-black">
+              {"Change profile photo"}
+            </Text>
+          </TouchableOpacity>
 
-        <FormInput
-          label="Display name"
-          value={displayName}
-          onChangeText={setDisplayName}
-          placeholder="Display name"
-        />
+          <SectionTitle title={"Account"} />
 
-        <FormInput
-          label="Username"
-          value={username}
-          onChangeText={setUsername}
-          placeholder="Username"
-          autoCapitalize="none"
-        />
+          <FormInput
+            label="Display name"
+            value={displayName}
+            onChangeText={setDisplayName}
+            placeholder="Display name"
+          />
 
-        <FormInput
-          label="Bio"
-          value={bio}
-          onChangeText={setBio}
-          placeholder={"Tell people about yourself..."}
-          multiline
-        />
+          <FormInput
+            label="Username"
+            value={username}
+            onChangeText={setUsername}
+            placeholder="Username"
+            autoCapitalize="none"
+          />
 
-        <FormInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Email"
-          autoCapitalize="none"
-          keyboardType="email-address"
-        />
+          <FormInput
+            label="Bio"
+            value={bio}
+            onChangeText={setBio}
+            placeholder={"Tell people about yourself..."}
+            multiline
+          />
 
-        <FormInput
-          label="New password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Leave empty to keep current password"
-          isPassword
-        />
+          <FormInput
+            label="Email"
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Email"
+            autoCapitalize="none"
+            keyboardType="email-address"
+          />
 
-        <AppButton
-          title={loading ? "Saving..." : "Save"}
-          onPress={saveProfile}
-          disabled={loading}
-        />
+          <FormInput
+            label="New password"
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Leave empty to keep current password"
+            isPassword
+          />
 
-        <AppButton
-          title="Logout"
-          onPress={() =>
-            Alert.alert("Logout", "Are you sure you want to logout?", [
-              { text: "Cancel", style: "cancel" },
-              { text: "Logout", style: "destructive", onPress: logout },
-            ])
-          }
-        />
-      </View>
-    </ScrollView>
+          <AppButton
+            title={loading ? "Saving..." : "Save"}
+            onPress={saveProfile}
+            disabled={loading}
+          />
+
+          <AppButton
+            title="Logout"
+            onPress={() =>
+              Alert.alert("Logout", "Are you sure you want to logout?", [
+                { text: "Cancel", style: "cancel" },
+                { text: "Logout", style: "destructive", onPress: logout },
+              ])
+            }
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
