@@ -1,6 +1,5 @@
 import "@/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -63,7 +62,7 @@ function RootNavigator() {
   if (isLoading) return null;
 
   return (
-    <ThemeProvider value={DefaultTheme}>
+    <>
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -73,6 +72,6 @@ function RootNavigator() {
       </Stack>
 
       <StatusBar style="dark" />
-    </ThemeProvider>
+    </>
   );
 }

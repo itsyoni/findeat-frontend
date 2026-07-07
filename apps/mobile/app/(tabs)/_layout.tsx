@@ -1,8 +1,5 @@
 import Avatar from "@/components/common/Avatar";
-import { HapticTab } from "@/components/ui/haptic-tab";
-import { Colors } from "@/constants/theme";
 import { useAuth } from "@/contexts/AuthContext";
-import { useColorScheme } from "@/hooks/use-color-scheme";
 import { Tabs } from "expo-router";
 import {
   ChatCircleIcon,
@@ -14,15 +11,12 @@ import React from "react";
 import { View } from "react-native";
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
   const { user } = useAuth();
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
         tabBarShowLabel: false,
       }}
     >

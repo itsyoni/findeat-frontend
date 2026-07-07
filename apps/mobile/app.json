@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.itsyoni.findeat",
+      "bundleIdentifier": "com.itsyoni.findeat.dev",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -41,6 +41,7 @@
           }
         }
       ],
+      "@rnmapbox/maps",
       "expo-font",
       "expo-image",
       "expo-status-bar",
