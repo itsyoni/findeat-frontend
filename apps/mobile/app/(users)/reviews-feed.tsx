@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import FeedPostList from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
@@ -5,7 +6,7 @@ import { Post } from "@findeat/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 
 export default function UserReviewsFeedScreen() {
   const { userId } = useLocalSearchParams<{
@@ -56,11 +57,7 @@ export default function UserReviewsFeedScreen() {
   }, [loadPosts]);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

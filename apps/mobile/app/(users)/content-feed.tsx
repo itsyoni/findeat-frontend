@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { api } from "@/lib/api";
@@ -6,12 +7,7 @@ import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dimensions, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { height } = Dimensions.get("window");
@@ -72,11 +68,7 @@ export default function UserContentFeedScreen() {
   }, [loadPosts]);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-black">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

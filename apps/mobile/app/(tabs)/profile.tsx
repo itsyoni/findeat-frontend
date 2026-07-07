@@ -1,4 +1,4 @@
-import Text from "@/components/common/AppText";
+import { AppButton } from "@/components/common";
 import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
@@ -9,7 +9,7 @@ import { ManagedRestaurant } from "@findeat/types/restaurant";
 import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 export default function ProfileScreen() {
   const { profile, loading, refresh } = useMyProfile();
@@ -55,27 +55,19 @@ export default function ProfileScreen() {
 
       {isAdmin && (
         <View className="px-5 pb-4">
-          <TouchableOpacity
-            className="rounded-2xl bg-black py-4"
+          <AppButton
+            title="Restaurant Claims"
             onPress={() => router.push("/admin/claims")}
-          >
-            <Text className="text-center font-bold text-white">
-              Restaurant Claims
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       )}
 
       {managedRestaurants.length > 0 && (
         <View className="px-5 pb-4">
-          <TouchableOpacity
-            className="rounded-2xl bg-black py-4"
+          <AppButton
+            title="Manage Restaurants"
             onPress={() => router.push("/business/menu")}
-          >
-            <Text className="text-center font-bold text-white">
-              Manage restaurant
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       )}
 

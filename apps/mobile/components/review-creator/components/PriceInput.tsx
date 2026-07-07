@@ -1,5 +1,4 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { View } from "react-native";
 
 type Props = {

@@ -1,5 +1,5 @@
+import { AppButton, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
@@ -209,25 +209,17 @@ export default function EditMenuItemScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            className="mt-6 rounded-2xl bg-black py-4"
+          <AppButton
+            title={loading ? "Saving..." : "Save changes"}
             onPress={saveDish}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-white">
-              {loading ? "Saving..." : "Save changes"}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            className="mt-3 rounded-2xl border border-red-300 py-4"
+          <AppButton
+            title="Delete dish"
             onPress={deleteDish}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-red-500">
-              Delete dish
-            </Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

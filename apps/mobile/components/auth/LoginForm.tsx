@@ -1,5 +1,4 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginFormData, loginSchema } from "@/lib/validation/auth";
 import { getErrorMessage } from "@findeat/utils/index";

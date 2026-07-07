@@ -1,20 +1,13 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { Menu } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppButton, LoadingScreen, TextInput } from "@/components/common";
 
 export default function ManageMenuScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -99,11 +92,7 @@ export default function ManageMenuScreen() {
   );
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (!menu) {
@@ -175,15 +164,11 @@ export default function ManageMenuScreen() {
                 textAlignVertical="top"
               />
 
-              <TouchableOpacity
-                className="mt-4 rounded-2xl bg-black py-4"
+              <AppButton
+                title={creating ? "Adding..." : "Add dish"}
                 onPress={addDish}
                 disabled={creating}
-              >
-                <Text className="text-center font-bold text-white">
-                  {creating ? "Adding..." : "Add dish"}
-                </Text>
-              </TouchableOpacity>
+              />
             </View>
 
             <Text className="mt-8 mb-4 text-xl font-bold text-black">

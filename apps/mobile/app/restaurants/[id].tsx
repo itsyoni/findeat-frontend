@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Tabs from "@/components/common/Tabs";
 import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
@@ -9,13 +10,7 @@ import type { Restaurant } from "@findeat/types";
 import { filterPostsByType, getErrorMessage } from "@findeat/utils";
 import { useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 
 type RestaurantTab = "CONTENT" | "REVIEWS" | "MENU";
 
@@ -152,11 +147,7 @@ export default function RestaurantScreen() {
   );
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (!restaurant) {

@@ -1,7 +1,5 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
-
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { ManagedRestaurant, SelectedRestaurant } from "@findeat/types";
@@ -19,6 +17,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { AppButton, TextInput } from "@/components/common";
 
 export default function CreateContentScreen() {
   const [description, setDescription] = useState("");
@@ -166,22 +165,11 @@ export default function CreateContentScreen() {
               </Text>
 
               <View className="gap-3">
-                <TouchableOpacity
-                  className={`rounded-2xl border px-4 py-4 ${
-                    postingAs.type === "USER"
-                      ? "border-black bg-black"
-                      : "border-gray-200 bg-white"
-                  }`}
+                <AppButton
+                  title="My personal profile"
+                  variant={postingAs.type === "USER" ? "primary" : "outline"}
                   onPress={() => setPostingAs({ type: "USER" })}
-                >
-                  <Text
-                    className={`font-bold ${
-                      postingAs.type === "USER" ? "text-white" : "text-black"
-                    }`}
-                  >
-                    My personal profile
-                  </Text>
-                </TouchableOpacity>
+                />
 
                 {managedRestaurants.map((restaurant) => (
                   <TouchableOpacity
@@ -259,15 +247,11 @@ export default function CreateContentScreen() {
             textAlignVertical="top"
           />
 
-          <TouchableOpacity
-            className="mt-6 rounded-2xl bg-black py-4"
+          <AppButton
+            title={loading ? "Publishing..." : "Publish"}
             onPress={handleCreatePost}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-white">
-              {loading ? "Publishing..." : "Publish"}
-            </Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

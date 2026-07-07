@@ -1,15 +1,10 @@
+import { AppButton, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { api } from "@/lib/api";
 import { getErrorMessage } from "@findeat/utils";
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-} from "react-native";
+import { Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateMenuScreen() {
@@ -70,15 +65,11 @@ export default function CreateMenuScreen() {
           textAlignVertical="top"
         />
 
-        <TouchableOpacity
-          className="mt-6 rounded-2xl bg-black py-4"
+        <AppButton
+          title={loading ? "Creating..." : "Create menu"}
           onPress={createMenu}
           disabled={loading}
-        >
-          <Text className="text-center font-bold text-white">
-            {loading ? "Creating..." : "Create menu"}
-          </Text>
-        </TouchableOpacity>
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

@@ -1,3 +1,4 @@
+import { AppButton } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import FormInput from "@/components/forms/FormInput";
@@ -242,27 +243,21 @@ export default function EditProfileScreen() {
           isPassword
         />
 
-        <TouchableOpacity
-          className="mt-6 rounded-2xl bg-black py-4"
+        <AppButton
+          title={loading ? "Saving..." : "Save"}
           onPress={saveProfile}
           disabled={loading}
-        >
-          <Text className="text-center font-bold text-white">
-            {loading ? "Saving..." : "Save"}
-          </Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity
-          className="mt-3 rounded-2xl border border-red-300 py-4"
+        <AppButton
+          title="Logout"
           onPress={() =>
             Alert.alert("Logout", "Are you sure you want to logout?", [
               { text: "Cancel", style: "cancel" },
               { text: "Logout", style: "destructive", onPress: logout },
             ])
           }
-        >
-          <Text className="text-center font-bold text-red-500">Logout</Text>
-        </TouchableOpacity>
+        />
       </View>
     </ScrollView>
   );

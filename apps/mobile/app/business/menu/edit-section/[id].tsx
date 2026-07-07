@@ -1,5 +1,5 @@
+import { AppButton, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { api } from "@/lib/api";
 import { getErrorMessage } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
@@ -9,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -116,25 +115,17 @@ export default function EditMenuSectionScreen() {
             textAlignVertical="top"
           />
 
-          <TouchableOpacity
-            className="mt-6 rounded-2xl bg-black py-4"
+          <AppButton
+            title={loading ? "Saving..." : "Save changes"}
             onPress={saveSection}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-white">
-              {loading ? "Saving..." : "Save changes"}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            className="mt-3 rounded-2xl border border-red-300 py-4"
+          <AppButton
+            title="Delete section"
             onPress={deleteSection}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-red-500">
-              Delete section
-            </Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import Tabs from "@/components/common/Tabs";
@@ -12,12 +13,7 @@ import {
 } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
 
 type ConnectionsTab = "followers" | "following" | "friends";
 
@@ -106,11 +102,7 @@ export default function ConnectionsScreen() {
   }, [loadConnections]);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

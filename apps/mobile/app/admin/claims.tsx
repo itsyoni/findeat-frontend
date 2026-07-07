@@ -1,15 +1,10 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { getErrorMessage, removeById } from "@findeat/utils";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 
 type Claim = {
   id: string;
@@ -73,11 +68,7 @@ export default function AdminClaimsScreen() {
   );
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

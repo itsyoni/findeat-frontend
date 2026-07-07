@@ -1,9 +1,10 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Dish } from "@findeat/types";
 import { useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Image, ScrollView, View } from "react-native";
+import { Image, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MenuItemScreen() {
@@ -27,11 +28,7 @@ export default function MenuItemScreen() {
   }, [loadDish]);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (!dish) {

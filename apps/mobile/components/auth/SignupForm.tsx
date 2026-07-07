@@ -1,5 +1,4 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { SignupFormData, signupSchema } from "@/lib/validation/auth";

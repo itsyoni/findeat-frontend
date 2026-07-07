@@ -1,4 +1,5 @@
 import ChatList from "@/components/chats/ChatList";
+import { LoadingScreen } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
@@ -9,7 +10,7 @@ import { SearchResultItem } from "@findeat/types/search";
 import { router, useFocusEffect } from "expo-router";
 import { PlusIcon } from "phosphor-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -73,11 +74,7 @@ export default function ChatsScreen() {
   }
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
@@ -87,11 +88,7 @@ export default function AddGroupMembersScreen() {
   }
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

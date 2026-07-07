@@ -1,5 +1,4 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/inputs/AppTextInput";
 import { api } from "@/lib/api";
 import { uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
