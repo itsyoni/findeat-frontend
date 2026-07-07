@@ -9,9 +9,11 @@ import { ManagedRestaurant } from "@findeat/types/restaurant";
 import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 
 export default function ProfileScreen() {
+  const { t } = useTranslation(["common", "profile"]);
   const { profile, loading, refresh } = useMyProfile();
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [managedRestaurants, setManagedRestaurants] = useState<
@@ -56,7 +58,7 @@ export default function ProfileScreen() {
       {isAdmin && (
         <View className="px-5 pb-4">
           <AppButton
-            title="Restaurant Claims"
+            title={t("profile:restaurantClaims")}
             onPress={() => router.push("/admin/claims")}
           />
         </View>
@@ -65,7 +67,7 @@ export default function ProfileScreen() {
       {managedRestaurants.length > 0 && (
         <View className="px-5 pb-4">
           <AppButton
-            title="Manage Restaurants"
+            title={t("profile:manageRestaurants")}
             onPress={() => router.push("/business/menu")}
           />
         </View>
@@ -75,8 +77,8 @@ export default function ProfileScreen() {
         activeTab={activeFeed}
         onChange={setActiveFeed}
         tabs={[
-          { label: "Content", value: "CONTENT" },
-          { label: "Reviews", value: "REVIEW" },
+          { label: t("common:content"), value: "CONTENT" },
+          { label: t("common:reviews"), value: "REVIEW" },
         ]}
       />
 

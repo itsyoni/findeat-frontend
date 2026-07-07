@@ -1,9 +1,10 @@
 import Text from "@/components/common/AppText";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginFormData, loginSchema } from "@/lib/validation/auth";
-import { getErrorMessage } from "@findeat/utils/index";
+import { getErrorMessage } from "@findeat/utils";
 import { EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 import { TextInput } from "../common";
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export default function LoginForm({ onSignup }: Props) {
+  const { t } = useTranslation("auth");
   const { login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -32,11 +34,14 @@ export default function LoginForm({ onSignup }: Props) {
       await login(data.email, data.password);
     } catch (error) {
       if (error instanceof ZodError) {
-        Alert.alert("Invalid details", error.issues[0]?.message);
+        Alert.alert(t("invalidDetails"), error.issues[0]?.message);
         return;
       }
 
-      Alert.alert("Error", getErrorMessage(error, "Invalid email or password"));
+      Alert.alert(
+        t("common:error"),
+        getErrorMessage(error, t("invalidEmailOrPassword")),
+      );
     } finally {
       setLoading(false);
     }
@@ -45,17 +50,17 @@ export default function LoginForm({ onSignup }: Props) {
   return (
     <View>
       <Text weight="bold" className="text-center text-2xl text-[#212121]">
-        Welcome Back!
+        {t("welcomeBack")}
       </Text>
 
       <Text className="mb-6 mt-1 text-center text-gray-500">
-        Login to keep exploring dishes.
+        {t("loginSubtitle")}
       </Text>
 
       <View className="gap-4">
         <TextInput
           useBottomSheetInput
-          placeholder="Email"
+          placeholder={t("email")}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -69,7 +74,7 @@ export default function LoginForm({ onSignup }: Props) {
 
         <TextInput
           useBottomSheetInput
-          placeholder="Password"
+          placeholder={t("password")}
           value={password}
           onChangeText={setPassword}
           isPassword
@@ -86,15 +91,15 @@ export default function LoginForm({ onSignup }: Props) {
           disabled={loading}
         >
           <Text weight="bold" className="text-center text-white">
-            {loading ? "Logging in..." : "Login"}
+            {loading ? t("loggingIn") : t("login")}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={onSignup}>
           <Text className="text-center text-gray-500">
-            {"Don't have an account? "}
+            {t("dontHaveAccount")}
             <Text weight="bold" className="text-[#212121]">
-              Sign up
+              {t("signUp")}
             </Text>
           </Text>
         </TouchableOpacity>

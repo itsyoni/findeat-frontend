@@ -1,3 +1,6 @@
+import { LANGUAGE_KEY, TOKEN_KEY } from "@/constants/storage";
+import i18n from "@/i18n";
+import { api } from "@/lib/api";
 import { AuthContextType, User } from "@findeat/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, {
@@ -7,9 +10,17 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { api } from "../lib/api";
 
-const TOKEN_KEY = "findeat_access_token";
+function toAppLanguage(language?: User["language"]) {
+  return language === "HE" ? "he" : "en";
+}
+
+async function syncLanguage(user: User) {
+  const appLanguage = toAppLanguage(user.language);
+
+  await i18n.changeLanguage(appLanguage);
+  await AsyncStorage.setItem(LANGUAGE_KEY, appLanguage);
+}
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -25,6 +36,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!savedToken) return;
 
       const user = await api.auth.me();
+
+      await syncLanguage(user);
 
       setToken(savedToken);
       setUser(user);
@@ -44,6 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     await AsyncStorage.setItem(TOKEN_KEY, accessToken);
+    await syncLanguage(user);
 
     setToken(accessToken);
     setUser(user);
@@ -63,6 +77,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     await AsyncStorage.setItem(TOKEN_KEY, accessToken);
+    await syncLanguage(user);
 
     setToken(accessToken);
     setUser(user);
@@ -77,6 +92,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   async function refreshUser() {
     const user = await api.auth.me();
+
+    await syncLanguage(user);
+
     setUser(user);
   }
 
