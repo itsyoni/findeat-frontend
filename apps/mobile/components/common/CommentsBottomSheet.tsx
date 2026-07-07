@@ -1,12 +1,11 @@
-import { api } from "@/lib/api";
-import { Comment } from "@findeat/types";
+import { useComments } from "@/hooks/useComments";
 import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetFlatList,
   BottomSheetTextInput,
   BottomSheetView,
 } from "@gorhom/bottom-sheet";
-import { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
+import { forwardRef, useMemo, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Text from "./AppText";
 
@@ -17,28 +16,15 @@ type Props = {
 export const CommentsBottomSheet = forwardRef<BottomSheet, Props>(
   ({ postId }, ref) => {
     const snapPoints = useMemo(() => ["60%", "90%"], []);
-
-    const [comments, setComments] = useState<Comment[]>([]);
     const [content, setContent] = useState("");
 
-    const loadComments = useCallback(async () => {
-      if (!postId) return;
-
-      const comments = await api.posts.comments(postId);
-      setComments(comments);
-    }, [postId]);
-
-    useEffect(() => {
-      void loadComments();
-    }, [loadComments]);
+    const { comments, addComment } = useComments(postId);
 
     async function submitComment() {
-      if (!postId || !content.trim()) return;
+      if (!content.trim()) return;
 
-      await api.posts.addComment(postId, content.trim());
-
+      await addComment(content);
       setContent("");
-      await loadComments();
     }
 
     return (

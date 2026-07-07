@@ -3,8 +3,8 @@ import Avatar from "@/components/common/Avatar";
 import Tabs from "@/components/common/Tabs";
 import ProfileManagedRestaurants from "@/components/profile/ProfileManagedRestaurants";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { api } from "@/lib/api";
-import { Profile } from "@findeat/types";
 import { PostType } from "@findeat/types/post";
 import {
   filterPostsByType,
@@ -15,35 +15,23 @@ import {
 } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
-  const [user, setUser] = useState<Profile | null>(null);
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [loading, setLoading] = useState(true);
+  const {
+    profile: user,
+    setProfile: setUser,
+    loading,
+  } = useUserProfile(id as string);
 
   const posts = useMemo(
     () => filterPostsByType(user?.posts, activeFeed),
     [user, activeFeed],
   );
-
-  const loadUser = useCallback(async () => {
-    try {
-      const user = await api.users.get(id as string);
-      setUser(user);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
 
   async function toggleFollow() {
     if (!user) return;

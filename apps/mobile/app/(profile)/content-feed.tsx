@@ -1,12 +1,12 @@
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
+import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
-import { Post } from "@findeat/types/post";
-import { filterPostsByType } from "@findeat/utils/posts";
+import { filterPostsByType } from "@findeat/utils";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Dimensions,
@@ -21,9 +21,13 @@ export default function ProfileContentFeedScreen() {
   const { postId } = useLocalSearchParams<{ postId: string }>();
   const commentsSheetRef = useRef<BottomSheet>(null);
 
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { profile, loading, refresh } = useMyProfile();
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  const posts = useMemo(
+    () => filterPostsByType(profile?.posts, "CONTENT"),
+    [profile?.posts],
+  );
 
   const initialIndex = useMemo(() => {
     return Math.max(
@@ -32,29 +36,9 @@ export default function ProfileContentFeedScreen() {
     );
   }, [posts, postId]);
 
-  async function loadPosts() {
-    try {
-      const profile = await api.users.me();
-
-      setPosts(filterPostsByType(profile.posts, "CONTENT"));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function toggleLike(postId: string, isLiked: boolean) {
-    if (isLiked) {
-      await api.posts.unlike(postId);
-    } else {
-      await api.posts.like(postId);
-    }
-
-    await loadPosts();
-  }
-
-  function openComments(postId: string) {
-    setSelectedPostId(postId);
-    commentsSheetRef.current?.snapToIndex(0);
+    await api.posts.toggleLike(postId, isLiked);
+    await refresh();
   }
 
   async function toggleWantToTry(
@@ -62,20 +46,17 @@ export default function ProfileContentFeedScreen() {
     restaurantId: string,
     isWantToTry: boolean,
   ) {
-    if (isWantToTry) {
-      await api.restaurants.removeWantToTry(restaurantId);
-    } else {
-      await api.restaurants.wantToTry(restaurantId, postId);
-    }
+    await api.restaurants.toggleWantToTry(restaurantId, isWantToTry, postId);
 
-    await loadPosts();
+    await refresh();
   }
 
-  useEffect(() => {
-    loadPosts();
-  }, []);
+  function openComments(postId: string) {
+    setSelectedPostId(postId);
+    commentsSheetRef.current?.snapToIndex(0);
+  }
 
-  if (loading) {
+  if (loading || !profile) {
     return (
       <View className="flex-1 items-center justify-center bg-black">
         <ActivityIndicator />
@@ -102,11 +83,12 @@ export default function ProfileContentFeedScreen() {
           <CaretLeftIcon size={24} color="white" />
         </TouchableOpacity>
       </SafeAreaView>
+
       <ContentFeedList
         posts={posts}
         height={height}
         refreshing={false}
-        onRefresh={loadPosts}
+        onRefresh={refresh}
         onToggleLike={toggleLike}
         onOpenComments={openComments}
         initialIndex={initialIndex}

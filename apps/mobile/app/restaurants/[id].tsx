@@ -3,11 +3,12 @@ import Tabs from "@/components/common/Tabs";
 import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
 import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSection";
 import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSection";
+import { useRestaurant } from "@/hooks/useRestaurant";
 import { api } from "@/lib/api";
-import { Restaurant } from "@findeat/types";
+import type { Restaurant } from "@findeat/types";
 import { filterPostsByType, getErrorMessage } from "@findeat/utils";
 import { useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,24 +21,8 @@ type RestaurantTab = "CONTENT" | "REVIEWS" | "MENU";
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const { restaurant, setRestaurant, loading } = useRestaurant(id);
   const [activeTab, setActiveTab] = useState<RestaurantTab>("CONTENT");
-  const [loading, setLoading] = useState(true);
-
-  const loadRestaurant = useCallback(async () => {
-    try {
-      const restaurant = await api.restaurants.get(id);
-      setRestaurant(restaurant);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    void loadRestaurant();
-  }, [loadRestaurant]);
 
   async function toggleFollow() {
     if (!restaurant) return;
@@ -73,7 +58,7 @@ export default function RestaurantScreen() {
     }
   }
 
-  async function updateRestaurantStatus(
+  function updateRestaurantStatus(
     nextStatus: Partial<Restaurant["userRestaurant"]>,
   ) {
     if (!restaurant) return;

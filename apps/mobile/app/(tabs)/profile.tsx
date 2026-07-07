@@ -2,9 +2,9 @@ import Text from "@/components/common/AppText";
 import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
+import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { PostType } from "@findeat/types/post";
-import { Profile } from "@findeat/types/profile";
 import { ManagedRestaurant } from "@findeat/types/restaurant";
 import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
@@ -12,9 +12,8 @@ import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile, loading, refresh } = useMyProfile();
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [loading, setLoading] = useState(true);
   const [managedRestaurants, setManagedRestaurants] = useState<
     ManagedRestaurant[]
   >([]);
@@ -24,32 +23,21 @@ export default function ProfileScreen() {
     [profile?.posts, activeFeed],
   );
 
-  useFocusEffect(
-    useCallback(() => {
-      loadProfile();
-      loadManagedRestaurants();
-    }, []),
-  );
-
-  async function loadProfile() {
-    try {
-      const profile = await api.users.me();
-      setProfile(profile);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadManagedRestaurants() {
+  const loadManagedRestaurants = useCallback(async () => {
     try {
       const managedRestaurants = await api.restaurants.mine();
       setManagedRestaurants(managedRestaurants);
     } catch (error) {
       console.error(error);
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+      void loadManagedRestaurants();
+    }, [refresh, loadManagedRestaurants]),
+  );
 
   if (loading || !profile) {
     return (
