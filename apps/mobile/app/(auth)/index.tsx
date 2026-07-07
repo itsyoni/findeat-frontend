@@ -4,6 +4,7 @@ import Text from "@/components/common/AppText";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ImageBackground, TouchableOpacity, View } from "react-native";
 import Animated, {
   FadeInRight,
@@ -12,29 +13,29 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const steps = [
-  {
-    title: "FIND.\nEAT.\nREPEAT.",
-    subtitle: "Discover dishes people actually recommend.",
-  },
-  {
-    title: "REAL\nREVIEWS.",
-    subtitle: "See what people actually ordered and loved.",
-  },
-  {
-    title: "YOUR NEXT\nBITE.",
-    subtitle: "Save dishes, follow friends, and find your next meal.",
-  },
-];
-
 type AuthMode = "login" | "signup" | "restaurant-signup";
 
 export default function AuthIndexScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
-
+  const { t } = useTranslation("auth");
   const [step, setStep] = useState(0);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
+
+  const steps = [
+    {
+      title: t("onboardingStep1Title"),
+      subtitle: t("onboardingStep1Subtitle"),
+    },
+    {
+      title: t("onboardingStep2Title"),
+      subtitle: t("onboardingStep2Subtitle"),
+    },
+    {
+      title: t("onboardingStep3Title"),
+      subtitle: t("onboardingStep3Subtitle"),
+    },
+  ];
 
   const current = steps[step];
 
@@ -141,7 +142,9 @@ export default function AuthIndexScreen() {
                     weight="bold"
                     className="text-center text-base text-black"
                   >
-                    {step === steps.length - 1 ? "Get Started" : "Continue"}
+                    {step === steps.length - 1
+                      ? t("getStarted")
+                      : t("continue")}
                   </Text>
                 </TouchableOpacity>
               </View>

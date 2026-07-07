@@ -9,10 +9,14 @@ import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LANGUAGE_KEY } from "@/constants/storage";
 import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditProfileScreen() {
+  const { t, i18n } = useTranslation(["profile", "common", "settings"]);
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -20,15 +24,32 @@ export default function EditProfileScreen() {
   const [newCoverUri, setNewCoverUri] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
   const [loading, setLoading] = useState(false);
-
   const { logout, refreshUser } = useAuth();
-
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [newAvatarUri, setNewAvatarUri] = useState<string | null>(null);
+  const [original, setOriginal] = useState<{
+    username: string;
+    displayName: string;
+    bio: string;
+    email: string;
+  }>({
+    username: "",
+    displayName: "",
+    bio: "",
+    email: "",
+  });
 
   const displayedAvatar = newAvatarUri || avatarUrl;
+
+  const hasChanges =
+    username !== original.username ||
+    displayName !== original.displayName ||
+    bio !== (original.bio ?? "") ||
+    email !== original.email ||
+    password.trim() !== "" ||
+    newAvatarUri !== null ||
+    newCoverUri !== null;
 
   useEffect(() => {
     loadProfile();
@@ -37,7 +58,12 @@ export default function EditProfileScreen() {
   async function loadProfile() {
     try {
       const data = await api.users.me();
-
+      setOriginal({
+        username: data.username ?? "",
+        displayName: data.displayName ?? "",
+        bio: data.bio ?? "",
+        email: data.email ?? "",
+      });
       setAvatarUrl(data.avatarUrl ?? null);
       setUsername(data.username ?? "");
       setBio(data.bio ?? "");
@@ -51,12 +77,18 @@ export default function EditProfileScreen() {
 
   async function saveProfile() {
     if (!username.trim()) {
-      Alert.alert("Missing username", "Username cannot be empty");
+      Alert.alert(
+        t("profile:missingUsername"),
+        t("profile:missingUsernameDescription"),
+      );
       return;
     }
 
     if (!displayName.trim()) {
-      Alert.alert("Missing display name", "Display name cannot be empty");
+      Alert.alert(
+        t("profile:missingDisplayName"),
+        t("profile:missingDisplayNameDescription"),
+      );
       return;
     }
 
@@ -85,7 +117,10 @@ export default function EditProfileScreen() {
     } catch (error) {
       console.error(error);
 
-      Alert.alert("Error", getErrorMessage(error, "Could not update profile"));
+      Alert.alert(
+        t("common:error"),
+        getErrorMessage(error, t("profile:updateError")),
+      );
     } finally {
       setLoading(false);
     }
@@ -99,7 +134,10 @@ export default function EditProfileScreen() {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
 
       if (!permission.granted) {
-        Alert.alert("Permission required", "Camera access is required.");
+        Alert.alert(
+          t("common:permissionRequired"),
+          t("profile:cameraPermission"),
+        );
         return;
       }
 
@@ -120,7 +158,10 @@ export default function EditProfileScreen() {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permission.granted) {
-        Alert.alert("Permission required", "Photo library access is required.");
+        Alert.alert(
+          t("common:permissionRequired"),
+          t("profile:libraryPermission"),
+        );
         return;
       }
 
@@ -145,28 +186,56 @@ export default function EditProfileScreen() {
       } catch (error) {
         console.error(error);
         Alert.alert(
-          "Error",
-          getErrorMessage(error, "Could not remove profile picture."),
+          t("common:error"),
+          getErrorMessage(error, t("profile:removeProfilePictureError")),
         );
       }
     }
 
-    Alert.alert("Choose image", "Where would you like to get the image from?", [
+    Alert.alert(t("profile:chooseImage"), t("profile:chooseImageDescription"), [
       {
-        text: "Take Photo",
+        text: t("profile:takePhoto"),
         onPress: openCamera,
       },
       {
-        text: "Choose From Library",
+        text: t("profile:chooseFromLibrary"),
         onPress: openLibrary,
       },
       {
-        text: "Remove Profile Picture",
+        text: t("profile:removeProfilePicture"),
         style: "destructive",
         onPress: removeProfilePicture,
       },
       {
-        text: "Cancel",
+        text: t("common:cancel"),
+        style: "cancel",
+      },
+    ]);
+  }
+
+  async function setAppLanguage(language: "en" | "he") {
+    await i18n.changeLanguage(language);
+    await AsyncStorage.setItem(LANGUAGE_KEY, language);
+
+    await api.users.updateMe({
+      language: language === "he" ? "HE" : "EN",
+    });
+
+    await refreshUser();
+  }
+
+  function changeLanguage() {
+    Alert.alert(t("settings:chooseLanguage"), undefined, [
+      {
+        text: t("settings:english"),
+        onPress: () => setAppLanguage("en"),
+      },
+      {
+        text: t("settings:hebrew"),
+        onPress: () => setAppLanguage("he"),
+      },
+      {
+        text: t("common:cancel"),
         style: "cancel",
       },
     ]);
@@ -176,6 +245,33 @@ export default function EditProfileScreen() {
     await pickImage([1, 1], setNewAvatarUri);
   }
 
+  function handleBack() {
+    if (!hasChanges) {
+      router.back();
+      return;
+    }
+
+    Alert.alert(
+      t("profile:unsavedChanges"),
+      t("profile:unsavedChangesDescription"),
+      [
+        {
+          text: t("common:cancel"),
+          style: "cancel",
+        },
+        {
+          text: t("profile:discard"),
+          style: "destructive",
+          onPress: () => router.back(),
+        },
+        {
+          text: t("common:save"),
+          onPress: saveProfile,
+        },
+      ],
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <ScrollView className="flex-1 bg-white">
@@ -183,11 +279,11 @@ export default function EditProfileScreen() {
           <IconButton
             icon={CaretLeftIcon}
             variant="ghost"
-            onPress={() => router.back()}
+            onPress={handleBack}
           />
 
           <Text className="ml-2 text-2xl font-bold text-black">
-            Edit profile
+            {t("profile:editProfile")}
           </Text>
         </View>
         <View className="px-5 pb-10">
@@ -203,7 +299,9 @@ export default function EditProfileScreen() {
               />
             ) : (
               <View className="h-full w-full items-center justify-center">
-                <Text className="text-gray-500">+ Add cover photo</Text>
+                <Text className="text-gray-500">
+                  {t("profile:addCoverPhoto")}
+                </Text>
               </View>
             )}
           </TouchableOpacity>
@@ -214,64 +312,77 @@ export default function EditProfileScreen() {
             <Avatar uri={displayedAvatar} username={username} size={96} />
 
             <Text className="mt-3 font-semibold text-black">
-              {"Change profile photo"}
+              {t("profile:changeProfilePhoto")}
             </Text>
           </TouchableOpacity>
 
-          <SectionTitle title={"Account"} />
+          <AppButton
+            title={t("settings:language")}
+            onPress={changeLanguage}
+            variant="secondary"
+          />
+
+          <SectionTitle title={t("profile:account")} />
 
           <FormInput
-            label="Display name"
+            label={t("profile:displayName")}
             value={displayName}
             onChangeText={setDisplayName}
-            placeholder="Display name"
+            placeholder={t("profile:displayName")}
           />
 
           <FormInput
-            label="Username"
+            label={t("common:username")}
             value={username}
             onChangeText={setUsername}
-            placeholder="Username"
+            placeholder={t("common:username")}
             autoCapitalize="none"
           />
 
           <FormInput
-            label="Bio"
+            label={t("profile:bio")}
             value={bio}
             onChangeText={setBio}
-            placeholder={"Tell people about yourself..."}
+            placeholder={t("profile:bioPlaceholder")}
             multiline
           />
 
           <FormInput
-            label="Email"
+            label={t("common:email")}
             value={email}
             onChangeText={setEmail}
-            placeholder="Email"
+            placeholder={t("common:email")}
             autoCapitalize="none"
             keyboardType="email-address"
           />
 
           <FormInput
-            label="New password"
+            label={t("profile:newPassword")}
             value={password}
             onChangeText={setPassword}
-            placeholder="Leave empty to keep current password"
+            placeholder={t("profile:passwordPlaceholder")}
             isPassword
           />
 
           <AppButton
-            title={loading ? "Saving..." : "Save"}
+            title={loading ? t("common:saving") : t("common:save")}
             onPress={saveProfile}
             disabled={loading}
           />
 
           <AppButton
-            title="Logout"
+            title={t("common:logout")}
             onPress={() =>
-              Alert.alert("Logout", "Are you sure you want to logout?", [
-                { text: "Cancel", style: "cancel" },
-                { text: "Logout", style: "destructive", onPress: logout },
+              Alert.alert(t("common:logout"), t("profile:logoutConfirmation"), [
+                {
+                  text: t("common:cancel"),
+                  style: "cancel",
+                },
+                {
+                  text: t("common:logout"),
+                  style: "destructive",
+                  onPress: logout,
+                },
               ])
             }
           />

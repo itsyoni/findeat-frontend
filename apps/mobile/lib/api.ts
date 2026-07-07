@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createApi, createApiClient } from "@findeat/api";
-
-export const TOKEN_KEY = "findeat_access_token";
+import { TOKEN_KEY } from "@/constants/storage";
 
 export const API_URL = process.env.EXPO_PUBLIC_API_URL!;
 

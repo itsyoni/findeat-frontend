@@ -2,9 +2,10 @@ import Text from "@/components/common/AppText";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { SignupFormData, signupSchema } from "@/lib/validation/auth";
-import { getErrorMessage } from "@findeat/utils/index";
+import { getErrorMessage } from "@findeat/utils";
 import { AtIcon, EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Alert, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 import { TextInput } from "../common";
@@ -14,8 +15,10 @@ type Props = {
   onRestaurantSignup: () => void;
 };
 
-export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
+export default function SignupForm({ onLogin }: Props) {
+  const { t } = useTranslation(["auth", "common"]);
   const { signup } = useAuth();
+
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
@@ -43,12 +46,12 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
       });
 
       if (availability.usernameAvailable === false) {
-        Alert.alert("Invalid details", "Username is already taken");
+        Alert.alert(t("auth:invalidDetails"), t("auth:usernameTaken"));
         return;
       }
 
       if (availability.emailAvailable === false) {
-        Alert.alert("Invalid details", "Email is already registered");
+        Alert.alert(t("auth:invalidDetails"), t("auth:emailRegistered"));
         return;
       }
 
@@ -62,11 +65,14 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
       );
     } catch (error) {
       if (error instanceof ZodError) {
-        Alert.alert("Invalid details", error.issues[0]?.message);
+        Alert.alert(t("auth:invalidDetails"), error.issues[0]?.message);
         return;
       }
 
-      Alert.alert("Error", getErrorMessage(error, "Could not create account"));
+      Alert.alert(
+        t("common:error"),
+        getErrorMessage(error, t("auth:couldNotCreateAccount")),
+      );
     } finally {
       setLoading(false);
     }
@@ -102,19 +108,19 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
 
   return (
     <View>
-      <Text weight="bold" className="text-2xl text-[#212121] text-center">
-        Create account
+      <Text weight="bold" className="text-center text-2xl text-[#212121]">
+        {t("auth:createAccount")}
       </Text>
 
-      <Text className="mb-6 mt-1 text-gray-500 text-center">
-        Join now and start discovering.
+      <Text className="mb-6 mt-1 text-center text-gray-500">
+        {t("auth:signupSubtitle")}
       </Text>
 
       <View className="gap-4">
         <View className="flex-row gap-3">
           <TextInput
             useBottomSheetInput
-            placeholder="First name"
+            placeholder={t("auth:firstName")}
             value={firstName}
             onChangeText={setFirstName}
             autoCapitalize="words"
@@ -123,16 +129,17 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
 
           <TextInput
             useBottomSheetInput
-            placeholder="Last name"
+            placeholder={t("auth:lastName")}
             value={lastName}
             onChangeText={setLastName}
             autoCapitalize="words"
             className="flex-1 border-0 bg-[#f8f8f8]"
           />
         </View>
+
         <TextInput
           useBottomSheetInput
-          placeholder="Username"
+          placeholder={t("auth:username")}
           value={username}
           onChangeText={(text) => {
             setUsername(text.replace(/[^a-zA-Z0-9_]/g, ""));
@@ -144,13 +151,13 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
 
         {availability.usernameAvailable === false && (
           <Text className="-mt-3 text-sm text-red-500">
-            Username is already taken
+            {t("auth:usernameTaken")}
           </Text>
         )}
 
         <TextInput
           useBottomSheetInput
-          placeholder="Email"
+          placeholder={t("auth:email")}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -161,13 +168,13 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
 
         {availability.emailAvailable === false && (
           <Text className="-mt-3 text-sm text-red-500">
-            Email is already registered
+            {t("auth:emailRegistered")}
           </Text>
         )}
 
         <TextInput
           useBottomSheetInput
-          placeholder="Password"
+          placeholder={t("auth:password")}
           value={password}
           onChangeText={setPassword}
           isPassword
@@ -177,7 +184,7 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
 
         <TextInput
           useBottomSheetInput
-          placeholder="Confirm Password"
+          placeholder={t("auth:confirmPassword")}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           isPassword
@@ -191,15 +198,15 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
           disabled={loading}
         >
           <Text weight="bold" className="text-center text-white">
-            {loading ? "Creating account..." : "Create account"}
+            {loading ? t("auth:creatingAccount") : t("auth:createAccount")}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={onLogin}>
           <Text className="text-center text-gray-500">
-            {"Already have an account? "}
+            {t("auth:alreadyHaveAccount")}
             <Text weight="bold" className="text-[#212121]">
-              Login
+              {t("auth:login")}
             </Text>
           </Text>
         </TouchableOpacity>

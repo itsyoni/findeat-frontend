@@ -4,12 +4,14 @@ import { router } from "expo-router";
 import { Image, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   profile: Profile;
 };
 
 export default function PersonalProfileHeader({ profile }: Props) {
+  const { t } = useTranslation(["common", "profile"]);
   return (
     <View className="bg-white pb-5">
       <View className="items-center">
@@ -51,7 +53,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
               {profile.postsCount ?? 0}
             </Text>
             <Text className="mt-1 text-sm text-gray-500 text-center">
-              Posts
+              {t("profile:posts")}
             </Text>
           </View>
 
@@ -68,7 +70,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
               {profile.followersCount ?? 0}
             </Text>
             <Text className="mt-1 text-sm text-gray-500 text-center">
-              Followers
+              {t("profile:followers")}
             </Text>
           </TouchableOpacity>
 
@@ -85,7 +87,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
               {profile.followingCount ?? 0}
             </Text>
             <Text className="mt-1 text-sm text-gray-500 text-center">
-              Following
+              {t("profile:following")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -94,7 +96,9 @@ export default function PersonalProfileHeader({ profile }: Props) {
           className="mt-5 rounded-lg py-2 bg-[#F5F4F5] w-40"
           onPress={() => router.push("/(profile)/edit-profile")}
         >
-          <Text className="text-center text-black">Edit Profile</Text>
+          <Text className="text-center text-black">
+            {t("profile:editProfile")}
+          </Text>
         </TouchableOpacity>
       </View>
     </View>

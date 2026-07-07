@@ -1,5 +1,6 @@
 import type {
   ConnectionItem,
+  Language,
   Profile,
   UserRelationship,
   UserSearchResult,
@@ -40,6 +41,7 @@ export function createUsersApi(api: AxiosInstance) {
       coverUrl?: string | null;
       email?: string;
       password?: string;
+      language?: Language;
     }) {
       const { data } = await api.patch<Profile>("/users/me", payload);
       return data;

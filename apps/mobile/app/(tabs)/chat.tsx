@@ -10,11 +10,13 @@ import { SearchResultItem } from "@findeat/types/search";
 import { router, useFocusEffect } from "expo-router";
 import { PlusIcon } from "phosphor-react-native";
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TouchableOpacity } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ChatsScreen() {
+  const { t } = useTranslation("common");
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,11 +105,11 @@ export default function ChatsScreen() {
         >
           <SearchBar
             editable={false}
-            placeholder="Search"
+            placeholder={t("search")}
             onPress={() => setIsSearching(true)}
             rightAccessory={
               <TouchableOpacity
-                className="aspect-square items-center justify-center rounded-2xl bg-black h-full"
+                className="h-full aspect-square items-center justify-center rounded-2xl bg-black"
                 onPress={() => router.push("/chats/create-group")}
               >
                 <PlusIcon size={22} color="white" weight="bold" />

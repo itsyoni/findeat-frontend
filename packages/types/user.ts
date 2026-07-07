@@ -1,3 +1,5 @@
+export type Language = "EN" | "HE";
+
 export type User = {
   id: string;
   email: string;
@@ -7,6 +9,7 @@ export type User = {
   avatarUrl: string;
   coverUrl?: string | null;
   bio?: string | null;
+  language: Language;
 };
 
 export type UserSummary = {

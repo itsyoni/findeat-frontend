@@ -13,11 +13,13 @@ import { SearchResultItem } from "@findeat/types/search";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ActivityIndicator, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
+  const { t } = useTranslation("common");
   const { user, isLoading: authLoading } = useAuth();
   const commentsSheetRef = useRef<BottomSheet>(null);
 
@@ -167,7 +169,7 @@ export default function HomeScreen() {
         >
           <SearchBar
             editable={false}
-            placeholder="Search"
+            placeholder={t("search")}
             onPress={() => setIsSearching(true)}
           />
 
@@ -175,8 +177,8 @@ export default function HomeScreen() {
             activeTab={activeFeed}
             onChange={setActiveFeed}
             tabs={[
-              { label: "Content", value: "CONTENT" },
-              { label: "Reviews", value: "REVIEW" },
+              { label: t("content"), value: "CONTENT" },
+              { label: t("reviews"), value: "REVIEW" },
             ]}
           />
 

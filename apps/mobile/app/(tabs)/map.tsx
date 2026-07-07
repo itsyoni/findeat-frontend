@@ -10,12 +10,14 @@ import { MapType } from "@findeat/types/map";
 import * as Location from "expo-location";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FlatList, TouchableOpacity, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function MapScreen() {
+  const { t } = useTranslation(["common", "map"]);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<MapType>("MAP");
@@ -171,8 +173,8 @@ export default function MapScreen() {
         >
           <SearchResultsView
             data={restaurants}
-            placeholder="Search restaurants"
-            emptyText="No restaurants found"
+            placeholder={t("map:searchRestaurants")}
+            emptyText={t("map:noRestaurantsFound")}
             keyExtractor={(restaurant) => restaurant.id}
             searchFn={restaurantSearchFn}
             onCancel={() => setIsSearching(false)}
@@ -189,7 +191,7 @@ export default function MapScreen() {
         >
           <SearchBar
             editable={false}
-            placeholder="Search"
+            placeholder={t("common:search")}
             onPress={() => setIsSearching(true)}
           />
 
@@ -197,8 +199,8 @@ export default function MapScreen() {
             activeTab={viewMode}
             onChange={setViewMode}
             tabs={[
-              { label: "Map", value: "MAP" },
-              { label: "List", value: "LIST" },
+              { label: t("map:map"), value: "MAP" },
+              { label: t("map:list"), value: "LIST" },
             ]}
           />
 

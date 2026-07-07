@@ -1,3 +1,4 @@
+import "@/i18n";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
