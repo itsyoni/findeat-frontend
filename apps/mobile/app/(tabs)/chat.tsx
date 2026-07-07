@@ -1,5 +1,5 @@
 import ChatList from "@/components/chats/ChatList";
-import SearchBar from "@/components/common/SearchBar";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";

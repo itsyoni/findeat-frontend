@@ -1,5 +1,5 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
+import TextInput from "@/components/common/inputs/AppTextInput";
 import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";

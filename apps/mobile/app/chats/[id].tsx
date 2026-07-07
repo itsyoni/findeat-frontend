@@ -1,5 +1,5 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
+import TextInput from "@/components/common/inputs/AppTextInput";
 import Avatar from "@/components/common/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";

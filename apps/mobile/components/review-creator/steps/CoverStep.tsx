@@ -1,5 +1,5 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
+import TextInput from "@/components/common/inputs/AppTextInput";
 import { CreateReviewDraft } from "@findeat/types/review";
 import * as ImagePicker from "expo-image-picker";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";

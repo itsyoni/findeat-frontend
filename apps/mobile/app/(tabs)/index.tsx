@@ -1,5 +1,5 @@
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
-import SearchBar from "@/components/common/SearchBar";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";

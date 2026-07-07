@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
-import SearchBar from "@/components/common/SearchBar";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";

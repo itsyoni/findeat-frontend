@@ -81,3 +81,5 @@ export const CommentsBottomSheet = forwardRef<BottomSheet, Props>(
 );
 
 CommentsBottomSheet.displayName = "CommentsBottomSheet";
+
+export default CommentsBottomSheet;

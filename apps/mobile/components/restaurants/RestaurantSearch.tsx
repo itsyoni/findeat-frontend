@@ -7,7 +7,7 @@ import {
 import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
-import TextInput from "../common/AppTextInput";
+import TextInput from "../common/inputs/AppTextInput";
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
