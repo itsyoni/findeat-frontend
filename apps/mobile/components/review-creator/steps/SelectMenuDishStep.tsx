@@ -1,3 +1,4 @@
+import { TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Dish, Restaurant } from "@findeat/types";

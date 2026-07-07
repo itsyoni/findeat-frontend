@@ -1,3 +1,4 @@
+import { TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { View } from "react-native";
 

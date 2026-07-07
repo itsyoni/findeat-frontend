@@ -1,5 +1,6 @@
 import Text from "@/components/common/AppText";
 import type { TextInputProps } from "react-native";
+import { TextInput } from "../common";
 
 type Props = TextInputProps & {
   label: string;

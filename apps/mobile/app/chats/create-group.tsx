@@ -1,3 +1,4 @@
+import { TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";

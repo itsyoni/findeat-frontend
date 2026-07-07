@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import RatingPicker from "../components/RatingPicker";
+import { TextInput } from "@/components/common";
 
 type Props = {
   draft: CreateReviewDraft;

@@ -6,6 +6,7 @@ import { EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useState } from "react";
 import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
+import { TextInput } from "../common";
 
 type Props = {
   onSignup: () => void;
