@@ -1,4 +1,4 @@
-import SearchBar from "@/components/common/SearchBar";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import {
@@ -44,8 +44,8 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
       return;
     }
 
-    const res = await api.get(`/users/search?q=${text}`);
-    setUsers(res.data);
+    const users = await api.users.search(text);
+    setUsers(users);
   }
 
   async function handleUserPress(userId: string) {
@@ -66,11 +66,11 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
       }
 
       if (mode === "chat") {
-        const res = await api.post(`/chats/start/${userId}`);
+        const conversation = await api.chats.startDirectConversation(userId);
 
         router.push({
           pathname: "/chats/[id]",
-          params: { id: res.data.id },
+          params: { id: conversation.id },
         });
 
         return;

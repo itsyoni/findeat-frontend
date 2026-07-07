@@ -1,11 +1,12 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { LoginFormData, loginSchema } from "@/lib/validation/auth";
+import { getErrorMessage } from "@findeat/utils/index";
 import { EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useState } from "react";
 import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
+import { TextInput } from "../common";
 
 type Props = {
   onSignup: () => void;
@@ -29,16 +30,13 @@ export default function LoginForm({ onSignup }: Props) {
 
       setLoading(true);
       await login(data.email, data.password);
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof ZodError) {
         Alert.alert("Invalid details", error.issues[0]?.message);
         return;
       }
 
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Invalid email or password",
-      );
+      Alert.alert("Error", getErrorMessage(error, "Invalid email or password"));
     } finally {
       setLoading(false);
     }

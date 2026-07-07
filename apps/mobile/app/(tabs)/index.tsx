@@ -1,5 +1,5 @@
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
-import SearchBar from "@/components/common/SearchBar";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
@@ -7,7 +7,7 @@ import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { searchGlobal } from "@/lib/search";
+import { searchGlobal } from "@/services/search";
 import { Post, PostType } from "@findeat/types/post";
 import { SearchResultItem } from "@findeat/types/search";
 import BottomSheet from "@gorhom/bottom-sheet";
@@ -33,8 +33,8 @@ export default function HomeScreen() {
     if (!user) return;
 
     try {
-      const res = await api.get(`/posts/feed?type=${activeFeed}`);
-      setPosts(res.data);
+      const posts = await api.posts.feed(activeFeed);
+      setPosts(posts);
     } catch (error) {
       console.error(error);
     } finally {
@@ -50,9 +50,9 @@ export default function HomeScreen() {
 
   async function toggleLike(postId: string, isLiked: boolean) {
     if (isLiked) {
-      await api.delete(`/posts/${postId}/like`);
+      await api.posts.unlike(postId);
     } else {
-      await api.post(`/posts/${postId}/like`);
+      await api.posts.like(postId);
     }
 
     await loadPosts();
@@ -92,11 +92,9 @@ export default function HomeScreen() {
 
     try {
       if (isWantToTry) {
-        await api.delete(`/restaurants/${restaurantId}/want-to-try`);
+        await api.restaurants.removeWantToTry(restaurantId);
       } else {
-        await api.post(`/restaurants/${restaurantId}/want-to-try`, {
-          savedFromPostId: postId,
-        });
+        await api.restaurants.wantToTry(restaurantId, postId);
       }
     } catch (error) {
       console.error("toggle want to try failed", error);
@@ -144,7 +142,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "black" }}>
+    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
       {isSearching ? (
         <Animated.View
           key="search"

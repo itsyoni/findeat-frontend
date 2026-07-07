@@ -1,5 +1,4 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { Dish } from "@findeat/types";
 import { ReviewDishDraft } from "@findeat/types/review";
 import * as ImagePicker from "expo-image-picker";
@@ -18,6 +17,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import PriceInput from "../components/PriceInput";
 import RatingPicker from "../components/RatingPicker";
+import { AppButton, TextInput } from "@/components/common";
 
 type Props = {
   selectedDish: Dish | null;
@@ -166,14 +166,7 @@ export default function AddDishDetailsStep({
               />
             </View>
 
-            <TouchableOpacity
-              className="mt-8 rounded-2xl bg-black py-4"
-              onPress={handleSave}
-            >
-              <Text className="text-center font-bold text-white">
-                Save dish
-              </Text>
-            </TouchableOpacity>
+            <AppButton title="Save dish" onPress={handleSave} />
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>

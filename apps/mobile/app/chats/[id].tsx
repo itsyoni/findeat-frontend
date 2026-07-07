@@ -1,5 +1,5 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
+
 import Avatar from "@/components/common/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
@@ -19,6 +19,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
+import { LoadingScreen, TextInput } from "@/components/common";
 
 export default function ChatScreen() {
   const { user } = useAuth();
@@ -69,15 +70,15 @@ export default function ChatScreen() {
   const loadChat = useCallback(async () => {
     if (isNewChat) return;
 
-    const res = await api.get(`/chats/${conversationId}`);
-    setChat(res.data);
+    const chat = await api.chats.get(conversationId);
+    setChat(chat);
   }, [conversationId, isNewChat]);
 
   const loadMessages = useCallback(async () => {
     if (isNewChat) return;
 
-    const res = await api.get(`/chats/${conversationId}/messages`);
-    setMessages(res.data);
+    const messages = await api.chats.messages(conversationId);
+    setMessages(messages);
   }, [conversationId, isNewChat]);
 
   useEffect(() => {
@@ -145,24 +146,23 @@ export default function ChatScreen() {
       setSending(true);
 
       if (isNewChat) {
-        const res =
+        const message =
           params.type === "DIRECT"
-            ? await api.post(`/chats/direct/${params.targetUserId}/messages`, {
-                content: trimmedContent,
-              })
-            : await api.post(
-                `/chats/restaurants/${params.restaurantId}/messages`,
-                {
-                  content: trimmedContent,
-                },
+            ? await api.chats.sendDirectMessage(
+                params.targetUserId!,
+                trimmedContent,
+              )
+            : await api.chats.sendRestaurantMessage(
+                params.restaurantId!,
+                trimmedContent,
               );
 
-        setMessages((current) => [...current, res.data]);
+        setMessages((current) => [...current, message]);
         setContent("");
-        setConversationId(res.data.conversationId);
+        setConversationId(message.conversationId);
 
         router.setParams({
-          id: res.data.conversationId,
+          id: message.conversationId,
         });
 
         return;
@@ -204,11 +204,7 @@ export default function ChatScreen() {
   }
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

@@ -1,6 +1,7 @@
+import { AppButton, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
+import { getErrorMessage } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import {
@@ -8,7 +9,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -35,18 +35,15 @@ export default function EditMenuSectionScreen() {
     try {
       setLoading(true);
 
-      await api.patch(`/business/menus/${params.id}`, {
+      await api.menu.updateMenu(params.id, {
         title: title.trim(),
         description: description.trim() || null,
       });
 
       router.back();
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not update section",
-      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not update section"));
     } finally {
       setLoading(false);
     }
@@ -72,13 +69,15 @@ export default function EditMenuSectionScreen() {
           onPress: async () => {
             try {
               setLoading(true);
-              await api.delete(`/business/menus/${params.id}`);
+
+              await api.menu.deleteMenu(params.id);
+
               router.back();
-            } catch (error: any) {
-              console.error(error.response?.data ?? error);
+            } catch (error) {
+              console.error(error);
               Alert.alert(
                 "Error",
-                error.response?.data?.message ?? "Could not delete section",
+                getErrorMessage(error, "Could not delete section"),
               );
             } finally {
               setLoading(false);
@@ -116,25 +115,17 @@ export default function EditMenuSectionScreen() {
             textAlignVertical="top"
           />
 
-          <TouchableOpacity
-            className="mt-6 rounded-2xl bg-black py-4"
+          <AppButton
+            title={loading ? "Saving..." : "Save changes"}
             onPress={saveSection}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-white">
-              {loading ? "Saving..." : "Save changes"}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            className="mt-3 rounded-2xl border border-red-300 py-4"
+          <AppButton
+            title="Delete section"
             onPress={deleteSection}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-red-500">
-              Delete section
-            </Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -1,4 +1,4 @@
-import SearchBar from "@/components/common/SearchBar";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,

@@ -1,12 +1,13 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { SignupFormData, signupSchema } from "@/lib/validation/auth";
+import { getErrorMessage } from "@findeat/utils/index";
 import { AtIcon, EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
+import { TextInput } from "../common";
 
 type Props = {
   onLogin: () => void;
@@ -59,16 +60,13 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
         data.password,
         `${data.firstName} ${data.lastName}`.trim(),
       );
-    } catch (error: any) {
+    } catch (error) {
       if (error instanceof ZodError) {
         Alert.alert("Invalid details", error.issues[0]?.message);
         return;
       }
 
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not create account",
-      );
+      Alert.alert("Error", getErrorMessage(error, "Could not create account"));
     } finally {
       setLoading(false);
     }
@@ -85,14 +83,12 @@ export default function SignupForm({ onLogin, onRestaurantSignup }: Props) {
       }
 
       try {
-        const res = await api.get("/auth/check-availability", {
-          params: {
-            username: username.trim() || undefined,
-            email: email.trim() || undefined,
-          },
+        const availability = await api.auth.checkAvailability({
+          username: username.trim() || undefined,
+          email: email.trim() || undefined,
         });
 
-        setAvailability(res.data);
+        setAvailability(availability);
       } catch {
         setAvailability({
           usernameAvailable: null,

@@ -1,10 +1,10 @@
+import { TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
-import { searchFriends } from "@/lib/search";
+import { searchFriends } from "@/services/search";
 import { SearchResultItem } from "@findeat/types/search";
 import { router, Stack } from "expo-router";
 import { CaretLeftIcon, CheckIcon } from "phosphor-react-native";
@@ -42,14 +42,14 @@ export default function CreateGroupScreen() {
     try {
       setCreating(true);
 
-      const res = await api.post("/chats/groups", {
+      const group = await api.chats.createGroup({
         title: trimmedTitle,
         participantIds: selectedUsers.map((user) => user.id),
       });
 
       router.replace({
         pathname: "/chats/[id]",
-        params: { id: res.data.id },
+        params: { id: group.id },
       });
     } catch (error) {
       console.error("create group failed", error);

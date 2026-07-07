@@ -1,43 +1,35 @@
+import { AppButton, LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Menu } from "@findeat/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BusinessMenuScreen() {
   const [loading, setLoading] = useState(true);
   const [menus, setMenus] = useState<Menu[]>([]);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadBusiness();
-    }, []),
-  );
-
-  async function loadBusiness() {
+  const loadBusiness = useCallback(async () => {
     try {
-      const res = await api.get("/business/menus");
-      setMenus(res.data);
+      const menus = await api.menu.myMenus();
+      setMenus(menus);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadBusiness();
+    }, [loadBusiness]),
+  );
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -48,14 +40,10 @@ export default function BusinessMenuScreen() {
           Manage the dishes people can review.
         </Text>
 
-        <TouchableOpacity
-          className="mt-5 rounded-2xl bg-black py-4"
+        <AppButton
+          title="Add menu section"
           onPress={() => router.push("/business/menu/create")}
-        >
-          <Text className="text-center font-bold text-white">
-            Add menu section
-          </Text>
-        </TouchableOpacity>
+        />
       </View>
 
       <FlatList
@@ -79,21 +67,18 @@ export default function BusinessMenuScreen() {
               {item.items.length} dishes
             </Text>
 
-            <TouchableOpacity
-              className="mt-4 rounded-xl bg-white py-3"
+            <AppButton
+              title="Manage dishes"
               onPress={() =>
                 router.push({
                   pathname: "/business/menu/[id]",
                   params: { id: item.id },
                 })
               }
-            >
-              <Text className="text-center font-bold text-black">
-                Manage dishes
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="mt-3 rounded-xl bg-white py-3"
+            />
+
+            <AppButton
+              title="Edit section"
               onPress={() =>
                 router.push({
                   pathname: "/business/menu/edit-section/[id]",
@@ -105,11 +90,7 @@ export default function BusinessMenuScreen() {
                   },
                 })
               }
-            >
-              <Text className="text-center font-bold text-black">
-                Edit section
-              </Text>
-            </TouchableOpacity>
+            />
           </View>
         )}
       />

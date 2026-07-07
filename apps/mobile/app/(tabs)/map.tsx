@@ -1,6 +1,7 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
-import SearchBar from "@/components/common/SearchBar";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
@@ -9,12 +10,7 @@ import { MapType } from "@findeat/types/map";
 import * as Location from "expo-location";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -54,10 +50,10 @@ export default function MapScreen() {
 
   async function loadRestaurants() {
     try {
-      const res = await api.get("/restaurants/saved/me");
+      const restaurants = await api.restaurants.savedMine();
 
       setRestaurants(
-        res.data.map((item: any) => ({
+        restaurants.map((item: any) => ({
           ...item.restaurant,
           userRestaurant: {
             wantToTry: item.wantToTry,
@@ -161,11 +157,7 @@ export default function MapScreen() {
   }
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

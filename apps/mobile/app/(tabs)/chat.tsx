@@ -1,15 +1,16 @@
 import ChatList from "@/components/chats/ChatList";
-import SearchBar from "@/components/common/SearchBar";
+import { LoadingScreen } from "@/components/common";
+import SearchBar from "@/components/common/inputs/SearchBar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
-import { searchGlobal } from "@/lib/search";
+import { searchGlobal } from "@/services/search";
 import { Chat } from "@findeat/types/chat";
 import { SearchResultItem } from "@findeat/types/search";
 import { router, useFocusEffect } from "expo-router";
 import { PlusIcon } from "phosphor-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -27,8 +28,8 @@ export default function ChatsScreen() {
 
   async function loadChats() {
     try {
-      const res = await api.get("/chats");
-      setChats(res.data);
+      const chats = await api.chats.list();
+      setChats(chats);
     } catch (error) {
       console.error(error);
     } finally {
@@ -73,11 +74,7 @@ export default function ChatsScreen() {
   }
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

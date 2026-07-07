@@ -1,53 +1,43 @@
-import Text from "@/components/common/AppText";
+import { AppButton } from "@/components/common";
 import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
+import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { PostType } from "@findeat/types/post";
-import { Profile } from "@findeat/types/profile";
 import { ManagedRestaurant } from "@findeat/types/restaurant";
+import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 export default function ProfileScreen() {
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile, loading, refresh } = useMyProfile();
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [loading, setLoading] = useState(true);
   const [managedRestaurants, setManagedRestaurants] = useState<
     ManagedRestaurant[]
   >([]);
 
-  const posts = useMemo(() => {
-    return profile?.posts?.filter((post) => post.type === activeFeed) ?? [];
-  }, [profile, activeFeed]);
+  const posts = useMemo(
+    () => filterPostsByType(profile?.posts, activeFeed),
+    [profile?.posts, activeFeed],
+  );
+
+  const loadManagedRestaurants = useCallback(async () => {
+    try {
+      const managedRestaurants = await api.restaurants.mine();
+      setManagedRestaurants(managedRestaurants);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      loadProfile();
-      loadManagedRestaurants();
-    }, []),
+      void refresh();
+      void loadManagedRestaurants();
+    }, [refresh, loadManagedRestaurants]),
   );
-
-  async function loadProfile() {
-    try {
-      const res = await api.get("/users/me");
-      setProfile(res.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function loadManagedRestaurants() {
-    try {
-      const res = await api.get("/restaurants/me");
-      setManagedRestaurants(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   if (loading || !profile) {
     return (
@@ -65,27 +55,19 @@ export default function ProfileScreen() {
 
       {isAdmin && (
         <View className="px-5 pb-4">
-          <TouchableOpacity
-            className="rounded-2xl bg-black py-4"
+          <AppButton
+            title="Restaurant Claims"
             onPress={() => router.push("/admin/claims")}
-          >
-            <Text className="text-center font-bold text-white">
-              Restaurant Claims
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       )}
 
       {managedRestaurants.length > 0 && (
         <View className="px-5 pb-4">
-          <TouchableOpacity
-            className="rounded-2xl bg-black py-4"
+          <AppButton
+            title="Manage Restaurants"
             onPress={() => router.push("/business/menu")}
-          >
-            <Text className="text-center font-bold text-white">
-              Manage restaurant
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
       )}
 

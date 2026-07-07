@@ -15,7 +15,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
       <View className="items-center">
         <Image
           source={{ uri: profile.coverUrl ?? "fallback" }}
-          className="h-70 w-full bg-gray-200"
+          className="h-70 w-full bg-gray-200 rounded-b-4xl"
           resizeMode="cover"
         />
         <View className="-mt-15 px-5">
@@ -25,7 +25,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
             size={100}
             style={{
               outlineStyle: "solid",
-              outlineWidth: 5,
+              outlineWidth: 7,
               outlineColor: "white",
             }}
           />

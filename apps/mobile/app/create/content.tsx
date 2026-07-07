@@ -1,13 +1,11 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
-
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { ManagedRestaurant, SelectedRestaurant } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -19,6 +17,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { AppButton, TextInput } from "@/components/common";
 
 export default function CreateContentScreen() {
   const [description, setDescription] = useState("");
@@ -35,18 +34,33 @@ export default function CreateContentScreen() {
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<SelectedRestaurant | null>(null);
 
-  useEffect(() => {
-    loadManagedRestaurants();
-  }, []);
+  async function getRestaurantId() {
+    if (!selectedRestaurant) return undefined;
 
-  async function loadManagedRestaurants() {
+    if (selectedRestaurant.source === "FINDEAT") {
+      return selectedRestaurant.restaurant.id;
+    }
+
+    const restaurant = await api.restaurants.fromGoogle({
+      name: selectedRestaurant.name,
+      address: selectedRestaurant.address,
+      city: selectedRestaurant.city,
+      latitude: selectedRestaurant.latitude,
+      longitude: selectedRestaurant.longitude,
+      googlePlaceId: selectedRestaurant.googlePlaceId,
+    });
+
+    return restaurant.id;
+  }
+
+  const loadManagedRestaurants = useCallback(async () => {
     try {
-      const res = await api.get("/restaurants/me");
-      setManagedRestaurants(res.data);
+      const restaurants = await api.restaurants.mine();
+      setManagedRestaurants(restaurants);
     } catch (error) {
       console.error(error);
     }
-  }
+  }, []);
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -57,25 +71,6 @@ export default function CreateContentScreen() {
     if (!result.canceled) {
       setImageUri(result.assets[0].uri);
     }
-  }
-
-  async function getRestaurantId() {
-    if (!selectedRestaurant) return undefined;
-
-    if (selectedRestaurant.source === "FINDEAT") {
-      return selectedRestaurant.restaurant.id;
-    }
-
-    const res = await api.post("/restaurants/from-google", {
-      name: selectedRestaurant.name,
-      address: selectedRestaurant.address,
-      city: selectedRestaurant.city,
-      latitude: selectedRestaurant.latitude,
-      longitude: selectedRestaurant.longitude,
-      googlePlaceId: selectedRestaurant.googlePlaceId,
-    });
-
-    return res.data.id as string;
   }
 
   async function handleCreatePost() {
@@ -97,7 +92,7 @@ export default function CreateContentScreen() {
       let imageUrl: string | undefined;
 
       if (imageUri) {
-        imageUrl = await uploadImageToCloudinary(imageUri);
+        imageUrl = await uploadImage(imageUri);
       }
 
       const restaurantId =
@@ -110,22 +105,15 @@ export default function CreateContentScreen() {
 
       const createdPost =
         postingAs.type === "RESTAURANT"
-          ? (
-              await api.post(
-                `/posts/restaurants/${postingAs.restaurantId}/posts`,
-                {
-                  description: description.trim(),
-                  imageUrl,
-                },
-              )
-            ).data
-          : (
-              await api.post("/posts/content", {
-                description: description.trim(),
-                imageUrl,
-                restaurantId,
-              })
-            ).data;
+          ? await api.posts.createRestaurantPost(postingAs.restaurantId, {
+              description: description.trim(),
+              imageUrl,
+            })
+          : await api.posts.createContent({
+              description: description.trim(),
+              imageUrl,
+              restaurantId,
+            });
 
       setDescription("");
       setImageUri(undefined);
@@ -139,17 +127,18 @@ export default function CreateContentScreen() {
           refresh: Date.now().toString(),
         },
       });
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
+    } catch (error) {
+      console.error(error);
 
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not create post",
-      );
+      Alert.alert("Error", getErrorMessage(error, "Could not create post"));
     } finally {
       setLoading(false);
     }
   }
+
+  useEffect(() => {
+    void loadManagedRestaurants();
+  }, [loadManagedRestaurants]);
 
   return (
     <KeyboardAvoidingView
@@ -176,22 +165,11 @@ export default function CreateContentScreen() {
               </Text>
 
               <View className="gap-3">
-                <TouchableOpacity
-                  className={`rounded-2xl border px-4 py-4 ${
-                    postingAs.type === "USER"
-                      ? "border-black bg-black"
-                      : "border-gray-200 bg-white"
-                  }`}
+                <AppButton
+                  title="My personal profile"
+                  variant={postingAs.type === "USER" ? "primary" : "outline"}
                   onPress={() => setPostingAs({ type: "USER" })}
-                >
-                  <Text
-                    className={`font-bold ${
-                      postingAs.type === "USER" ? "text-white" : "text-black"
-                    }`}
-                  >
-                    My personal profile
-                  </Text>
-                </TouchableOpacity>
+                />
 
                 {managedRestaurants.map((restaurant) => (
                   <TouchableOpacity
@@ -269,15 +247,11 @@ export default function CreateContentScreen() {
             textAlignVertical="top"
           />
 
-          <TouchableOpacity
-            className="mt-6 rounded-2xl bg-black py-4"
+          <AppButton
+            title={loading ? "Publishing..." : "Publish"}
             onPress={handleCreatePost}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-white">
-              {loading ? "Publishing..." : "Publish"}
-            </Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

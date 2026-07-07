@@ -3,59 +3,52 @@ import Avatar from "@/components/common/Avatar";
 import Tabs from "@/components/common/Tabs";
 import ProfileManagedRestaurants from "@/components/profile/ProfileManagedRestaurants";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
+import { useUserProfile } from "@/hooks/useUserProfile";
 import { api } from "@/lib/api";
-import { Profile } from "@findeat/types";
 import { PostType } from "@findeat/types/post";
+import {
+  filterPostsByType,
+  getRelationshipButtonColor,
+  getRelationshipButtonText,
+  isFollowingRelationship,
+  isFriendRelationship,
+} from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
-  const [user, setUser] = useState<Profile | null>(null);
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [loading, setLoading] = useState(true);
+  const {
+    profile: user,
+    setProfile: setUser,
+    loading,
+  } = useUserProfile(id as string);
 
-  const posts = useMemo(() => {
-    return user?.posts?.filter((post) => post.type === activeFeed) ?? [];
-  }, [user, activeFeed]);
-
-  const loadUser = useCallback(async () => {
-    try {
-      const res = await api.get(`/users/${id}`);
-      setUser(res.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
-  useEffect(() => {
-    loadUser();
-  }, [loadUser]);
+  const posts = useMemo(
+    () => filterPostsByType(user?.posts, activeFeed),
+    [user, activeFeed],
+  );
 
   async function toggleFollow() {
     if (!user) return;
 
     try {
-      const shouldUnfollow =
-        user.relationship === "FOLLOWING" || user.relationship === "FRIENDS";
+      const shouldUnfollow = isFollowingRelationship(user.relationship);
 
-      const res = shouldUnfollow
-        ? await api.delete(`/users/${user.id}/follow`)
-        : await api.post(`/users/${user.id}/follow`);
+      const result = shouldUnfollow
+        ? await api.users.unfollow(user.id)
+        : await api.users.follow(user.id);
 
       setUser((currentUser) =>
         currentUser
           ? {
               ...currentUser,
-              relationship: res.data.relationship,
-              isFollowing:
-                res.data.relationship === "FOLLOWING" ||
-                res.data.relationship === "FRIENDS",
+              relationship: result.relationship,
+              isFollowing: isFollowingRelationship(result.relationship),
               followersCount: shouldUnfollow
                 ? Math.max(0, currentUser.followersCount - 1)
                 : currentUser.followersCount + 1,
@@ -71,27 +64,14 @@ export default function UserProfileScreen() {
     if (!user) return;
 
     try {
-      const res = await api.post(`/chats/start/${user.id}`);
+      const chat = await api.chats.startDirectConversation(user.id);
 
       router.push({
         pathname: "/chats/[id]",
-        params: { id: res.data.id },
+        params: { id: chat.id },
       });
     } catch (error) {
       console.error(error);
-    }
-  }
-
-  function getFollowButtonText(relationship?: string) {
-    switch (relationship) {
-      case "FRIENDS":
-        return "Friends";
-      case "FOLLOWING":
-        return "Following";
-      case "FOLLOWED_BY":
-        return "Follow back";
-      default:
-        return "Follow";
     }
   }
 
@@ -191,21 +171,19 @@ export default function UserProfileScreen() {
 
           <View className="mt-6 flex-row gap-3">
             <TouchableOpacity
-              className={`flex-1 rounded-2xl py-4 ${
-                user.relationship === "FRIENDS"
-                  ? "bg-[#F7D786]"
-                  : user.relationship === "FOLLOWING"
-                    ? "bg-gray-900"
-                    : "bg-black"
-              }`}
+              className={`flex-1 rounded-2xl py-4 ${getRelationshipButtonColor(
+                user.relationship,
+              )}`}
               onPress={toggleFollow}
             >
               <Text
                 className={`text-center font-bold ${
-                  user.relationship === "FRIENDS" ? "text-black" : "text-white"
+                  isFriendRelationship(user.relationship)
+                    ? "text-black"
+                    : "text-white"
                 }`}
               >
-                {getFollowButtonText(user.relationship)}
+                {getRelationshipButtonText(user.relationship)}
               </Text>
             </TouchableOpacity>
 

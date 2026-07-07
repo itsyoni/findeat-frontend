@@ -1,16 +1,19 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import Tabs from "@/components/common/Tabs";
 import { api } from "@/lib/api";
-import { ConnectionItem } from "@findeat/types";
-import { router, useLocalSearchParams } from "expo-router";
-import { useEffect, useState } from "react";
+import { ConnectionItem, UserRelationship } from "@findeat/types";
 import {
-  ActivityIndicator,
-  FlatList,
-  TouchableOpacity,
-  View,
-} from "react-native";
+  getNextRelationshipAfterToggle,
+  getRelationshipButtonColor,
+  getRelationshipButtonText,
+  isFollowingRelationship,
+  isFriendRelationship,
+} from "@findeat/utils";
+import { router, useLocalSearchParams } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
+import { FlatList, TouchableOpacity, View } from "react-native";
 
 type ConnectionsTab = "followers" | "following" | "friends";
 
@@ -27,32 +30,36 @@ export default function ConnectionsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadConnections();
-  }, [id, activeTab]);
-
   async function onRefresh() {
     setRefreshing(true);
     await loadConnections();
     setRefreshing(false);
   }
 
-  async function loadConnections() {
+  const loadConnections = useCallback(async () => {
     try {
       setLoading(true);
 
-      const res = await api.get(`/users/${id}/${activeTab}`);
-      setItems(res.data);
+      const connections =
+        activeTab === "followers"
+          ? await api.users.followers(id)
+          : activeTab === "following"
+            ? await api.users.following(id)
+            : await api.users.friends(id);
+
+      setItems(connections);
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [id, activeTab]);
 
-  async function toggleFollow(targetUserId: string, relationship?: string) {
-    const isFollowing =
-      relationship === "FOLLOWING" || relationship === "FRIENDS";
+  async function toggleFollow(
+    targetUserId: string,
+    relationship?: UserRelationship,
+  ) {
+    const isFollowing = isFollowingRelationship(relationship);
 
     setItems((prev) =>
       prev.map((item) => {
@@ -60,12 +67,7 @@ export default function ConnectionsScreen() {
 
         if (user?.id !== targetUserId) return item;
 
-        const nextRelationship =
-          relationship === "FRIENDS"
-            ? "FOLLOWED_BY"
-            : isFollowing
-              ? "NONE"
-              : "FOLLOWING";
+        const nextRelationship = getNextRelationshipAfterToggle(relationship);
 
         if (activeTab === "following") {
           return {
@@ -87,26 +89,20 @@ export default function ConnectionsScreen() {
       }),
     );
 
-    if (isFollowing) {
-      await api.delete(`/users/${targetUserId}/follow`);
-    } else {
-      await api.post(`/users/${targetUserId}/follow`);
-    }
-
+    await api.users.toggleFollow(targetUserId, isFollowing);
     await loadConnections();
   }
-
   function getUserFromConnection(item: ConnectionItem) {
     if (activeTab === "following") return item.following;
     return item.follower;
   }
 
+  useEffect(() => {
+    loadConnections();
+  }, [loadConnections]);
+
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (
@@ -142,17 +138,8 @@ export default function ConnectionsScreen() {
           if (!user) return null;
 
           const relationship = user.relationship;
-          const isFollowing =
-            relationship === "FOLLOWING" || relationship === "FRIENDS";
 
-          const buttonText =
-            relationship === "FRIENDS"
-              ? "Friends"
-              : relationship === "FOLLOWING"
-                ? "Following"
-                : relationship === "FOLLOWED_BY"
-                  ? "Follow back"
-                  : "Follow";
+          const buttonText = getRelationshipButtonText(relationship);
 
           return (
             <TouchableOpacity
@@ -185,13 +172,9 @@ export default function ConnectionsScreen() {
               </View>
 
               <TouchableOpacity
-                className={`w-30 items-center rounded-xl px-4 py-2 ${
-                  relationship === "FRIENDS"
-                    ? "bg-[#F7D786]"
-                    : relationship === "FOLLOWING"
-                      ? "bg-gray-900"
-                      : "bg-black"
-                }`}
+                className={`w-30 items-center rounded-xl px-4 py-2 ${getRelationshipButtonColor(
+                  relationship,
+                )}`}
                 onPress={(event) => {
                   event.stopPropagation();
                   toggleFollow(user.id, relationship);
@@ -199,7 +182,7 @@ export default function ConnectionsScreen() {
               >
                 <Text
                   className={`text-center font-bold ${
-                    user.relationship === "FRIENDS"
+                    isFriendRelationship(user.relationship)
                       ? "text-black"
                       : "text-white"
                   }`}

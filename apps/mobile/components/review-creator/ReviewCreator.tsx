@@ -1,5 +1,5 @@
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { Dish } from "@findeat/types";
 import { CreateReviewDraft, CreateReviewStep } from "@findeat/types/review";
 import { router } from "expo-router";
@@ -52,7 +52,7 @@ export default function ReviewCreator() {
       return draft.restaurant.restaurant.id;
     }
 
-    const res = await api.post("/restaurants/from-google", {
+    const restaurant = await api.restaurants.fromGoogle({
       name: draft.restaurant.name,
       address: draft.restaurant.address,
       city: draft.restaurant.city,
@@ -61,7 +61,7 @@ export default function ReviewCreator() {
       googlePlaceId: draft.restaurant.googlePlaceId,
     });
 
-    return res.data.id as string;
+    return restaurant.id;
   }
 
   async function publishReview() {
@@ -88,7 +88,7 @@ export default function ReviewCreator() {
       }
 
       const coverImageUrl = draft.coverImageUri
-        ? await uploadImageToCloudinary(draft.coverImageUri)
+        ? await uploadImage(draft.coverImageUri)
         : undefined;
 
       const uploadedItems = await Promise.all(
@@ -97,7 +97,7 @@ export default function ReviewCreator() {
           customDishName: item.customDishName,
           customPrice: item.customPrice,
           imageUrl: item.imageUri
-            ? await uploadImageToCloudinary(item.imageUri)
+            ? await uploadImage(item.imageUri)
             : item.fallbackImageUrl,
           rating: item.rating,
           text: item.text,
@@ -105,7 +105,7 @@ export default function ReviewCreator() {
         })),
       );
 
-      const res = await api.post("/posts/review", {
+      const createdPost = await api.posts.createReview({
         restaurantId,
         coverImageUrl,
         overallRating,
@@ -116,8 +116,6 @@ export default function ReviewCreator() {
         items: uploadedItems,
       });
 
-      const createdPost = res.data;
-
       router.replace({
         pathname: "/(tabs)",
         params: {
@@ -126,12 +124,9 @@ export default function ReviewCreator() {
           refresh: Date.now().toString(),
         },
       });
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not publish review",
-      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not publish review"));
     } finally {
       setLoading(false);
     }

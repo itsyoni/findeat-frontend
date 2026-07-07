@@ -1,14 +1,10 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
+import { getErrorMessage, removeById } from "@findeat/utils";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 
 type Claim = {
   id: string;
@@ -33,52 +29,46 @@ export default function AdminClaimsScreen() {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadClaims();
-    }, []),
-  );
-
-  async function loadClaims() {
+  const loadClaims = useCallback(async () => {
     try {
-      const res = await api.get("/restaurants/claims/pending");
-      setClaims(res.data);
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert("Error", "Could not load claims");
+      const claims = await api.restaurants.pendingClaims();
+      setClaims(claims);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not load claims"));
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
   async function approveClaim(claimId: string) {
     try {
-      await api.post(`/restaurants/claims/${claimId}/approve`);
-      setClaims((prev) => prev.filter((claim) => claim.id !== claimId));
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert("Error", "Could not approve claim");
+      await api.restaurants.approveClaim(claimId);
+      setClaims((prev) => removeById(prev, claimId));
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not approve claim"));
     }
   }
 
   async function rejectClaim(claimId: string) {
     try {
-      await api.post(`/restaurants/claims/${claimId}/reject`, {
-        reason: "Rejected by admin",
-      });
-      setClaims((prev) => prev.filter((claim) => claim.id !== claimId));
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert("Error", "Could not reject claim");
+      await api.restaurants.rejectClaim(claimId, "Rejected by admin");
+      setClaims((prev) => removeById(prev, claimId));
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not reject claim"));
     }
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      void loadClaims();
+    }, [loadClaims]),
+  );
+
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

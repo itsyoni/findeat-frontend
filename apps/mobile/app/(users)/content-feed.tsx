@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { api } from "@/lib/api";
@@ -5,13 +6,8 @@ import { Post } from "@findeat/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dimensions, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const { height } = Dimensions.get("window");
@@ -35,24 +31,20 @@ export default function UserContentFeedScreen() {
     );
   }, [posts, postId]);
 
-  async function loadPosts() {
+  const loadPosts = useCallback(async () => {
     try {
-      const res = await api.get(`/users/${userId}`);
-      setPosts(res.data.posts.filter((post: Post) => post.type === "CONTENT"));
+      const user = await api.users.get(userId);
+
+      setPosts(user.posts.filter((post: Post) => post.type === "CONTENT"));
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [userId]);
 
   async function toggleLike(postId: string, isLiked: boolean) {
-    if (isLiked) {
-      await api.delete(`/posts/${postId}/like`);
-    } else {
-      await api.post(`/posts/${postId}/like`);
-    }
-
+    await api.posts.toggleLike(postId, isLiked);
     await loadPosts();
   }
 
@@ -61,13 +53,7 @@ export default function UserContentFeedScreen() {
     restaurantId: string,
     isWantToTry: boolean,
   ) {
-    if (isWantToTry) {
-      await api.delete(`/restaurants/${restaurantId}/want-to-try`);
-    } else {
-      await api.post(`/restaurants/${restaurantId}/want-to-try`, {
-        savedFromPostId: postId,
-      });
-    }
+    await api.restaurants.toggleWantToTry(restaurantId, isWantToTry, postId);
 
     await loadPosts();
   }
@@ -79,14 +65,10 @@ export default function UserContentFeedScreen() {
 
   useEffect(() => {
     loadPosts();
-  }, []);
+  }, [loadPosts]);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-black">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

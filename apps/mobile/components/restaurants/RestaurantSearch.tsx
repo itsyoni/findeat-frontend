@@ -2,13 +2,12 @@ import { api } from "@/lib/api";
 import {
   GoogleRestaurantSuggestion,
   Restaurant,
-  RestaurantSearchResponse,
   SelectedRestaurant,
 } from "@findeat/types";
 import { useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
-import TextInput from "../common/AppTextInput";
+import TextInput from "../common/inputs/AppTextInput";
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
@@ -36,12 +35,10 @@ export default function RestaurantSearch({
       return;
     }
 
-    const res = await api.get<RestaurantSearchResponse>(
-      `/restaurants/search?q=${encodeURIComponent(text)}`,
-    );
+    const results = await api.restaurants.search(text);
 
-    setFindeatRestaurants(res.data.findeat ?? []);
-    setGoogleRestaurants(res.data.google ?? []);
+    setFindeatRestaurants(results.findeat ?? []);
+    setGoogleRestaurants(results.google ?? []);
   }
 
   const selectedName =

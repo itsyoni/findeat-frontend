@@ -1,20 +1,13 @@
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { Menu } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { AppButton, LoadingScreen, TextInput } from "@/components/common";
 
 export default function ManageMenuScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -31,8 +24,8 @@ export default function ManageMenuScreen() {
     if (!id) return;
 
     try {
-      const res = await api.get(`/business/menus/${id}`);
-      setMenu(res.data);
+      const menu = await api.menu.getMenu(id);
+      setMenu(menu);
     } catch (error) {
       console.error(error);
     } finally {
@@ -41,25 +34,26 @@ export default function ManageMenuScreen() {
   }, [id]);
 
   async function addDish() {
+    if (!id) return;
+
     if (!dishName.trim()) {
       Alert.alert("Missing name", "Dish name is required");
       return;
     }
 
     const parsedPrice = dishPrice.trim() ? Number(dishPrice) : undefined;
-    const imageUrl = dishImageUri
-      ? await uploadImageToCloudinary(dishImageUri)
-      : undefined;
 
     if (dishPrice.trim() && Number.isNaN(parsedPrice)) {
       Alert.alert("Invalid price", "Price must be a number");
       return;
     }
 
+    const imageUrl = dishImageUri ? await uploadImage(dishImageUri) : undefined;
+
     try {
       setCreating(true);
 
-      await api.post(`/business/menus/${id}/dishes`, {
+      await api.menu.createDish(id, {
         name: dishName.trim(),
         description: dishDescription.trim() || undefined,
         price: parsedPrice,
@@ -74,7 +68,7 @@ export default function ManageMenuScreen() {
       await loadMenu();
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not add dish");
+      Alert.alert("Error", getErrorMessage(error, "Could not add dish"));
     } finally {
       setCreating(false);
     }
@@ -98,11 +92,7 @@ export default function ManageMenuScreen() {
   );
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (!menu) {
@@ -174,15 +164,11 @@ export default function ManageMenuScreen() {
                 textAlignVertical="top"
               />
 
-              <TouchableOpacity
-                className="mt-4 rounded-2xl bg-black py-4"
+              <AppButton
+                title={creating ? "Adding..." : "Add dish"}
                 onPress={addDish}
                 disabled={creating}
-              >
-                <Text className="text-center font-bold text-white">
-                  {creating ? "Adding..." : "Add dish"}
-                </Text>
-              </TouchableOpacity>
+              />
             </View>
 
             <Text className="mt-8 mb-4 text-xl font-bold text-black">

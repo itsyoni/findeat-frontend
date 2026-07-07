@@ -1,6 +1,12 @@
 import { AuthContextType, User } from "@findeat/types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { api } from "../lib/api";
 
 const TOKEN_KEY = "findeat_access_token";
@@ -12,36 +18,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  async function loadUser() {
+  const loadUser = useCallback(async () => {
     try {
       const savedToken = await AsyncStorage.getItem(TOKEN_KEY);
 
       if (!savedToken) return;
 
-      api.defaults.headers.common.Authorization = `Bearer ${savedToken}`;
-
-      const res = await api.get<User>("/auth/me");
+      const user = await api.auth.me();
 
       setToken(savedToken);
-      setUser(res.data);
-    } catch (error: any) {
+      setUser(user);
+    } catch {
       await AsyncStorage.removeItem(TOKEN_KEY);
       setToken(null);
       setUser(null);
     } finally {
       setIsLoading(false);
     }
-  }
+  }, []);
 
   async function login(email: string, password: string) {
-    const res = await api.post("/auth/login", { email, password });
-
-    const accessToken = res.data.accessToken;
-    const user = res.data.user;
+    const { accessToken, user } = await api.auth.login({
+      email,
+      password,
+    });
 
     await AsyncStorage.setItem(TOKEN_KEY, accessToken);
-
-    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
     setToken(accessToken);
     setUser(user);
@@ -53,19 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     displayName: string,
   ) {
-    const res = await api.post("/auth/signup", {
+    const { accessToken, user } = await api.auth.signup({
       email,
       username,
       password,
       displayName,
     });
 
-    const accessToken = res.data.accessToken;
-    const user = res.data.user;
-
     await AsyncStorage.setItem(TOKEN_KEY, accessToken);
-
-    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
 
     setToken(accessToken);
     setUser(user);
@@ -74,20 +71,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   async function logout() {
     await AsyncStorage.removeItem(TOKEN_KEY);
 
-    delete api.defaults.headers.common.Authorization;
-
     setToken(null);
     setUser(null);
   }
 
   async function refreshUser() {
-    const res = await api.get<User>("/auth/me");
-    setUser(res.data);
+    const user = await api.auth.me();
+    setUser(user);
   }
 
   useEffect(() => {
-    loadUser();
-  }, []);
+    void loadUser();
+  }, [loadUser]);
 
   return (
     <AuthContext.Provider

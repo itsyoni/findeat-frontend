@@ -1,42 +1,23 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Tabs from "@/components/common/Tabs";
 import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
 import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSection";
 import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSection";
+import { useRestaurant } from "@/hooks/useRestaurant";
 import { api } from "@/lib/api";
-import { Restaurant } from "@findeat/types";
+import type { Restaurant } from "@findeat/types";
+import { filterPostsByType, getErrorMessage } from "@findeat/utils";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { useMemo, useState } from "react";
+import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 
 type RestaurantTab = "CONTENT" | "REVIEWS" | "MENU";
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
+  const { restaurant, setRestaurant, loading } = useRestaurant(id);
   const [activeTab, setActiveTab] = useState<RestaurantTab>("CONTENT");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadRestaurant();
-  }, [id]);
-
-  async function loadRestaurant() {
-    try {
-      const res = await api.get(`/restaurants/${id}`);
-      setRestaurant(res.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function toggleFollow() {
     if (!restaurant) return;
@@ -55,9 +36,9 @@ export default function RestaurantScreen() {
 
     try {
       if (wasFollowing) {
-        await api.delete(`/restaurants/${restaurant.id}/follow`);
+        await api.restaurants.unfollow(restaurant.id);
       } else {
-        await api.post(`/restaurants/${restaurant.id}/follow`);
+        await api.restaurants.follow(restaurant.id);
       }
     } catch {
       setRestaurant((prev) =>
@@ -72,7 +53,7 @@ export default function RestaurantScreen() {
     }
   }
 
-  async function updateRestaurantStatus(
+  function updateRestaurantStatus(
     nextStatus: Partial<Restaurant["userRestaurant"]>,
   ) {
     if (!restaurant) return;
@@ -96,7 +77,7 @@ export default function RestaurantScreen() {
   async function markVisited() {
     if (!restaurant) return;
 
-    await api.post(`/restaurants/${restaurant.id}/visited`);
+    await api.restaurants.visited(restaurant.id);
 
     updateRestaurantStatus({
       visited: true,
@@ -110,10 +91,10 @@ export default function RestaurantScreen() {
     const isFavorite = restaurant.userRestaurant?.favorite === true;
 
     if (isFavorite) {
-      await api.delete(`/restaurants/${restaurant.id}/favorite`);
+      await api.restaurants.removeFavorite(restaurant.id);
       updateRestaurantStatus({ favorite: false });
     } else {
-      await api.post(`/restaurants/${restaurant.id}/favorite`);
+      await api.restaurants.favorite(restaurant.id);
       updateRestaurantStatus({
         favorite: true,
         visited: true,
@@ -126,7 +107,7 @@ export default function RestaurantScreen() {
     if (!restaurant) return;
 
     try {
-      await api.post(`/restaurants/${restaurant.id}/start-claim`);
+      await api.restaurants.startClaim(restaurant.id);
 
       setRestaurant((prev) =>
         prev
@@ -141,12 +122,9 @@ export default function RestaurantScreen() {
         "Request sent",
         "Your request was sent. We’ll review it soon.",
       );
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not send request",
-      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", getErrorMessage(error, "Could not send request"));
     }
   }
 
@@ -158,20 +136,18 @@ export default function RestaurantScreen() {
       .filter((item) => item.isFeatured);
   }, [restaurant]);
 
-  const contentPosts = useMemo(() => {
-    return restaurant?.posts.filter((post) => post.type === "CONTENT") ?? [];
-  }, [restaurant]);
+  const contentPosts = useMemo(
+    () => filterPostsByType(restaurant?.posts, "CONTENT"),
+    [restaurant?.posts],
+  );
 
-  const reviewPosts = useMemo(() => {
-    return restaurant?.posts.filter((post) => post.type === "REVIEW") ?? [];
-  }, [restaurant]);
+  const reviewPosts = useMemo(
+    () => filterPostsByType(restaurant?.posts, "REVIEW"),
+    [restaurant?.posts],
+  );
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   if (!restaurant) {

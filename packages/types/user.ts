@@ -12,7 +12,7 @@ export type User = {
 export type UserSummary = {
   id: string;
   username: string;
-  displayName?: string;
+  displayName?: string | null;
   avatarUrl?: string | null;
   isOnline?: boolean;
   lastSeenAt?: string | null;

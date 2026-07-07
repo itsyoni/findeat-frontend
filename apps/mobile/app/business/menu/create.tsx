@@ -1,14 +1,10 @@
+import { AppButton, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
+import { getErrorMessage } from "@findeat/utils";
 import { router } from "expo-router";
 import { useState } from "react";
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  TouchableOpacity,
-} from "react-native";
+import { Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateMenuScreen() {
@@ -25,7 +21,7 @@ export default function CreateMenuScreen() {
     try {
       setLoading(true);
 
-      await api.post("/business/menus", {
+      await api.menu.createMenu({
         title: title.trim(),
         description: description.trim() || undefined,
       });
@@ -33,7 +29,7 @@ export default function CreateMenuScreen() {
       router.back();
     } catch (error) {
       console.error(error);
-      Alert.alert("Error", "Could not create menu");
+      Alert.alert("Error", getErrorMessage(error, "Could not create menu"));
     } finally {
       setLoading(false);
     }
@@ -69,15 +65,11 @@ export default function CreateMenuScreen() {
           textAlignVertical="top"
         />
 
-        <TouchableOpacity
-          className="mt-6 rounded-2xl bg-black py-4"
+        <AppButton
+          title={loading ? "Creating..." : "Create menu"}
           onPress={createMenu}
           disabled={loading}
-        >
-          <Text className="text-center font-bold text-white">
-            {loading ? "Creating..." : "Create menu"}
-          </Text>
-        </TouchableOpacity>
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

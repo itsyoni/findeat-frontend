@@ -1,7 +1,7 @@
+import { AppButton, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
-import { uploadImageToCloudinary } from "@/lib/uploadImage";
+import { getErrorMessage, uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -74,10 +74,10 @@ export default function EditMenuItemScreen() {
       let finalImageUrl = imageUrl;
 
       if (newImageUri) {
-        finalImageUrl = await uploadImageToCloudinary(newImageUri);
+        finalImageUrl = await uploadImage(newImageUri);
       }
 
-      await api.patch(`/business/menus/dishes/${params.id}`, {
+      await api.menu.updateDish(params.id, {
         name: name.trim(),
         description: description.trim() || null,
         price: parsedPrice,
@@ -88,12 +88,10 @@ export default function EditMenuItemScreen() {
       });
 
       router.back();
-    } catch (error: any) {
-      console.error(error.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error.response?.data?.message ?? "Could not update dish",
-      );
+    } catch (error) {
+      console.error(error);
+
+      Alert.alert("Error", getErrorMessage(error, "Could not update dish"));
     } finally {
       setLoading(false);
     }
@@ -108,11 +106,16 @@ export default function EditMenuItemScreen() {
         onPress: async () => {
           try {
             setLoading(true);
-            await api.delete(`/business/menus/dishes/${params.id}`);
+
+            await api.menu.deleteDish(params.id);
+
             router.back();
-          } catch (error: any) {
-            console.error(error.response?.data ?? error);
-            Alert.alert("Error", "Could not delete dish");
+          } catch (error) {
+            console.error(error);
+            Alert.alert(
+              "Error",
+              getErrorMessage(error, "Could not delete dish"),
+            );
           } finally {
             setLoading(false);
           }
@@ -206,25 +209,17 @@ export default function EditMenuItemScreen() {
             </View>
           </View>
 
-          <TouchableOpacity
-            className="mt-6 rounded-2xl bg-black py-4"
+          <AppButton
+            title={loading ? "Saving..." : "Save changes"}
             onPress={saveDish}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-white">
-              {loading ? "Saving..." : "Save changes"}
-            </Text>
-          </TouchableOpacity>
+          />
 
-          <TouchableOpacity
-            className="mt-3 rounded-2xl border border-red-300 py-4"
+          <AppButton
+            title="Delete dish"
             onPress={deleteDish}
             disabled={loading}
-          >
-            <Text className="text-center font-bold text-red-500">
-              Delete dish
-            </Text>
-          </TouchableOpacity>
+          />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

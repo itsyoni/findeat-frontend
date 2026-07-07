@@ -1,8 +1,8 @@
+import { TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
-import TextInput from "@/components/common/AppTextInput";
 import { api } from "@/lib/api";
 import { Dish, Restaurant } from "@findeat/types";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -27,23 +27,24 @@ export default function SelectMenuDishStep({
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    async function loadRestaurant() {
-      if (!restaurant?.id) return;
+  const loadRestaurant = useCallback(async () => {
+    if (!restaurant?.id) return;
 
-      try {
-        setLoading(true);
-        const res = await api.get(`/restaurants/${restaurant.id}`);
-        setFullRestaurant(res.data);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
+    try {
+      setLoading(true);
+
+      const fullRestaurant = await api.restaurants.get(restaurant.id);
+      setFullRestaurant(fullRestaurant);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
-
-    loadRestaurant();
   }, [restaurant?.id]);
+
+  useEffect(() => {
+    void loadRestaurant();
+  }, [loadRestaurant]);
 
   const filteredMenus = useMemo(() => {
     const menus = fullRestaurant?.menus ?? [];

@@ -1,11 +1,12 @@
+import { LoadingScreen } from "@/components/common";
 import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
 import FeedPostList from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useLocalSearchParams } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { View } from "react-native";
 
 export default function UserReviewsFeedScreen() {
   const { userId } = useLocalSearchParams<{
@@ -19,24 +20,20 @@ export default function UserReviewsFeedScreen() {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function loadPosts() {
+  const loadPosts = useCallback(async () => {
     try {
-      const res = await api.get(`/users/${userId}`);
-      setPosts(res.data.posts.filter((post: Post) => post.type === "REVIEW"));
+      const user = await api.users.get(userId);
+
+      setPosts(user.posts.filter((post: Post) => post.type === "REVIEW"));
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [userId]);
 
   async function toggleLike(postId: string, isLiked: boolean) {
-    if (isLiked) {
-      await api.delete(`/posts/${postId}/like`);
-    } else {
-      await api.post(`/posts/${postId}/like`);
-    }
-
+    await api.posts.toggleLike(postId, isLiked);
     await loadPosts();
   }
 
@@ -45,13 +42,7 @@ export default function UserReviewsFeedScreen() {
     restaurantId: string,
     isWantToTry: boolean,
   ) {
-    if (isWantToTry) {
-      await api.delete(`/restaurants/${restaurantId}/want-to-try`);
-    } else {
-      await api.post(`/restaurants/${restaurantId}/want-to-try`, {
-        savedFromPostId: postId,
-      });
-    }
+    await api.restaurants.toggleWantToTry(restaurantId, isWantToTry, postId);
 
     await loadPosts();
   }
@@ -63,14 +54,10 @@ export default function UserReviewsFeedScreen() {
 
   useEffect(() => {
     loadPosts();
-  }, []);
+  }, [loadPosts]);
 
   if (loading) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen />;
   }
 
   return (

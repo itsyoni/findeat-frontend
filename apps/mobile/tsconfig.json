@@ -9,6 +9,7 @@
       "@findeat/types": ["../../packages/types/index.ts"],
       "@findeat/types/*": ["../../packages/types/*"],
       "@findeat/utils/*": ["../../packages/utils/*"],
+      "@findeat/api": ["../../packages/api/index.ts"],
       "@findeat/api/*": ["../../packages/api/*"]
     }
   },
