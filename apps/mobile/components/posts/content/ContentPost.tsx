@@ -69,19 +69,22 @@ export default function ContentPost({
   };
 
   const textShadow = {
-    textShadowColor: "#00000080",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    textShadowColor: "#000",
+    textShadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    textShadowRadius: 8,
   };
 
   function handleLike() {
     if (!post.isLiked) {
-      likeScale.value = 1;
+      likeScale.set(1);
 
-      likeScale.value = withSequence(withSpring(1.25), withSpring(1));
+      likeScale.set(withSequence(withSpring(1.25), withSpring(1)));
     } else {
       // Reset immediately if unliking
-      likeScale.value = 1;
+      likeScale.set(1);
     }
 
     onToggleLike(post.id, post.isLiked);
@@ -115,9 +118,9 @@ export default function ContentPost({
       <LinearGradient
         colors={[
           "transparent",
-          "rgba(0,0,0,0.01)",
-          "rgba(0,0,0,0.05)",
           "rgba(0,0,0,0.1)",
+          "rgba(0,0,0,0.25)",
+          "rgba(0,0,0,0.5)",
         ]}
         style={{
           position: "absolute",
