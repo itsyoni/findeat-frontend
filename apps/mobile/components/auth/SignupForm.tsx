@@ -35,8 +35,6 @@ export default function SignupForm({ onLogin }: Props) {
   const [loading, setLoading] = useState(false);
 
   async function handleSignup() {
-    console.log("SIGNUP PRESSED");
-
     try {
       const data: SignupFormData = signupSchema.parse({
         firstName,
@@ -47,23 +45,17 @@ export default function SignupForm({ onLogin }: Props) {
         confirmPassword,
       });
 
-      console.log("SIGNUP VALIDATED", data);
-
       if (availability.usernameAvailable === false) {
-        console.log("SIGNUP STOPPED: username taken");
         Alert.alert(t("auth:invalidDetails"), t("auth:usernameTaken"));
         return;
       }
 
       if (availability.emailAvailable === false) {
-        console.log("SIGNUP STOPPED: email registered");
         Alert.alert(t("auth:invalidDetails"), t("auth:emailRegistered"));
         return;
       }
 
       setLoading(true);
-
-      console.log("SIGNUP REQUEST START");
 
       await signup(
         data.email,
@@ -71,12 +63,7 @@ export default function SignupForm({ onLogin }: Props) {
         data.password,
         `${data.firstName} ${data.lastName}`.trim(),
       );
-
-      console.log("SIGNUP REQUEST SUCCESS");
     } catch (error) {
-      console.log("SIGNUP ERROR:", error);
-      console.log("SIGNUP RESPONSE:", (error as any)?.response?.data);
-
       if (error instanceof ZodError) {
         Alert.alert(t("auth:invalidDetails"), error.issues[0]?.message);
         return;
