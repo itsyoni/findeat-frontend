@@ -7,6 +7,8 @@
   ],
   "scripts": {
     "mobile": "npm --workspace apps/mobile run start",
+    "mobile:dev-client": "npm --workspace apps/mobile run start:dev-client",
+    "mobile:clean": "npm --workspace apps/mobile run start:clean",
     "web": "npm --workspace apps/web run dev",
     "build:web": "npm --workspace apps/web run build",
     "typecheck:mobile": "npm --workspace apps/mobile run typecheck",
@@ -14,7 +16,20 @@
     "lint:mobile": "npm --workspace apps/mobile run lint",
     "lint:web": "npm --workspace apps/web run lint",
     "typecheck": "npm run typecheck:mobile && npm run typecheck:web",
-    "lint": "npm run lint:mobile && npm run lint:web"
+    "lint": "npm run lint:mobile && npm run lint:web",
+    "mobile:build:dev:ios": "npm --workspace apps/mobile run build:dev:ios",
+    "mobile:build:dev:android": "npm --workspace apps/mobile run build:dev:android",
+    "mobile:build:dev:all": "npm --workspace apps/mobile run build:dev:all",
+    "mobile:build:preview:ios": "npm --workspace apps/mobile run build:preview:ios",
+    "mobile:build:preview:android": "npm --workspace apps/mobile run build:preview:android",
+    "mobile:build:preview:all": "npm --workspace apps/mobile run build:preview:all",
+    "mobile:build:prod:ios": "npm --workspace apps/mobile run build:prod:ios",
+    "mobile:build:prod:android": "npm --workspace apps/mobile run build:prod:android",
+    "mobile:build:prod:all": "npm --workspace apps/mobile run build:prod:all",
+    "mobile:build:prod:ios:submit": "npm --workspace apps/mobile run build:prod:ios:submit",
+    "mobile:build:prod:android:submit": "npm --workspace apps/mobile run build:prod:android:submit",
+    "mobile:submit:ios:latest": "npm --workspace apps/mobile run submit:ios:latest",
+    "mobile:submit:android:latest": "npm --workspace apps/mobile run submit:android:latest"
   },
   "overrides": {
     "lightningcss": "1.30.1"
