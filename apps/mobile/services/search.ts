@@ -44,3 +44,33 @@ export async function searchGlobal(query: string): Promise<SearchResultItem[]> {
 
   return [...sortSearchResults(mappedUsers), ...mappedRestaurants];
 }
+
+export async function searchChatTargets(
+  query: string,
+): Promise<SearchResultItem[]> {
+  const [users, restaurants] = await Promise.all([
+    api.users.search(query),
+    api.restaurants.searchFindEat(query),
+  ]);
+
+  const mappedUsers: SearchResultItem[] = users.map((user) => ({
+    id: user.id,
+    type: "USER",
+    title: `@${user.username}`,
+    subtitle: user.displayName ?? undefined,
+    imageUrl: user.avatarUrl ?? null,
+    relationship: user.relationship,
+  }));
+
+  const claimedRestaurants: SearchResultItem[] = restaurants
+    .filter((restaurant) => restaurant.status === "CLAIMED")
+    .map((restaurant) => ({
+      id: restaurant.id,
+      type: "RESTAURANT",
+      title: restaurant.name,
+      subtitle: restaurant.address ?? restaurant.city ?? undefined,
+      imageUrl: restaurant.logoUrl ?? null,
+    }));
+
+  return [...sortSearchResults(mappedUsers), ...claimedRestaurants];
+}

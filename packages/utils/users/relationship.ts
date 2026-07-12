@@ -33,9 +33,9 @@ export function getRelationshipButtonColor(
     case "FRIENDS":
       return "bg-[#F7D786]";
     case "FOLLOWING":
-      return "bg-gray-900";
+      return "bg-gray-900 dark:bg-gray-100";
     default:
-      return "bg-black";
+      return "bg-black dark:bg-white";
   }
 }
 

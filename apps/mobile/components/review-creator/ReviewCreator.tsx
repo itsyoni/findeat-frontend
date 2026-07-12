@@ -121,6 +121,10 @@ export default function ReviewCreator() {
 
       prependPostToFeedCache(queryClient, createdPost);
 
+      setDraft(initialDraft);
+      setSelectedMenuDish(null);
+      setStep("RESTAURANT");
+
       router.replace({
         pathname: "/(tabs)",
         params: {

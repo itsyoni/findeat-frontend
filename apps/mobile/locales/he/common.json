@@ -10,5 +10,11 @@
   "password": "סיסמה",
   "username": "שם משתמש",
   "content": "תוכן",
-  "reviews": "ביקורות"
+  "reviews": "ביקורות",
+  "postOptions": "אפשרויות פוסט",
+  "managePost": "ניהול הפוסט",
+  "deletePost": "מחיקת פוסט",
+  "deletePostHint": "הסרת הפוסט לצמיתות",
+  "deletePostTitle": "למחוק את הפוסט?",
+  "deletePostDescription": "לא ניתן לבטל פעולה זו. הפוסט, הלייקים והתגובות שלו יימחקו לצמיתות."
 }

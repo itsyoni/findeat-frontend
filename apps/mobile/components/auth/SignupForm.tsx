@@ -6,18 +6,22 @@ import { getErrorMessage } from "@findeat/utils";
 import { AtIcon, EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, TouchableOpacity, View } from "react-native";
+import { Alert, Platform, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 import { TextInput } from "../common";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Props = {
   onLogin: () => void;
   onRestaurantSignup: () => void;
+  onVerificationRequired: (email: string) => void;
 };
 
-export default function SignupForm({ onLogin }: Props) {
+export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
   const { t } = useTranslation(["auth", "common"]);
   const { signup } = useAuth();
+  const { isDark } = useAppTheme();
+  const iconColor = isDark ? "#E5E7EB" : "#212121";
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -33,6 +37,13 @@ export default function SignupForm({ onLogin }: Props) {
     emailAvailable: null,
   });
   const [loading, setLoading] = useState(false);
+  const passwordsMatch =
+    confirmPassword.length === 0 || password === confirmPassword;
+  const passwordInputStyle = {
+    fontFamily: Platform.OS === "ios" ? "System" : "CabinetRegular",
+    fontSize: 16,
+    lineHeight: 20,
+  } as const;
 
   async function handleSignup() {
     try {
@@ -57,12 +68,13 @@ export default function SignupForm({ onLogin }: Props) {
 
       setLoading(true);
 
-      await signup(
+      const result = await signup(
         data.email,
         data.username,
         data.password,
         `${data.firstName} ${data.lastName}`.trim(),
       );
+      onVerificationRequired(result.email);
     } catch (error) {
       if (error instanceof ZodError) {
         Alert.alert(t("auth:invalidDetails"), error.issues[0]?.message);
@@ -108,7 +120,7 @@ export default function SignupForm({ onLogin }: Props) {
 
   return (
     <View>
-      <Text weight="bold" className="text-center text-2xl text-[#212121]">
+      <Text weight="bold" className="text-center text-2xl text-[#212121] dark:text-white">
         {t("auth:createAccount")}
       </Text>
 
@@ -124,7 +136,7 @@ export default function SignupForm({ onLogin }: Props) {
             value={firstName}
             onChangeText={setFirstName}
             autoCapitalize="words"
-            className="flex-1 border-0 bg-[#f8f8f8]"
+            className="flex-1 border-0 bg-[#f8f8f8] dark:bg-gray-800"
           />
 
           <TextInput
@@ -133,7 +145,7 @@ export default function SignupForm({ onLogin }: Props) {
             value={lastName}
             onChangeText={setLastName}
             autoCapitalize="words"
-            className="flex-1 border-0 bg-[#f8f8f8]"
+            className="flex-1 border-0 bg-[#f8f8f8] dark:bg-gray-800"
           />
         </View>
 
@@ -145,8 +157,8 @@ export default function SignupForm({ onLogin }: Props) {
             setUsername(text.replace(/[^a-zA-Z0-9_]/g, ""));
           }}
           autoCapitalize="none"
-          className="border-0 bg-[#f8f8f8]"
-          leftIcon={<AtIcon size={20} color="#212121" />}
+          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          leftIcon={<AtIcon size={20} color={iconColor} />}
         />
 
         {availability.usernameAvailable === false && (
@@ -162,8 +174,8 @@ export default function SignupForm({ onLogin }: Props) {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          className="border-0 bg-[#f8f8f8]"
-          leftIcon={<EnvelopeSimpleIcon size={20} color="#212121" />}
+          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          leftIcon={<EnvelopeSimpleIcon size={20} color={iconColor} />}
         />
 
         {availability.emailAvailable === false && (
@@ -178,8 +190,9 @@ export default function SignupForm({ onLogin }: Props) {
           value={password}
           onChangeText={setPassword}
           isPassword
-          className="border-0 bg-[#f8f8f8]"
-          leftIcon={<LockIcon size={20} color="#212121" />}
+          style={passwordInputStyle}
+          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          leftIcon={<LockIcon size={20} color={iconColor} />}
         />
 
         <TextInput
@@ -188,16 +201,23 @@ export default function SignupForm({ onLogin }: Props) {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           isPassword
-          className="border-0 bg-[#f8f8f8]"
-          leftIcon={<LockIcon size={20} color="#212121" />}
+          style={passwordInputStyle}
+          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          leftIcon={<LockIcon size={20} color={iconColor} />}
         />
 
+        {!passwordsMatch && (
+          <Text className="-mt-3 text-sm text-red-500">
+            {t("auth:passwordsDoNotMatch")}
+          </Text>
+        )}
+
         <TouchableOpacity
-          className="rounded-2xl bg-[#212121] py-4"
+          className="rounded-2xl bg-[#212121] py-4 dark:bg-white"
           onPress={handleSignup}
-          disabled={loading}
+          disabled={loading || !passwordsMatch}
         >
-          <Text weight="bold" className="text-center text-white">
+          <Text weight="bold" className="text-center text-white dark:text-black">
             {loading ? t("auth:creatingAccount") : t("auth:createAccount")}
           </Text>
         </TouchableOpacity>
@@ -205,7 +225,7 @@ export default function SignupForm({ onLogin }: Props) {
         <TouchableOpacity onPress={onLogin}>
           <Text className="text-center text-gray-500">
             {t("auth:alreadyHaveAccount")}
-            <Text weight="bold" className="text-[#212121]">
+            <Text weight="bold" className="text-[#212121] dark:text-white">
               {t("auth:login")}
             </Text>
           </Text>

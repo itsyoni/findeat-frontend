@@ -2,5 +2,21 @@
   "searchRestaurants": "Search restaurants",
   "noRestaurantsFound": "No restaurants found",
   "map": "Map",
-  "list": "List"
+  "list": "List",
+  "viewRestaurant": "View restaurant",
+  "filters": "Map filters",
+  "show": "Show places",
+  "distance": "Distance",
+  "sortBy": "Sort by",
+  "showPlaces": "Show places",
+  "filterALL": "All",
+  "filterSAVED": "Saved",
+  "filterWANT_TO_TRY": "Want to try",
+  "filterVISITED": "Visited",
+  "filterFAVORITE": "Favorites",
+  "filterCLAIMED": "Claimed",
+  "sortBEST": "Best nearby",
+  "sortDISTANCE": "Nearest",
+  "sortRATING": "Highest rated",
+  "sortMOST_REVIEWED": "Most reviewed"
 }

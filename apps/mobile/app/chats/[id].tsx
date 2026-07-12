@@ -28,6 +28,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 
 type ChatMessage = Message & {
   renderKey?: string;
@@ -106,7 +107,8 @@ export default function ChatScreen() {
   const otherUser = chat?.participants.find((p) => p.userId !== user?.id)?.user;
 
   const isGroupChat = chat?.type === "GROUP";
-  const isRestaurantChat = chat?.type === "RESTAURANT";
+  const isRestaurantChat =
+    chat?.type === "RESTAURANT" || params.type === "RESTAURANT";
 
   const headerTitle = isNewChat
     ? params.title
@@ -401,15 +403,16 @@ export default function ChatScreen() {
                     uri={headerImage}
                     username={headerTitle ?? "Chat"}
                     size={40}
+                    fallbackType={isRestaurantChat ? "restaurant" : "user"}
                   />
 
                   <View className="ml-3 min-w-0 flex-1">
-                    <Text
-                      numberOfLines={1}
-                      className="text-base font-bold text-black dark:text-white"
-                    >
-                      {headerTitle ?? "Chat"}
-                    </Text>
+                    <View className="flex-row items-center">
+                      <Text numberOfLines={1} className="shrink text-base font-bold text-black dark:text-white">
+                        {headerTitle ?? "Chat"}
+                      </Text>
+                      {isRestaurantChat ? <RestaurantBadge /> : null}
+                    </View>
 
                     <Text numberOfLines={1} className="text-xs text-gray-500">
                       {getStatusText()}
@@ -554,10 +557,12 @@ export default function ChatScreen() {
                                   )}
 
                                   <View className="p-3">
-                                    <Text className="font-bold text-black">
-                                      {item.post.restaurant?.name ??
-                                        t("findEatPost")}
-                                    </Text>
+                                    <View className="flex-row items-center">
+                                      <Text className="font-bold text-black">
+                                        {item.post.restaurant?.name ?? t("findEatPost")}
+                                      </Text>
+                                      {item.post.restaurant?.name ? <RestaurantBadge /> : null}
+                                    </View>
 
                                     {!!description && (
                                       <Text

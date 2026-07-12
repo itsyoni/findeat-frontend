@@ -1,162 +1,206 @@
+import Avatar from "@/components/common/Avatar";
+import Text from "@/components/common/AppText";
+import TextInput from "@/components/common/inputs/AppTextInput";
+import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
-import {
+import type {
   GoogleRestaurantSuggestion,
   Restaurant,
   SelectedRestaurant,
 } from "@findeat/types";
+import {
+  CheckCircleIcon,
+  MagnifyingGlassIcon,
+  XIcon,
+} from "phosphor-react-native";
 import { useState } from "react";
-import { TouchableOpacity, View } from "react-native";
-import Text from "../common/AppText";
-import TextInput from "../common/inputs/AppTextInput";
+import { useTranslation } from "react-i18next";
+import {
+  ActivityIndicator,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import RestaurantBadge from "./RestaurantBadge";
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
-  onSelect: (restaurant: SelectedRestaurant) => void;
+  onSelect: (restaurant: SelectedRestaurant | null) => void;
 };
 
-export default function RestaurantSearch({
-  selectedRestaurant,
-  onSelect,
-}: Props) {
+export default function RestaurantSearch({ selectedRestaurant, onSelect }: Props) {
+  const { t } = useTranslation("restaurants");
+  const { isDark } = useAppTheme();
   const [query, setQuery] = useState("");
-  const [findeatRestaurants, setFindeatRestaurants] = useState<Restaurant[]>(
-    [],
-  );
-  const [googleRestaurants, setGoogleRestaurants] = useState<
-    GoogleRestaurantSuggestion[]
-  >([]);
+  const [findeatRestaurants, setFindeatRestaurants] = useState<Restaurant[]>([]);
+  const [googleRestaurants, setGoogleRestaurants] = useState<GoogleRestaurantSuggestion[]>([]);
+  const [searching, setSearching] = useState(false);
+
+  function clearResults() {
+    setQuery("");
+    setFindeatRestaurants([]);
+    setGoogleRestaurants([]);
+  }
 
   async function searchRestaurants(text: string) {
     setQuery(text);
-
     if (!text.trim()) {
-      setFindeatRestaurants([]);
-      setGoogleRestaurants([]);
+      clearResults();
+      setSearching(false);
       return;
     }
 
-    const results = await api.restaurants.search(text);
-
-    setFindeatRestaurants(results.findeat ?? []);
-    setGoogleRestaurants(results.google ?? []);
+    try {
+      setSearching(true);
+      const results = await api.restaurants.search(text);
+      setFindeatRestaurants(results.findeat ?? []);
+      setGoogleRestaurants(results.google ?? []);
+    } catch (error) {
+      console.error("restaurant search failed", error);
+      setFindeatRestaurants([]);
+      setGoogleRestaurants([]);
+    } finally {
+      setSearching(false);
+    }
   }
 
-  const selectedName =
-    selectedRestaurant?.source === "FINDEAT"
-      ? selectedRestaurant.restaurant.name
-      : selectedRestaurant?.name;
+  function select(restaurant: SelectedRestaurant) {
+    onSelect(restaurant);
+    clearResults();
+  }
 
-  const selectedCity =
-    selectedRestaurant?.source === "FINDEAT"
-      ? selectedRestaurant.restaurant.city
-      : selectedRestaurant?.city;
-
-  const selectedAddress =
-    selectedRestaurant?.source === "FINDEAT"
-      ? selectedRestaurant.restaurant.address
-      : selectedRestaurant?.address;
+  const hasResults = findeatRestaurants.length > 0 || googleRestaurants.length > 0;
+  const resultsCount = findeatRestaurants.length + googleRestaurants.length;
 
   if (selectedRestaurant) {
+    const restaurant = selectedRestaurant.source === "FINDEAT"
+      ? selectedRestaurant.restaurant
+      : selectedRestaurant;
+    const logoUrl = selectedRestaurant.source === "FINDEAT"
+      ? selectedRestaurant.restaurant.logoUrl
+      : null;
+
     return (
-      <View className="mt-6 rounded-2xl border border-gray-200 p-4">
-        <Text className="text-xs text-gray-400">Restaurant</Text>
-
-        <Text className="mt-1 text-base font-bold text-black dark:text-white">
-          {selectedName}
-        </Text>
-
-        {!!selectedCity && (
-          <Text className="mt-1 text-gray-500">{selectedCity}</Text>
-        )}
-
-        {!!selectedAddress && (
-          <Text className="mt-1 text-gray-500">{selectedAddress}</Text>
-        )}
-
-        {selectedRestaurant.source === "GOOGLE" && (
-          <Text className="mt-2 text-xs text-gray-400">
-            This restaurant will be added to FindEat only after publishing.
-          </Text>
-        )}
-
-        <TouchableOpacity
-          className="mt-3"
-          onPress={() => {
-            setQuery("");
-            setFindeatRestaurants([]);
-            setGoogleRestaurants([]);
-          }}
-        >
-          <Text className="font-bold text-black dark:text-white">Change</Text>
-        </TouchableOpacity>
+      <View className="rounded-xl border border-gray-200 bg-gray-50 p-2.5 dark:border-gray-700 dark:bg-gray-900">
+        <View className="flex-row items-center">
+          <Avatar uri={logoUrl} username={restaurant.name} size={40} fallbackType="restaurant" />
+          <View className="ml-3 flex-1">
+            <View className="flex-row items-center">
+              <Text numberOfLines={1} className="flex-shrink font-bold text-black dark:text-white">
+                {restaurant.name}
+              </Text>
+              <RestaurantBadge
+                size={14}
+                claimed={
+                  selectedRestaurant.source === "FINDEAT" &&
+                  selectedRestaurant.restaurant.status === "CLAIMED"
+                }
+              />
+            </View>
+            {!!(restaurant.address || restaurant.city) && (
+              <Text numberOfLines={1} className="mt-1 text-sm text-gray-500">
+                {[restaurant.address, restaurant.city].filter(Boolean).join(", ")}
+              </Text>
+            )}
+          </View>
+          <CheckCircleIcon size={20} color="#22C55E" weight="fill" />
+          <TouchableOpacity
+            onPress={() => {
+              onSelect(null);
+              clearResults();
+            }}
+            className="ml-1.5 h-8 w-8 items-center justify-center rounded-full bg-white dark:bg-gray-800"
+          >
+            <XIcon size={17} color="#6B7280" weight="bold" />
+          </TouchableOpacity>
+        </View>
       </View>
     );
   }
 
   return (
-    <View className="mt-6">
+    <View style={{ zIndex: hasResults ? 1000 : 1, elevation: hasResults ? 20 : 0 }}>
       <TextInput
-        className="rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
-        placeholder="Search restaurant..."
-        placeholderTextColor="#9CA3AF"
+        className="rounded-xl border-gray-200 bg-gray-50 px-3 dark:border-gray-700 dark:bg-gray-900"
+        style={{ paddingVertical: 11, fontSize: 15 }}
+        placeholder={t("searchRestaurant")}
         value={query}
-        onChangeText={searchRestaurants}
+        onChangeText={(text) => void searchRestaurants(text)}
+        autoCorrect={false}
+        leftIcon={<MagnifyingGlassIcon size={20} color="#9CA3AF" />}
+        rightIcon={searching ? <ActivityIndicator size="small" /> : undefined}
       />
 
-      {findeatRestaurants.length > 0 && (
-        <Text className="mt-4 text-xs font-bold text-gray-400">FindEat</Text>
-      )}
-
-      {findeatRestaurants.map((restaurant) => (
-        <TouchableOpacity
-          key={restaurant.id}
-          className="border-b border-gray-100 py-4"
-          onPress={() =>
-            onSelect({
-              source: "FINDEAT",
-              restaurant,
-            })
-          }
+      {hasResults && (
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          nestedScrollEnabled
+          className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 56,
+            height: Math.min(resultsCount * 68, 288),
+            backgroundColor: isDark ? "#111827" : "#FFFFFF",
+            borderColor: isDark ? "#374151" : "#E5E7EB",
+            borderWidth: 1,
+            zIndex: 1000,
+            elevation: 20,
+            shadowColor: "#000",
+            shadowOpacity: 0.16,
+            shadowRadius: 12,
+            shadowOffset: { width: 0, height: 5 },
+          }}
         >
-          <Text className="font-bold text-black dark:text-white">
-            {restaurant.name}
-          </Text>
+          {findeatRestaurants.map((restaurant, index) => (
+            <TouchableOpacity
+              key={restaurant.id}
+              onPress={() => select({ source: "FINDEAT", restaurant })}
+              className={`flex-row items-center px-3 py-3 ${
+                index < findeatRestaurants.length - 1 || googleRestaurants.length > 0
+                  ? "border-b border-gray-100 dark:border-gray-800"
+                  : ""
+              }`}
+            >
+              <Avatar uri={restaurant.logoUrl} username={restaurant.name} size={43} fallbackType="restaurant" />
+              <View className="ml-3 flex-1">
+                <View className="flex-row items-center">
+                  <Text className="font-bold text-black dark:text-white">{restaurant.name}</Text>
+                  <RestaurantBadge size={13} status={restaurant.status} />
+                </View>
+                {!!(restaurant.address || restaurant.city) && (
+                  <Text numberOfLines={1} className="mt-1 text-xs text-gray-500">
+                    {restaurant.address ?? restaurant.city}
+                  </Text>
+                )}
+              </View>
+            </TouchableOpacity>
+          ))}
 
-          {!!restaurant.city && (
-            <Text className="mt-1 text-gray-500">{restaurant.city}</Text>
-          )}
-
-          {!!restaurant.address && (
-            <Text className="mt-1 text-gray-500">{restaurant.address}</Text>
-          )}
-        </TouchableOpacity>
-      ))}
-
-      {googleRestaurants.length > 0 && (
-        <Text className="mt-4 text-xs font-bold text-gray-400">
-          Google Places
-        </Text>
+          {googleRestaurants.map((restaurant, index) => (
+            <TouchableOpacity
+              key={restaurant.googlePlaceId}
+              onPress={() => select(restaurant)}
+              className={`flex-row items-center px-3 py-3 ${
+                index < googleRestaurants.length - 1 ? "border-b border-gray-100 dark:border-gray-800" : ""
+              }`}
+            >
+              <Avatar username={restaurant.name} size={43} fallbackType="restaurant" />
+              <View className="ml-3 flex-1">
+                <View className="flex-row items-center">
+                  <Text className="font-bold text-black dark:text-white">{restaurant.name}</Text>
+                  <RestaurantBadge size={13} claimed={false} />
+                </View>
+                {!!restaurant.address && (
+                  <Text numberOfLines={1} className="mt-1 text-xs text-gray-500">{restaurant.address}</Text>
+                )}
+                <Text className="mt-1 text-[11px] text-gray-400">{t("addedAfterPublishing")}</Text>
+              </View>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       )}
-
-      {googleRestaurants.map((restaurant) => (
-        <TouchableOpacity
-          key={restaurant.googlePlaceId}
-          className="border-b border-gray-100 py-4"
-          onPress={() => onSelect(restaurant)}
-        >
-          <Text className="font-bold text-black dark:text-white">
-            {restaurant.name}
-          </Text>
-
-          {!!restaurant.address && (
-            <Text className="mt-1 text-gray-500">{restaurant.address}</Text>
-          )}
-
-          <Text className="mt-1 text-xs text-gray-400">
-            Will be added only after publishing
-          </Text>
-        </TouchableOpacity>
-      ))}
     </View>
   );
 }

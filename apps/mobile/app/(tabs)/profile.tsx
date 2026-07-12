@@ -85,6 +85,10 @@ export default function ProfileScreen() {
       <View style={{ flex: 1 }}>
         <ProfilePostGrid
           posts={posts}
+          type={activeFeed}
+          onCreatePost={() =>
+            router.push(activeFeed === "CONTENT" ? "/create/content" : "/create/review")
+          }
           onPressPost={(postId) => {
             router.push({
               pathname:

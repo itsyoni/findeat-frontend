@@ -4,7 +4,7 @@ import SearchBar from "@/components/common/inputs/SearchBar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
-import { searchGlobal } from "@/services/search";
+import { searchChatTargets } from "@/services/search";
 import { Chat } from "@findeat/types/chat";
 import { SearchResultItem } from "@findeat/types/search";
 import { router, useFocusEffect } from "expo-router";
@@ -97,7 +97,7 @@ export default function ChatsScreen() {
           className="flex-1"
         >
           <SearchResultsView
-            searchRequest={searchGlobal}
+            searchRequest={searchChatTargets}
             onCancel={() => setIsSearching(false)}
             onSelect={handleSearchSelect}
             keyExtractor={(item) => `${item.type}-${item.id}`}

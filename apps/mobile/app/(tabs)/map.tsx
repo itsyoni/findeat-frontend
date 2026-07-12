@@ -1,34 +1,48 @@
 import { LoadingScreen } from "@/components/common";
+import AppBottomSheet from "@/components/common/AppBottomSheet";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
-import { Restaurant } from "@findeat/types";
+import {
+  Restaurant,
+  RestaurantMapFilter,
+  RestaurantMapSort,
+} from "@findeat/types";
 import { MapType } from "@findeat/types/map";
 import * as Location from "expo-location";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FlatList, Image, TouchableOpacity, View } from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Mapbox from "@rnmapbox/maps";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { CrosshairIcon, XIcon } from "phosphor-react-native";
+import { CheckIcon, CrosshairIcon, FunnelIcon, XIcon } from "phosphor-react-native";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
+import RestaurantStats from "@/components/restaurants/RestaurantStats";
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "");
 
 export default function MapScreen() {
-  const { t } = useTranslation(["common", "map"]);
+  const { restaurantId } = useLocalSearchParams<{ restaurantId?: string }>();
+  const { t } = useTranslation(["common", "map", "restaurants"]);
   const { isDark } = useAppTheme();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<MapType>("MAP");
   const [isSearching, setIsSearching] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [mapFilter, setMapFilter] = useState<RestaurantMapFilter>("ALL");
+  const [mapSort, setMapSort] = useState<RestaurantMapSort>("BEST");
+  const [radiusKm, setRadiusKm] = useState<number | null>(50);
   const bottomSheetRef = useRef<BottomSheet>(null);
+  const temporaryRestaurantIdRef = useRef<string | null>(null);
+  const handledRestaurantIdRef = useRef<string | null>(null);
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<Restaurant | null>(null);
 
@@ -45,6 +59,19 @@ export default function MapScreen() {
       typeof restaurant.longitude === "number",
   );
 
+  const restaurantLogoImages = useMemo(
+    () =>
+      Object.fromEntries(
+        restaurantsWithLocation
+          .filter((restaurant) => !!restaurant.logoUrl)
+          .map((restaurant) => [
+            `restaurant-logo-${restaurant.id}`,
+            { uri: restaurant.logoUrl as string },
+          ]),
+      ),
+    [restaurantsWithLocation],
+  );
+
   const restaurantsGeoJson = useMemo(
     () => ({
       type: "FeatureCollection" as const,
@@ -56,7 +83,18 @@ export default function MapScreen() {
           name: restaurant.name,
           favorite: !!restaurant.userRestaurant?.favorite,
           visited: !!restaurant.userRestaurant?.visited,
+          wantToTry: !!restaurant.userRestaurant?.wantToTry,
+          hasOverlayStatus: !!(
+            restaurant.userRestaurant?.favorite ||
+            restaurant.userRestaurant?.visited
+          ),
           selected: selectedRestaurant?.id === restaurant.id,
+          hasLogo: !!restaurant.logoUrl,
+          logoImage: `restaurant-logo-${restaurant.id}`,
+          fallbackLetter: restaurant.name.trim().charAt(0).toUpperCase(),
+          statusIcon: restaurant.userRestaurant?.favorite
+            ? "★"
+            : "✓",
         },
         geometry: {
           type: "Point" as const,
@@ -70,40 +108,86 @@ export default function MapScreen() {
     [restaurantsWithLocation, selectedRestaurant],
   );
 
-  useEffect(() => {
-    loadUserLocation();
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadRestaurants();
-    }, []),
-  );
-
-  async function loadRestaurants() {
+  const loadRestaurants = useCallback(async (coordinates?: { latitude: number; longitude: number }) => {
     try {
-      const restaurants = await api.restaurants.savedMine();
+      const latitude = coordinates?.latitude ?? userLocation?.coords.latitude ?? 32.0853;
+      const longitude = coordinates?.longitude ?? userLocation?.coords.longitude ?? 34.7818;
+      const nextRestaurants = await api.restaurants.discoverForMap({
+        latitude,
+        longitude,
+        radiusKm: radiusKm ?? undefined,
+        limit: 10,
+        filter: mapFilter,
+        sort: mapSort,
+      });
 
-      setRestaurants(
-        restaurants.map((item: any) => ({
-          ...item.restaurant,
-          userRestaurant: {
-            wantToTry: item.wantToTry,
-            visited: item.visited,
-            favorite: item.favorite,
-            visitedAt: item.visitedAt,
-            favoritedAt: item.favoritedAt,
-          },
-        })),
-      );
+      const requestedId =
+        restaurantId && handledRestaurantIdRef.current !== restaurantId
+          ? restaurantId
+          : undefined;
+      let requestedRestaurant = requestedId
+        ? nextRestaurants.find((restaurant) => restaurant.id === requestedId)
+        : undefined;
+
+      if (requestedId && !requestedRestaurant) {
+        requestedRestaurant = await api.restaurants.get(requestedId);
+        nextRestaurants.push(requestedRestaurant);
+        temporaryRestaurantIdRef.current = requestedRestaurant.id;
+      } else if (requestedRestaurant) {
+        temporaryRestaurantIdRef.current = null;
+      }
+
+      setRestaurants(nextRestaurants);
+
+      if (requestedRestaurant) {
+        handledRestaurantIdRef.current = requestedRestaurant.id;
+        setSelectedRestaurant(requestedRestaurant);
+        setIsSearching(false);
+        setViewMode("MAP");
+
+        if (
+          typeof requestedRestaurant.latitude === "number" &&
+          typeof requestedRestaurant.longitude === "number"
+        ) {
+          setTimeout(() => {
+            cameraRef.current?.setCamera({
+              centerCoordinate: [
+                requestedRestaurant!.longitude as number,
+                requestedRestaurant!.latitude as number,
+              ],
+              zoomLevel: 15,
+              padding: {
+                paddingBottom: 220,
+                paddingTop: 80,
+                paddingLeft: 40,
+                paddingRight: 40,
+              },
+              animationDuration: 600,
+            });
+          }, 150);
+        }
+      }
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
-  }
+  }, [mapFilter, mapSort, radiusKm, restaurantId, userLocation]);
 
-  async function loadUserLocation() {
+  const dismissRestaurantPreview = useCallback(() => {
+    setSelectedRestaurant(null);
+    handledRestaurantIdRef.current = null;
+
+    const temporaryId = temporaryRestaurantIdRef.current;
+    if (temporaryId) {
+      setRestaurants((current) =>
+        current.filter((restaurant) => restaurant.id !== temporaryId),
+      );
+      temporaryRestaurantIdRef.current = null;
+    }
+  }, []);
+
+  const loadUserLocation = useCallback(async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
@@ -127,10 +211,29 @@ export default function MapScreen() {
     } catch (error) {
       console.error("Could not get current location:", error);
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!userLocation) {
+        void loadUserLocation();
+      }
+      void loadRestaurants();
+      return dismissRestaurantPreview;
+    }, [dismissRestaurantPreview, loadRestaurants, loadUserLocation, userLocation]),
+  );
 
   function selectRestaurant(restaurant: Restaurant) {
+    const temporaryId = temporaryRestaurantIdRef.current;
+    if (temporaryId && temporaryId !== restaurant.id) {
+      setRestaurants((current) =>
+        current.filter((item) => item.id !== temporaryId),
+      );
+      temporaryRestaurantIdRef.current = null;
+    }
+
     setSelectedRestaurant(restaurant);
+    void hydrateSelectedRestaurant(restaurant);
     setIsSearching(false);
     setViewMode("MAP");
 
@@ -153,6 +256,24 @@ export default function MapScreen() {
     }, 100);
   }
 
+  async function hydrateSelectedRestaurant(restaurant: Restaurant) {
+    try {
+      const details = await api.restaurants.get(restaurant.id);
+      const hydrated = {
+        ...details,
+        userRestaurant: restaurant.userRestaurant ?? details.userRestaurant,
+      };
+      setSelectedRestaurant((current) =>
+        current?.id === restaurant.id ? hydrated : current,
+      );
+      setRestaurants((current) =>
+        current.map((item) => (item.id === restaurant.id ? hydrated : item)),
+      );
+    } catch (error) {
+      console.error("Could not load restaurant preview", error);
+    }
+  }
+
   function restaurantSearchFn(query: string, restaurant: Restaurant): boolean {
     const q = query.trim().toLowerCase();
 
@@ -166,12 +287,13 @@ export default function MapScreen() {
   function renderRestaurant(restaurant: Restaurant) {
     return (
       <View className="flex-row items-center border-b border-gray-100 p-4">
-        <Avatar uri={restaurant.logoUrl} username={restaurant.name} size={56} />
+        <Avatar uri={restaurant.logoUrl} username={restaurant.name} size={56} fallbackType="restaurant" />
 
         <View className="ml-4 flex-1">
-          <Text className="text-base font-bold text-black">
-            {restaurant.name}
-          </Text>
+          <View className="flex-row items-center">
+            <Text className="text-base font-bold text-black dark:text-white">{restaurant.name}</Text>
+            <RestaurantBadge status={restaurant.status} />
+          </View>
 
           {!!restaurant.address && (
             <Text className="mt-1 text-sm text-gray-500">
@@ -186,6 +308,17 @@ export default function MapScreen() {
   if (loading) {
     return <LoadingScreen />;
   }
+
+  const selectedReviews =
+    selectedRestaurant?.posts?.filter((post) => post.type === "REVIEW") ?? [];
+  const selectedRatings = selectedReviews
+    .map((post) => post.rating)
+    .filter((rating): rating is number => rating != null);
+  const selectedAverageRating =
+    selectedRestaurant?.averageRating ?? (selectedRatings.length > 0
+      ? selectedRatings.reduce((total, rating) => total + rating, 0) /
+        selectedRatings.length
+      : null);
 
   return (
     <SafeAreaView
@@ -221,6 +354,18 @@ export default function MapScreen() {
             editable={false}
             placeholder={t("common:search")}
             onPress={() => setIsSearching(true)}
+            rightAccessory={
+              <TouchableOpacity
+                onPress={() => setFiltersOpen(true)}
+                className="h-full aspect-square items-center justify-center rounded-2xl bg-black dark:bg-white"
+              >
+                <FunnelIcon
+                  size={21}
+                  color={isDark ? "#000" : "#FFF"}
+                  weight={mapFilter === "ALL" ? "regular" : "fill"}
+                />
+              </TouchableOpacity>
+            }
           />
 
           <Tabs
@@ -236,7 +381,13 @@ export default function MapScreen() {
             <View style={{ flex: 1 }}>
               <Mapbox.MapView
                 style={{ flex: 1 }}
-                onPress={() => setSelectedRestaurant(null)}
+                styleURL={
+                  isDark ? Mapbox.StyleURL.Dark : Mapbox.StyleURL.Street
+                }
+                onPress={() => {
+                  bottomSheetRef.current?.close();
+                  dismissRestaurantPreview();
+                }}
               >
                 <Mapbox.Camera
                   ref={cameraRef}
@@ -247,6 +398,8 @@ export default function MapScreen() {
                   ]}
                 />
                 <Mapbox.UserLocation visible />
+
+                <Mapbox.Images images={restaurantLogoImages} />
 
                 <Mapbox.ShapeSource
                   id="restaurants"
@@ -286,7 +439,16 @@ export default function MapScreen() {
 
                     if (!restaurant) return;
 
+                    const temporaryId = temporaryRestaurantIdRef.current;
+                    if (temporaryId && temporaryId !== restaurant.id) {
+                      setRestaurants((current) =>
+                        current.filter((item) => item.id !== temporaryId),
+                      );
+                      temporaryRestaurantIdRef.current = null;
+                    }
+
                     setSelectedRestaurant(restaurant);
+                    void hydrateSelectedRestaurant(restaurant);
 
                     const coordinates = (feature.geometry as any)?.coordinates;
 
@@ -306,52 +468,116 @@ export default function MapScreen() {
                   }}
                 >
                   <Mapbox.CircleLayer
-                    id="restaurant-points-glow"
-                    filter={["!", ["has", "point_count"]]}
+                    id="restaurant-selected-ring"
+                    filter={[
+                      "all",
+                      ["!", ["has", "point_count"]],
+                      ["==", ["get", "selected"], true],
+                    ]}
                     style={{
-                      circleRadius: [
-                        "case",
-                        ["==", ["get", "selected"], true],
-                        18,
-                        12,
-                      ],
-                      circleColor: [
-                        "case",
-                        ["==", ["get", "favorite"], true],
-                        "#FEE2E2",
-                        ["==", ["get", "visited"], true],
-                        "#DCFCE7",
-                        "#FEF3C7",
-                      ],
-                      circleOpacity: 0.9,
+                      circleRadius: 26,
+                      circleColor: "#111827",
+                      circleStrokeWidth: 2,
+                      circleStrokeColor: "#FFFFFF",
                     }}
                   />
 
                   <Mapbox.CircleLayer
-                    id="restaurant-points"
+                    id="restaurant-logo-border"
                     filter={["!", ["has", "point_count"]]}
                     style={{
-                      circleRadius: [
-                        "case",
-                        ["==", ["get", "selected"], true],
-                        12,
-                        8,
-                      ],
+                      circleRadius: 23,
                       circleColor: [
                         "case",
                         ["==", ["get", "favorite"], true],
                         "#EF4444",
                         ["==", ["get", "visited"], true],
                         "#22C55E",
-                        "#F7D786",
+                        ["==", ["get", "wantToTry"], true],
+                        "#EAB308",
+                        "#6B7280",
                       ],
-                      circleStrokeWidth: [
-                        "case",
-                        ["==", ["get", "selected"], true],
-                        4,
-                        2,
-                      ],
+                      circleStrokeWidth: 2,
                       circleStrokeColor: "#FFFFFF",
+                    }}
+                  />
+
+                  <Mapbox.CircleLayer
+                    id="restaurant-logo-background"
+                    filter={["!", ["has", "point_count"]]}
+                    style={{
+                      circleRadius: 19,
+                      circleColor: isDark ? "#1F2937" : "#FFFFFF",
+                    }}
+                  />
+
+                  <Mapbox.SymbolLayer
+                    id="restaurant-logo-images"
+                    filter={[
+                      "all",
+                      ["!", ["has", "point_count"]],
+                      ["==", ["get", "hasLogo"], true],
+                    ]}
+                    style={{
+                      iconImage: ["get", "logoImage"],
+                      iconSize: 0.1,
+                      iconAllowOverlap: true,
+                      iconIgnorePlacement: true,
+                    }}
+                  />
+
+                  <Mapbox.SymbolLayer
+                    id="restaurant-logo-fallback"
+                    filter={[
+                      "all",
+                      ["!", ["has", "point_count"]],
+                      ["==", ["get", "hasLogo"], false],
+                    ]}
+                    style={{
+                      textField: ["get", "fallbackLetter"],
+                      textSize: 19,
+                      textColor: isDark ? "#FFFFFF" : "#111827",
+                      textAllowOverlap: true,
+                      textIgnorePlacement: true,
+                    }}
+                  />
+
+                  <Mapbox.CircleLayer
+                    id="restaurant-status-overlay"
+                    filter={[
+                      "all",
+                      ["!", ["has", "point_count"]],
+                      ["==", ["get", "hasOverlayStatus"], true],
+                    ]}
+                    style={{
+                      circleRadius: 19,
+                      circleColor: [
+                        "case",
+                        ["==", ["get", "favorite"], true],
+                        "#EF4444",
+                        ["==", ["get", "visited"], true],
+                        "#22C55E",
+                        "#EAB308",
+                      ],
+                      circleOpacity: 0.42,
+                    }}
+                  />
+
+                  <Mapbox.SymbolLayer
+                    id="restaurant-status-icon"
+                    filter={[
+                      "all",
+                      ["!", ["has", "point_count"]],
+                      ["==", ["get", "hasOverlayStatus"], true],
+                    ]}
+                    style={{
+                      textField: ["get", "statusIcon"],
+                      textSize: 20,
+                      textColor: "#FFFFFF",
+                      textHaloColor: "rgba(0, 0, 0, 0.25)",
+                      textHaloWidth: 1,
+                      textAllowOverlap: true,
+                      textIgnorePlacement: true,
                     }}
                   />
 
@@ -384,23 +610,6 @@ export default function MapScreen() {
                       textAllowOverlap: true,
                     }}
                   />
-                  <Mapbox.CircleLayer
-                    id="restaurant-points"
-                    filter={["!", ["has", "point_count"]]}
-                    style={{
-                      circleRadius: 8,
-                      circleColor: [
-                        "case",
-                        ["==", ["get", "favorite"], true],
-                        "#EF4444",
-                        ["==", ["get", "visited"], true],
-                        "#22C55E",
-                        "#F7D786",
-                      ],
-                      circleStrokeWidth: 2,
-                      circleStrokeColor: "#FFFFFF",
-                    }}
-                  />
                 </Mapbox.ShapeSource>
               </Mapbox.MapView>
 
@@ -410,47 +619,44 @@ export default function MapScreen() {
                   index={0}
                   snapPoints={["50%", "70%"]}
                   enablePanDownToClose
-                  onClose={() => setSelectedRestaurant(null)}
+                  onClose={dismissRestaurantPreview}
+                  backgroundStyle={{
+                    backgroundColor: isDark ? "#111827" : "#FFF",
+                    borderRadius: 28,
+                    overflow: "hidden",
+                  }}
+                  handleIndicatorStyle={{
+                    backgroundColor: isDark ? "#6B7280" : "#D1D5DB",
+                    width: 44,
+                  }}
                 >
-                  <Image
-                    source={{
-                      uri:
-                        selectedRestaurant.coverUrl ??
-                        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4",
-                    }}
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      borderTopLeftRadius: 24,
-                      borderTopRightRadius: 24,
-                    }}
-                    resizeMode="cover"
-                  />
-                  <BottomSheetView className="px-4 pb-6">
+                  <BottomSheetView className="px-5 pb-6">
                     <TouchableOpacity
-                      onPress={() => setSelectedRestaurant(null)}
-                      className="absolute right-4 top-4 z-10 rounded-full bg-gray-100 p-2"
+                      onPress={() => bottomSheetRef.current?.close()}
+                      className="absolute right-4 top-4 z-10 rounded-full bg-gray-100 p-2 dark:bg-gray-800"
                     >
                       <XIcon size={18} color="#6B7280" weight="bold" />
                     </TouchableOpacity>
 
-                    <View className="flex-row items-center pt-4">
+                    <View className="flex-row items-center pt-2">
                       <Avatar
                         uri={selectedRestaurant.logoUrl}
                         username={selectedRestaurant.name}
                         size={56}
+                        fallbackType="restaurant"
                       />
 
                       <View className="ml-4 flex-1 pr-8">
-                        <Text className="text-lg font-bold">
-                          {selectedRestaurant.name}
-                        </Text>
+                        <View className="flex-row items-center">
+                          <Text className="text-lg font-bold text-black dark:text-white">{selectedRestaurant.name}</Text>
+                          <RestaurantBadge status={selectedRestaurant.status} />
+                        </View>
 
-                        <View className="mt-3 flex-row gap-2">
+                        <View className="mt-2 flex-row flex-wrap gap-2">
                           {selectedRestaurant.userRestaurant?.favorite && (
                             <View className="rounded-full bg-red-100 px-3 py-1">
                               <Text className="text-xs font-bold text-red-500">
-                                ❤️ Favorite
+                                {t("restaurants:favorite")}
                               </Text>
                             </View>
                           )}
@@ -458,7 +664,7 @@ export default function MapScreen() {
                           {selectedRestaurant.userRestaurant?.visited && (
                             <View className="rounded-full bg-green-100 px-3 py-1">
                               <Text className="text-xs font-bold text-green-600">
-                                ✓ Visited
+                                {t("restaurants:visited")}
                               </Text>
                             </View>
                           )}
@@ -466,31 +672,49 @@ export default function MapScreen() {
                           {selectedRestaurant.userRestaurant?.wantToTry && (
                             <View className="rounded-full bg-yellow-100 px-3 py-1">
                               <Text className="text-xs font-bold text-yellow-700">
-                                🔖 Want to try
+                                {t("restaurants:wantToTry")}
                               </Text>
                             </View>
                           )}
                         </View>
 
-                        {!!selectedRestaurant.address && (
-                          <Text className="text-gray-500">
-                            {selectedRestaurant.address}
+                        {(selectedRestaurant.address || selectedRestaurant.city) && (
+                          <Text className="mt-2 text-gray-500">
+                            {[selectedRestaurant.address, selectedRestaurant.city]
+                              .filter(Boolean)
+                              .join(", ")}
                           </Text>
                         )}
                       </View>
                     </View>
 
+                    {!!selectedRestaurant.bio && (
+                      <Text numberOfLines={3} className="mt-4 leading-5 text-gray-600 dark:text-gray-300">
+                        {selectedRestaurant.bio}
+                      </Text>
+                    )}
+
+                    <RestaurantStats
+                      averageRating={selectedAverageRating}
+                      reviewsCount={
+                        selectedRestaurant.reviewsCount ?? selectedReviews.length
+                      }
+                      followersCount={selectedRestaurant.followersCount ?? 0}
+                    />
+
                     <TouchableOpacity
-                      className="mt-4 rounded-2xl bg-black py-3"
-                      onPress={() =>
+                      className="mt-4 rounded-2xl bg-black py-3 dark:bg-white"
+                      onPress={() => {
+                        const selectedId = selectedRestaurant.id;
+                        dismissRestaurantPreview();
                         router.push({
                           pathname: "/restaurants/[id]",
-                          params: { id: selectedRestaurant.id },
-                        })
-                      }
+                          params: { id: selectedId },
+                        });
+                      }}
                     >
-                      <Text className="text-center font-bold text-white">
-                        View restaurant
+                      <Text className="text-center font-bold text-white dark:text-black">
+                        {t("map:viewRestaurant")}
                       </Text>
                     </TouchableOpacity>
                   </BottomSheetView>
@@ -499,11 +723,15 @@ export default function MapScreen() {
 
               <TouchableOpacity
                 onPress={loadUserLocation}
-                className={`absolute right-3 h-12 w-12 items-center justify-center rounded-full bg-white ${
+                className={`absolute right-3 h-12 w-12 items-center justify-center rounded-full bg-white dark:bg-gray-800 ${
                   selectedRestaurant ? "bottom-82.5" : "bottom-2"
                 }`}
               >
-                <CrosshairIcon size={22} weight="fill" />
+                <CrosshairIcon
+                  size={22}
+                  color={isDark ? "#FFF" : "#111"}
+                  weight="fill"
+                />
               </TouchableOpacity>
             </View>
           ) : (
@@ -527,6 +755,90 @@ export default function MapScreen() {
           )}
         </Animated.View>
       )}
+
+      <AppBottomSheet
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        snapPoints={["68%"]}
+      >
+        <BottomSheetView className="flex-1 px-5 pb-7">
+          <Text className="text-2xl font-bold text-black dark:text-white">
+            {t("map:filters")}
+          </Text>
+
+          <Text className="mb-2 mt-5 font-bold text-black dark:text-white">
+            {t("map:show")}
+          </Text>
+          <View className="flex-row flex-wrap gap-2">
+            {(["ALL", "SAVED", "WANT_TO_TRY", "VISITED", "FAVORITE", "CLAIMED"] as RestaurantMapFilter[]).map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                onPress={() => setMapFilter(filter)}
+                className={`flex-row items-center rounded-full px-4 py-2.5 ${
+                  mapFilter === filter
+                    ? "bg-black dark:bg-white"
+                    : "bg-gray-100 dark:bg-gray-800"
+                }`}
+              >
+                {mapFilter === filter && (
+                  <CheckIcon size={14} color={isDark ? "#000" : "#FFF"} weight="bold" />
+                )}
+                <Text className={`font-bold ${mapFilter === filter ? "ml-1.5 text-white dark:text-black" : "text-black dark:text-white"}`}>
+                  {t(`map:filter${filter}`)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text className="mb-2 mt-6 font-bold text-black dark:text-white">
+            {t("map:distance")}
+          </Text>
+          <View className="flex-row gap-2">
+            {[10, 50, 100, 200].map((distance) => (
+              <TouchableOpacity
+                key={distance}
+                onPress={() =>
+                  setRadiusKm((current) =>
+                    current === distance ? null : distance,
+                  )
+                }
+                className={`flex-1 items-center rounded-xl py-3 ${radiusKm === distance ? "bg-black dark:bg-white" : "bg-gray-100 dark:bg-gray-800"}`}
+              >
+                <Text className={`font-bold ${radiusKm === distance ? "text-white dark:text-black" : "text-black dark:text-white"}`}>
+                  {distance} km
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text className="mb-2 mt-6 font-bold text-black dark:text-white">
+            {t("map:sortBy")}
+          </Text>
+          <View className="gap-2">
+            {(["BEST", "DISTANCE", "RATING", "MOST_REVIEWED"] as RestaurantMapSort[]).map((sort) => (
+              <TouchableOpacity
+                key={sort}
+                onPress={() => setMapSort(sort)}
+                className="flex-row items-center justify-between rounded-xl bg-gray-100 px-4 py-3 dark:bg-gray-800"
+              >
+                <Text className="font-semibold text-black dark:text-white">
+                  {t(`map:sort${sort}`)}
+                </Text>
+                {mapSort === sort && <CheckIcon size={18} color={isDark ? "#FFF" : "#111"} weight="bold" />}
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <TouchableOpacity
+            onPress={() => setFiltersOpen(false)}
+            className="mt-auto rounded-2xl bg-black py-4 dark:bg-white"
+          >
+            <Text className="text-center font-bold text-white dark:text-black">
+              {t("map:showPlaces")}
+            </Text>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </AppBottomSheet>
     </SafeAreaView>
   );
 }

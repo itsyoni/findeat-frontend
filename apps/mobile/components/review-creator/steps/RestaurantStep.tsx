@@ -6,7 +6,7 @@ import { ThemedSafeAreaView } from "@/components/common";
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
-  onSelect: (restaurant: SelectedRestaurant) => void;
+  onSelect: (restaurant: SelectedRestaurant | null) => void;
   onNext: () => void;
 };
 

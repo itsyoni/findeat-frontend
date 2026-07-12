@@ -10,5 +10,11 @@
   "password": "Password",
   "username": "Username",
   "content": "Content",
-  "reviews": "Reviews"
+  "reviews": "Reviews",
+  "postOptions": "Post options",
+  "managePost": "Manage this post",
+  "deletePost": "Delete post",
+  "deletePostHint": "Remove this post permanently",
+  "deletePostTitle": "Delete this post?",
+  "deletePostDescription": "This cannot be undone. The post, its likes, and its comments will be permanently removed."
 }

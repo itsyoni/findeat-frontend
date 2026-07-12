@@ -36,6 +36,13 @@ export type RestaurantMembership = {
 
 export type ManagedRestaurant = Restaurant;
 
+export type RestaurantPostSection = "OFFICIAL" | "COMMUNITY" | "REVIEWS";
+
+export type RestaurantPostsPage = {
+  items: RestaurantPostPreview[];
+  nextCursor: string | null;
+};
+
 export type Restaurant = {
   id: string;
   name: string;
@@ -67,7 +74,24 @@ export type Restaurant = {
 
   menus: Menu[];
   posts: RestaurantPostPreview[];
+  averageRating?: number | null;
+  reviewsCount?: number;
+  distanceKm?: number;
 };
+
+export type RestaurantMapFilter =
+  | "ALL"
+  | "SAVED"
+  | "WANT_TO_TRY"
+  | "VISITED"
+  | "FAVORITE"
+  | "CLAIMED";
+
+export type RestaurantMapSort =
+  | "BEST"
+  | "DISTANCE"
+  | "RATING"
+  | "MOST_REVIEWED";
 
 export type GoogleRestaurantSuggestion = {
   source: "GOOGLE";

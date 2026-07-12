@@ -33,7 +33,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadUser = useCallback(async () => {
     try {
-      const savedToken = await AsyncStorage.getItem(TOKEN_KEY);
+      const [savedToken, savedLanguage] = await Promise.all([
+        AsyncStorage.getItem(TOKEN_KEY),
+        AsyncStorage.getItem(LANGUAGE_KEY),
+      ]);
+
+      if (savedLanguage === "en" || savedLanguage === "he") {
+        await i18n.changeLanguage(savedLanguage);
+      }
 
       if (!savedToken) return;
 
@@ -73,12 +80,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     password: string,
     displayName: string,
   ) {
-    const { accessToken, user } = await api.auth.signup({
+    return api.auth.signup({
       email,
       username,
       password,
       displayName,
     });
+  }
+
+  async function verifyEmail(email: string, code: string) {
+    const { accessToken, user } = await api.auth.verifyEmail(email, code);
 
     await AsyncStorage.setItem(TOKEN_KEY, accessToken);
     await syncLanguage(user);
@@ -118,6 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         signup,
+        verifyEmail,
         logout,
         refreshUser,
       }}

@@ -5,7 +5,8 @@ import { Image, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 import { useTranslation } from "react-i18next";
-import { useAppTheme } from "@/contexts/ThemeContext";
+import { GearSixIcon } from "phosphor-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
   profile: Profile;
@@ -13,26 +14,34 @@ type Props = {
 
 export default function PersonalProfileHeader({ profile }: Props) {
   const { t } = useTranslation(["common", "profile"]);
-  const { isDark } = useAppTheme();
   return (
     <View className="bg-white pb-5 dark:bg-black">
       <View className="items-center">
-        <Image
-          source={{ uri: profile.coverUrl ?? "fallback" }}
-          className="h-70 w-full bg-gray-200 rounded-b-4xl"
-          resizeMode="cover"
-        />
-        <View className="-mt-15 px-5">
-          <Avatar
-            uri={profile.avatarUrl}
-            username={profile.username}
-            size={100}
-            style={{
-              outlineStyle: "solid",
-              outlineWidth: 7,
-              outlineColor: isDark ? "#000" : "#FFF",
-            }}
+        {profile.coverUrl ? (
+          <Image
+            source={{ uri: profile.coverUrl }}
+            className="h-52 w-full bg-gray-200"
+            resizeMode="cover"
           />
+        ) : (
+          <View className="h-52 w-full bg-gray-200 dark:bg-gray-800" />
+        )}
+        <SafeAreaView
+          edges={["top"]}
+          pointerEvents="box-none"
+          style={{ position: "absolute", left: 0, right: 0, top: 0 }}
+        >
+          <View className="items-end px-4 pt-2">
+            <TouchableOpacity
+              onPress={() => router.push("/settings")}
+              className="h-11 w-11 items-center justify-center rounded-full bg-black/45"
+            >
+              <GearSixIcon size={24} color="white" weight="bold" />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+        <View className="-mt-12 rounded-full bg-white p-1.5 dark:bg-black">
+          <Avatar uri={profile.avatarUrl} username={profile.username} size={100} />
         </View>
 
         <Text className="mt-2 text-2xl font-bold text-black dark:text-white">

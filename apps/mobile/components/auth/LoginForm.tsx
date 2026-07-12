@@ -8,15 +8,20 @@ import { useTranslation } from "react-i18next";
 import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 import { TextInput } from "../common";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Props = {
   onSignup: () => void;
   onRestaurantSignup: () => void;
+  onForgotPassword: () => void;
+  onVerificationRequired: (email: string) => void;
 };
 
-export default function LoginForm({ onSignup }: Props) {
+export default function LoginForm({ onSignup, onForgotPassword, onVerificationRequired }: Props) {
   const { t } = useTranslation("auth");
   const { login } = useAuth();
+  const { isDark } = useAppTheme();
+  const iconColor = isDark ? "#E5E7EB" : "#212121";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,6 +43,11 @@ export default function LoginForm({ onSignup }: Props) {
         return;
       }
 
+      if (getErrorMessage(error, '') === 'EMAIL_NOT_VERIFIED') {
+        onVerificationRequired(email.trim());
+        return;
+      }
+
       Alert.alert(
         t("common:error"),
         getErrorMessage(error, t("invalidEmailOrPassword")),
@@ -49,7 +59,7 @@ export default function LoginForm({ onSignup }: Props) {
 
   return (
     <View>
-      <Text weight="bold" className="text-center text-2xl text-[#212121]">
+      <Text weight="bold" className="text-center text-2xl text-[#212121] dark:text-white">
         {t("welcomeBack")}
       </Text>
 
@@ -68,9 +78,13 @@ export default function LoginForm({ onSignup }: Props) {
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
           onSubmitEditing={Keyboard.dismiss}
-          className="border-0 bg-[#f8f8f8]"
-          leftIcon={<EnvelopeSimpleIcon size={20} color="#212121" />}
+          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          leftIcon={<EnvelopeSimpleIcon size={20} color={iconColor} />}
         />
+
+        <TouchableOpacity onPress={onForgotPassword} className="-mt-1 self-end">
+          <Text weight="bold" className="text-[#212121] dark:text-white">{t('forgotPassword')}</Text>
+        </TouchableOpacity>
 
         <TextInput
           useBottomSheetInput
@@ -81,16 +95,16 @@ export default function LoginForm({ onSignup }: Props) {
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
           onSubmitEditing={Keyboard.dismiss}
-          className="border-0 bg-[#f8f8f8]"
-          leftIcon={<LockIcon size={20} color="#212121" />}
+          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          leftIcon={<LockIcon size={20} color={iconColor} />}
         />
 
         <TouchableOpacity
-          className="rounded-2xl bg-[#212121] py-4"
+          className="rounded-2xl bg-[#212121] py-4 dark:bg-white"
           onPress={handleLogin}
           disabled={loading}
         >
-          <Text weight="bold" className="text-center text-white">
+          <Text weight="bold" className="text-center text-white dark:text-black">
             {loading ? t("loggingIn") : t("login")}
           </Text>
         </TouchableOpacity>
@@ -98,7 +112,7 @@ export default function LoginForm({ onSignup }: Props) {
         <TouchableOpacity onPress={onSignup}>
           <Text className="text-center text-gray-500">
             {t("dontHaveAccount")}
-            <Text weight="bold" className="text-[#212121]">
+            <Text weight="bold" className="text-[#212121] dark:text-white">
               {t("signUp")}
             </Text>
           </Text>

@@ -85,9 +85,9 @@ export default function TextInput({
       {isPassword ? (
         <TouchableOpacity onPress={() => setHidden((prev) => !prev)}>
           {hidden ? (
-            <EyeIcon size={20} color="#000" />
+            <EyeIcon size={20} color={isDark ? "#E5E7EB" : "#000"} />
           ) : (
-            <EyeClosedIcon size={20} color="#000" />
+            <EyeClosedIcon size={20} color={isDark ? "#E5E7EB" : "#000"} />
           )}
         </TouchableOpacity>
       ) : (

@@ -1,0 +1,28 @@
+{
+  "title": "התראות",
+  "new": "התראה חדשה",
+  "someone": "מישהו",
+  "markAllRead": "סימון הכל כנקרא",
+  "follow": "עקוב",
+  "followBack": "עקוב בחזרה",
+  "following": "עוקב",
+  "friends": "חברים",
+  "viewPost": "צפה בפוסט",
+  "emptyTitle": "אין התראות עדיין",
+  "emptyBody": "לייקים, תגובות, עוקבים והודעות יופיעו כאן.",
+  "types": {
+    "POST_LIKE": "{{name}} אהב/ה את הפוסט שלך",
+    "POST_COMMENT": "{{name}} הגיב/ה לפוסט שלך",
+    "COMMENT_REPLY": "{{name}} השיב/ה לתגובה שלך",
+    "FOLLOW": "{{name}} התחיל/ה לעקוב אחריך",
+    "FOLLOW_BACK": "{{name}} החזיר/ה לך עוקב",
+    "FRIEND": "את/ה ו-{{name}} חברים עכשיו",
+    "MESSAGE": "{{name}} שלח/ה לך הודעה",
+    "GROUP_INVITE": "{{name}} הוסיף/ה אותך לקבוצה",
+    "GROUP_JOIN": "{{name}} הצטרף/ה לקבוצה",
+    "POLL_CREATED": "{{name}} יצר/ה סקר",
+    "POLL_ENDED": "הסקר הסתיים",
+    "RESTAURANT_CLAIM_APPROVED": "הבקשה שלך למסעדה אושרה",
+    "RESTAURANT_CLAIM_REJECTED": "הבקשה שלך למסעדה נדחתה"
+  }
+}

@@ -89,12 +89,20 @@ export function createPostsApi(api: AxiosInstance) {
     },
 
     async like(id: string) {
-      const { data } = await api.post(`/posts/${id}/like`);
+      const { data } = await api.post<{
+        ok: boolean;
+        isLiked: boolean;
+        likesCount: number;
+      }>(`/posts/${id}/like`);
       return data;
     },
 
     async unlike(id: string) {
-      const { data } = await api.delete(`/posts/${id}/like`);
+      const { data } = await api.delete<{
+        ok: boolean;
+        isLiked: boolean;
+        likesCount: number;
+      }>(`/posts/${id}/like`);
       return data;
     },
 

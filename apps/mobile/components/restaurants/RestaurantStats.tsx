@@ -1,37 +1,44 @@
-import { router } from "expo-router";
-import { TouchableOpacity, View } from "react-native";
-import Text from "../common/AppText";
+import { View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useAppTheme } from '@/contexts/ThemeContext';
+import Text from '../common/AppText';
 
 type Props = {
-  accountId: string;
-  postsCount: number;
+  averageRating: number | null;
+  reviewsCount: number;
   followersCount: number;
 };
 
 export default function RestaurantStats({
-  accountId,
-  postsCount,
+  averageRating,
+  reviewsCount,
   followersCount,
 }: Props) {
-  return (
-    <View className="mt-5 flex-row">
-      <View className="mr-8">
-        <Text className="text-xl font-bold">{postsCount}</Text>
-        <Text className="text-gray-500">Posts</Text>
-      </View>
+  const { t } = useTranslation('restaurants');
+  const { isDark } = useAppTheme();
+  const valueColor = isDark ? '#FFF' : '#111';
 
-      <TouchableOpacity
-        className="mr-8"
-        onPress={() =>
-          router.push({
-            pathname: "/(users)/connections",
-            params: { id: accountId, type: "followers" },
-          })
-        }
-      >
-        <Text className="text-xl font-bold">{followersCount}</Text>
-        <Text className="text-gray-500">Followers</Text>
-      </TouchableOpacity>
+  const stats = [
+    {
+      label: t('overallRating'),
+      value: averageRating == null ? '—' : `⭐ ${averageRating.toFixed(1)}`,
+    },
+    { label: t('reviewsCount'), value: reviewsCount.toLocaleString() },
+    { label: t('followersCount'), value: followersCount.toLocaleString() },
+  ];
+
+  return (
+    <View className="mt-5 w-full flex-row">
+      {stats.map((stat) => (
+        <View key={stat.label} className="flex-1 items-center px-1">
+          <Text weight="bold" className="text-xl" style={{ color: valueColor }}>
+            {stat.value}
+          </Text>
+          <Text className="mt-1 text-center text-xs text-gray-500">
+            {stat.label}
+          </Text>
+        </View>
+      ))}
     </View>
   );
 }

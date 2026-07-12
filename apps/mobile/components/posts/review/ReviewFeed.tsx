@@ -1,7 +1,7 @@
 import { Post } from "@findeat/types/post";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import ReviewPost from "./ReviewPost";
-import EmptyPostsState from "../EmptyPostsState";
+import ReviewFeedEmptyState from "./ReviewFeedEmptyState";
 
 type Props = {
   posts: Post[];
@@ -34,6 +34,7 @@ export default function ReviewFeed({
 }: Props) {
   return (
     <FlatList
+      style={{ flex: 1 }}
       data={posts}
       keyExtractor={(item) => item.id}
       refreshing={refreshing}
@@ -47,7 +48,11 @@ export default function ReviewFeed({
       contentContainerStyle={{
         flexGrow: 1,
       }}
-      ListEmptyComponent={<EmptyPostsState type="REVIEW" />}
+      ListEmptyComponent={
+        <View style={{ flex: 1, minHeight: 520 }}>
+          <ReviewFeedEmptyState />
+        </View>
+      }
       ListFooterComponent={
         loadingMore ? (
           <View className="items-center py-6">

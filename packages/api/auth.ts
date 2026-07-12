@@ -10,10 +10,37 @@ export function createAuthApi(api: AxiosInstance) {
       displayName: string;
     }) {
       const { data } = await api.post<{
-        user: Profile;
-        accessToken: string;
+        email: string;
+        emailVerificationRequired: true;
       }>("/auth/signup", payload);
 
+      return data;
+    },
+
+    async verifyEmail(email: string, code: string) {
+      const { data } = await api.post<{ user: Profile; accessToken: string }>(
+        "/auth/email/verify",
+        { email, code },
+      );
+      return data;
+    },
+
+    async resendVerification(email: string) {
+      const { data } = await api.post<{ ok: boolean }>("/auth/email/resend", { email });
+      return data;
+    },
+
+    async forgotPassword(email: string) {
+      const { data } = await api.post<{ ok: boolean }>("/auth/password/forgot", { email });
+      return data;
+    },
+
+    async resetPassword(email: string, code: string, password: string) {
+      const { data } = await api.post<{ ok: boolean }>("/auth/password/reset", {
+        email,
+        code,
+        password,
+      });
       return data;
     },
 
