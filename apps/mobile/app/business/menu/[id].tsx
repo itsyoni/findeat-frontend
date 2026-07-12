@@ -6,8 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { AppButton, LoadingScreen, TextInput } from "@/components/common";
+import { ThemedSafeAreaView , AppButton, LoadingScreen, TextInput } from "@/components/common";
 
 export default function ManageMenuScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -97,16 +96,16 @@ export default function ManageMenuScreen() {
 
   if (!menu) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ThemedSafeAreaView>
         <View className="flex-1 items-center justify-center px-5">
           <Text className="text-lg font-bold text-black">Menu not found</Text>
         </View>
-      </SafeAreaView>
+      </ThemedSafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <FlatList
         data={menu.items}
         keyExtractor={(item) => item.id}
@@ -246,6 +245,6 @@ export default function ManageMenuScreen() {
           </TouchableOpacity>
         )}
       />
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

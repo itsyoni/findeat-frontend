@@ -23,6 +23,7 @@ import Animated, {
   withSequence,
   withSpring,
 } from "react-native-reanimated";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Props = {
   post: Post;
@@ -64,6 +65,8 @@ export default function ReviewPost({
   onOpenSharePost,
   onOpenPostOptions,
 }: Props) {
+  const { isDark } = useAppTheme();
+  const actionColor = isDark ? "#E5E7EB" : "#212121";
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
   const review = post.reviewPost;
@@ -132,7 +135,7 @@ export default function ReviewPost({
   }
 
   return (
-    <View className="mb-6 bg-white pb-6">
+    <View className="mb-6 bg-white pb-6 dark:bg-black">
       <View className="mb-3 flex-row items-center justify-between px-4">
         <TouchableOpacity
           className="flex-1 flex-row items-center gap-3"
@@ -161,7 +164,7 @@ export default function ReviewPost({
           />
 
           <View className="flex-1">
-            <Text className="font-bold text-black">
+            <Text className="font-bold text-black dark:text-white">
               {isRestaurantPost ? displayName : `@${displayName}`}
             </Text>
 
@@ -180,7 +183,7 @@ export default function ReviewPost({
             activeOpacity={0.8}
             onPress={() => onOpenPostOptions(post.id)}
           >
-            <DotsThreeOutlineIcon size={28} color="#212121" weight="fill" />
+            <DotsThreeOutlineIcon size={28} color="#6B7280" weight="fill" />
           </TouchableOpacity>
         )}
       </View>
@@ -326,46 +329,54 @@ export default function ReviewPost({
               <Animated.View style={likeAnimatedStyle}>
                 <HeartIcon
                   weight={post.isLiked ? "fill" : "regular"}
-                  color={post.isLiked ? "#FF3040" : "#212121"}
+                  color={post.isLiked ? "#FF3040" : actionColor}
                   size={28}
                 />
               </Animated.View>
 
-              <Text className="text-base text-black">{post.likesCount}</Text>
+              <Text className="text-base text-black dark:text-white">
+                {post.likesCount}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => onOpenComments(post.id)}
               className="flex-col items-center gap-1"
             >
-              <ChatCircleIcon weight="regular" color="#212121" size={28} />
-              <Text className="text-base text-black">{post.commentsCount}</Text>
+              <ChatCircleIcon weight="regular" color={actionColor} size={28} />
+              <Text className="text-base text-black dark:text-white">
+                {post.commentsCount}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => onOpenSharePost(post.id)}
-              className="flex-col items-center gap-1"
+              className="items-center justify-center"
             >
-              <ShareFatIcon weight="regular" color="#212121" size={28} />
-              <Text className="text-base text-black">{post.commentsCount}</Text>
+              <ShareFatIcon weight="regular" color={actionColor} size={28} />
+              <Text className="text-base text-black dark:text-white">
+                {post.sharesCount ?? 0}
+              </Text>
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity onPress={handleWantToTry}>
             <BookBookmarkIcon
               weight={isWantToTry ? "fill" : "regular"}
-              color={isWantToTry ? "#F7D786" : "#212121"}
+              color={isWantToTry ? "#F7D786" : actionColor}
               size={28}
             />
 
-            <Text className="text-center text-lg text-black">
-              {post.restaurantSavesCount}
+            <Text className="text-center text-lg text-black dark:text-white">
+              {post.restaurantSavesCount ?? 0}
             </Text>
           </TouchableOpacity>
         </View>
 
         {!!activeSlide?.text && (
-          <Text className="mt-3 text-gray-700">{activeSlide.text}</Text>
+          <Text className="mt-3 text-gray-700 dark:text-gray-300">
+            {activeSlide.text}
+          </Text>
         )}
       </View>
     </View>

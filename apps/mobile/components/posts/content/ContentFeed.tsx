@@ -8,6 +8,8 @@ type Props = {
   height: number;
   refreshing: boolean;
   onRefresh: () => void;
+  onEndReached?: () => void;
+  loadingMore?: boolean;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
   onDeletePost: (postId: string) => void;
@@ -26,6 +28,7 @@ export default function ContentFeed({
   height,
   refreshing,
   onRefresh,
+  onEndReached,
   onToggleLike,
   onOpenComments,
   onToggleWantToTry,
@@ -40,6 +43,12 @@ export default function ContentFeed({
       keyExtractor={(item) => item.id}
       refreshing={refreshing}
       onRefresh={onRefresh}
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.6}
+      initialNumToRender={2}
+      maxToRenderPerBatch={2}
+      windowSize={3}
+      removeClippedSubviews
       pagingEnabled
       showsVerticalScrollIndicator={false}
       decelerationRate="fast"

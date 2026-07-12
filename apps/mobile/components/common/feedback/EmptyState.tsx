@@ -14,7 +14,7 @@ export default function EmptyState({ title, description, icon: Icon }: Props) {
     <View className="flex-1 items-center justify-center px-8 py-12">
       {Icon && <Icon size={56} color="#9CA3AF" weight="light" />}
 
-      <Text className="mt-4 text-center text-xl font-bold text-black">
+      <Text className="mt-4 text-center text-xl font-bold text-black dark:text-white">
         {title}
       </Text>
 

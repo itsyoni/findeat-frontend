@@ -2,9 +2,8 @@ import Text from "@/components/common/AppText";
 import { CreateReviewDraft } from "@findeat/types/review";
 import * as ImagePicker from "expo-image-picker";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView , TextInput } from "@/components/common";
 import RatingPicker from "../components/RatingPicker";
-import { TextInput } from "@/components/common";
 
 type Props = {
   draft: CreateReviewDraft;
@@ -32,7 +31,7 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
     !!draft.valueRating;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <ThemedSafeAreaView>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
@@ -42,10 +41,10 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
         }}
       >
         <TouchableOpacity onPress={onBack}>
-          <Text className="font-bold text-black">← Back</Text>
+          <Text className="font-bold text-black dark:text-white">← Back</Text>
         </TouchableOpacity>
 
-        <Text className="mt-6 text-3xl font-bold text-black">
+        <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
           Tell us about the meal
         </Text>
 
@@ -84,7 +83,7 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
           />
 
           <TextInput
-            className="min-h-36 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
+            className="min-h-36 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
             placeholder="Tell people about your experience..."
             value={draft.summary}
             onChangeText={(summary) => onChange({ summary })}
@@ -109,6 +108,6 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
           </Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

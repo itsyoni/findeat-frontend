@@ -95,6 +95,12 @@ export type Post = {
   likesCount: number;
   restaurantSavesCount: number;
   commentsCount: number;
+  sharesCount: number;
   isLiked: boolean;
   canDelete: boolean;
+};
+
+export type FeedPage = {
+  items: Post[];
+  nextCursor: string | null;
 };

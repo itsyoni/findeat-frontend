@@ -14,10 +14,9 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView , AppButton, TextInput } from "@/components/common";
 import PriceInput from "../components/PriceInput";
 import RatingPicker from "../components/RatingPicker";
-import { AppButton, TextInput } from "@/components/common";
 
 type Props = {
   selectedDish: Dish | null;
@@ -83,7 +82,7 @@ export default function AddDishDetailsStep({
   const displayedImage = imageUri;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -98,10 +97,12 @@ export default function AddDishDetailsStep({
             }}
           >
             <TouchableOpacity onPress={onBack}>
-              <Text className="font-bold text-black">← Back</Text>
+              <Text className="font-bold text-black dark:text-white">
+                ← Back
+              </Text>
             </TouchableOpacity>
 
-            <Text className="mt-6 text-3xl font-bold text-black">
+            <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
               {isFromMenu ? "Rate this dish" : "Add custom dish"}
             </Text>
 
@@ -129,7 +130,9 @@ export default function AddDishDetailsStep({
             <View className="mt-8 gap-6">
               <TextInput
                 className={`rounded-2xl border border-gray-200 px-4 py-4 text-base text-black ${
-                  isFromMenu ? "bg-gray-100" : "bg-white"
+                  isFromMenu
+                    ? "bg-gray-100 dark:bg-gray-800"
+                    : "bg-white dark:bg-gray-900"
                 }`}
                 placeholder="Dish name"
                 value={dishName}
@@ -139,7 +142,9 @@ export default function AddDishDetailsStep({
 
               {isFromMenu ? (
                 <View>
-                  <Text className="mb-3 font-bold text-black">Price</Text>
+                  <Text className="mb-3 font-bold text-black dark:text-white">
+                    Price
+                  </Text>
                   <View className="rounded-2xl border border-gray-200 bg-gray-100 px-4 py-4">
                     <Text className="text-base text-gray-500">
                       {price != null ? `₪${price}` : "No price"}
@@ -157,7 +162,7 @@ export default function AddDishDetailsStep({
               />
 
               <TextInput
-                className="min-h-36 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
+                className="min-h-36 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
                 placeholder="Tell people about this dish..."
                 value={text}
                 onChangeText={setText}
@@ -170,6 +175,6 @@ export default function AddDishDetailsStep({
           </ScrollView>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

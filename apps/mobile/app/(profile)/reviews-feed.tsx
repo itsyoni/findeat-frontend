@@ -51,14 +51,14 @@ export default function ProfileReviewsFeedScreen() {
 
   if (loading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white dark:bg-black">
       <ReviewFeed
         posts={posts}
         refreshing={false}
@@ -79,6 +79,7 @@ export default function ProfileReviewsFeedScreen() {
       <SharePostBottomSheet
         postId={sharePostId}
         onClose={() => setSharePostId(null)}
+        onShared={() => void refresh()}
       />
 
       <CommentsBottomSheet

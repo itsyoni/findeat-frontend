@@ -1,4 +1,4 @@
-import { LoadingScreen } from "@/components/common";
+import { LoadingScreen , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
@@ -8,14 +8,13 @@ import { searchFriends } from "@/services/search";
 import { SearchResultItem } from "@findeat/types/search";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddGroupMembersScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,25 +24,29 @@ export default function AddGroupMembersScreen() {
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
 
-  const loadGroup = useCallback(async () => {
-    try {
-      const chat = await api.chats.get(id);
-
-      setExistingMemberIds(
-        chat.participants.map((participant: { userId: string }) => {
-          return participant.userId;
-        }),
-      );
-    } catch (error) {
-      console.error("load group failed", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
-    void loadGroup();
-  }, [loadGroup]);
+    let cancelled = false;
+
+    api.chats
+      .get(id)
+      .then((chat) => {
+        if (cancelled) return;
+
+        setExistingMemberIds(
+          chat.participants.map((participant: { userId: string }) => {
+            return participant.userId;
+          }),
+        );
+      })
+      .catch((error) => console.error("load group failed", error))
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   async function searchAvailableFriends(query: string) {
     const friends = await searchFriends(query);
@@ -109,7 +112,7 @@ export default function AddGroupMembersScreen() {
         }}
       />
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ThemedSafeAreaView>
         <View className="border-b border-gray-100 px-5 pb-4">
           <Text className="text-3xl font-bold text-black">Add members</Text>
 
@@ -165,7 +168,7 @@ export default function AddGroupMembersScreen() {
             </View>
           )}
         />
-      </SafeAreaView>
+      </ThemedSafeAreaView>
     </>
   );
 }

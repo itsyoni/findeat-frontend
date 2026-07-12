@@ -330,7 +330,7 @@ export default function ContentPost({
               style={iconShadow}
             />
             <Text style={textShadow} className="text-center text-lg text-white">
-              {post.commentsCount}
+              {post.sharesCount ?? 0}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleWantToTry}>
@@ -342,7 +342,7 @@ export default function ContentPost({
             />
 
             <Text style={textShadow} className="text-center text-lg text-white">
-              {post.restaurantSavesCount}
+              {post.restaurantSavesCount ?? 0}
             </Text>
           </TouchableOpacity>
         </View>

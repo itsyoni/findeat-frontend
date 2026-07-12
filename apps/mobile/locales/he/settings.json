@@ -2,5 +2,10 @@
   "language": "שפה",
   "chooseLanguage": "בחירת שפה",
   "english": "English",
-  "hebrew": "עברית"
+  "hebrew": "עברית",
+  "theme": "מראה",
+  "chooseTheme": "בחירת מראה",
+  "systemTheme": "לפי הגדרת המכשיר",
+  "lightTheme": "בהיר",
+  "darkTheme": "כהה"
 }

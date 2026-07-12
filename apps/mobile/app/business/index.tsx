@@ -1,11 +1,11 @@
 import Text from "@/components/common/AppText";
 import { router } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView } from "@/components/common";
 
 export default function BusinessDashboardScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <View className="flex-1 items-center justify-center px-6">
         <Text className="text-center text-2xl font-bold text-black">
           Business dashboard moved to web
@@ -23,6 +23,6 @@ export default function BusinessDashboardScreen() {
           <Text className="font-bold text-white">Go back</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

@@ -77,14 +77,14 @@ export default function UserProfileScreen() {
 
   if (loading || !user) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white dark:bg-black">
       <View>
         <View>
           <View className="relative">
@@ -125,7 +125,7 @@ export default function UserProfileScreen() {
           </View>
         </View>
         <View className="px-5">
-          <Text className="mt-5 text-3xl font-bold text-black">
+          <Text className="mt-5 text-3xl font-bold text-black dark:text-white">
             @{user.username}
           </Text>
 
@@ -135,7 +135,9 @@ export default function UserProfileScreen() {
             <Text className="mt-2 text-gray-500">{user.email}</Text>
           )}
 
-          {!!user.bio && <Text className="mt-3 text-black">{user.bio}</Text>}
+          {!!user.bio && (
+            <Text className="mt-3 text-black dark:text-white">{user.bio}</Text>
+          )}
 
           <View className="mt-6 flex-row">
             <View className="mr-8">
@@ -191,7 +193,9 @@ export default function UserProfileScreen() {
               className="flex-1 rounded-2xl border border-gray-200 py-4"
               onPress={startChat}
             >
-              <Text className="text-center font-bold text-black">Message</Text>
+              <Text className="text-center font-bold text-black dark:text-white">
+                Message
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

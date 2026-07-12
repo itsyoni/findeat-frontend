@@ -1,7 +1,13 @@
-import type { Comment, Post, PostType } from "@findeat/types";
+import type { Comment, FeedPage, Post, PostType } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
 export function createPostsApi(api: AxiosInstance) {
+  const commentsCache = new Map<
+    string,
+    { comments: Comment[]; expiresAt: number }
+  >();
+  const commentsCacheTtlMs = 5_000;
+
   return {
     async createContent(payload: {
       description: string;
@@ -62,9 +68,16 @@ export function createPostsApi(api: AxiosInstance) {
       return data;
     },
 
-    async feed(type?: PostType) {
-      const { data } = await api.get<Post[]>("/posts/feed", {
-        params: type ? { type } : undefined,
+    async feed(
+      type?: PostType,
+      options?: { cursor?: string; limit?: number },
+    ) {
+      const { data } = await api.get<FeedPage>("/posts/feed", {
+        params: {
+          ...(type ? { type } : {}),
+          ...(options?.cursor ? { cursor: options.cursor } : {}),
+          ...(options?.limit ? { limit: options.limit } : {}),
+        },
       });
 
       return data;
@@ -90,11 +103,24 @@ export function createPostsApi(api: AxiosInstance) {
         content,
       });
 
+      commentsCache.delete(id);
+
       return data;
     },
 
     async comments(id: string) {
+      const cached = commentsCache.get(id);
+
+      if (cached && cached.expiresAt > Date.now()) {
+        return cached.comments;
+      }
+
       const { data } = await api.get<Comment[]>(`/posts/${id}/comments`);
+
+      commentsCache.set(id, {
+        comments: data,
+        expiresAt: Date.now() + commentsCacheTtlMs,
+      });
 
       return data;
     },

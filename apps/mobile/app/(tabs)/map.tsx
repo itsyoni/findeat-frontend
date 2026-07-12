@@ -17,11 +17,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Mapbox from "@rnmapbox/maps";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
 import { CrosshairIcon, XIcon } from "phosphor-react-native";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "");
 
 export default function MapScreen() {
   const { t } = useTranslation(["common", "map"]);
+  const { isDark } = useAppTheme();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<MapType>("MAP");
@@ -186,7 +188,10 @@ export default function MapScreen() {
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
       {isSearching ? (
         <Animated.View
           key="search"

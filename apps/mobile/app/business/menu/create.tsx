@@ -1,11 +1,10 @@
-import { AppButton, TextInput } from "@/components/common";
+import { AppButton, TextInput , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { getErrorMessage } from "@findeat/utils";
 import { router } from "expo-router";
 import { useState } from "react";
 import { Alert, KeyboardAvoidingView, Platform } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateMenuScreen() {
   const [title, setTitle] = useState("");
@@ -36,7 +35,7 @@ export default function CreateMenuScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <KeyboardAvoidingView
         className="flex-1 px-5 pt-6"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -71,6 +70,6 @@ export default function CreateMenuScreen() {
           disabled={loading}
         />
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

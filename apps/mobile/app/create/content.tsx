@@ -5,7 +5,7 @@ import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { ManagedRestaurant, SelectedRestaurant } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   Image,
@@ -18,8 +18,11 @@ import {
   View,
 } from "react-native";
 import { AppButton, TextInput } from "@/components/common";
+import { prependPostToFeedCache } from "@/hooks/useFeed";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function CreateContentScreen() {
+  const queryClient = useQueryClient();
   const [description, setDescription] = useState("");
   const [loading, setLoading] = useState(false);
   const [imageUri, setImageUri] = useState<string>();
@@ -52,15 +55,6 @@ export default function CreateContentScreen() {
 
     return restaurant.id;
   }
-
-  const loadManagedRestaurants = useCallback(async () => {
-    try {
-      const restaurants = await api.restaurants.mine();
-      setManagedRestaurants(restaurants);
-    } catch (error) {
-      console.error(error);
-    }
-  }, []);
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -115,6 +109,8 @@ export default function CreateContentScreen() {
               restaurantId,
             });
 
+      prependPostToFeedCache(queryClient, createdPost);
+
       setDescription("");
       setImageUri(undefined);
       setSelectedRestaurant(null);
@@ -137,12 +133,23 @@ export default function CreateContentScreen() {
   }
 
   useEffect(() => {
-    void loadManagedRestaurants();
-  }, [loadManagedRestaurants]);
+    let cancelled = false;
+
+    api.restaurants
+      .mine()
+      .then((restaurants) => {
+        if (!cancelled) setManagedRestaurants(restaurants);
+      })
+      .catch(console.error);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <KeyboardAvoidingView
-      className="flex-1 bg-white"
+      className="flex-1 bg-white dark:bg-black"
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -154,7 +161,7 @@ export default function CreateContentScreen() {
             paddingBottom: 40,
           }}
         >
-          <Text className="text-3xl font-bold text-black">
+          <Text className="text-3xl font-bold text-black dark:text-white">
             New Content Post
           </Text>
 
@@ -178,7 +185,7 @@ export default function CreateContentScreen() {
                       postingAs.type === "RESTAURANT" &&
                       postingAs.restaurantId === restaurant.id
                         ? "border-black bg-black"
-                        : "border-gray-200 bg-white"
+                        : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
                     }`}
                     onPress={() => {
                       setPostingAs({
@@ -193,7 +200,7 @@ export default function CreateContentScreen() {
                         postingAs.type === "RESTAURANT" &&
                         postingAs.restaurantId === restaurant.id
                           ? "text-white"
-                          : "text-black"
+                          : "text-black dark:text-white"
                       }`}
                     >
                       {restaurant.name}
@@ -238,7 +245,7 @@ export default function CreateContentScreen() {
           )}
 
           <TextInput
-            className="mt-6 min-h-40 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
+            className="mt-6 min-h-40 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
             placeholder="Share something..."
             placeholderTextColor="#9CA3AF"
             value={description}

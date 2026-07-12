@@ -152,14 +152,14 @@ export default function RestaurantScreen() {
 
   if (!restaurant) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <Text>Restaurant not found</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-white">
+    <ScrollView className="flex-1 bg-white dark:bg-black">
       <RestaurantHeader restaurant={restaurant} onToggleFollow={toggleFollow} />
       {restaurant.status !== "CLAIMED" && (
         <View className="px-6 pt-4">

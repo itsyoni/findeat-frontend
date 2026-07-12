@@ -14,9 +14,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LANGUAGE_KEY } from "@/constants/storage";
 import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ThemePreference,
+  useAppTheme,
+} from "@/contexts/ThemeContext";
 
 export default function EditProfileScreen() {
   const { t, i18n } = useTranslation(["profile", "common", "settings"]);
+  const { preference, setPreference } = useAppTheme();
+  const { isDark } = useAppTheme();
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -52,28 +58,32 @@ export default function EditProfileScreen() {
     newCoverUri !== null;
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    let cancelled = false;
 
-  async function loadProfile() {
-    try {
-      const data = await api.users.me();
-      setOriginal({
-        username: data.username ?? "",
-        displayName: data.displayName ?? "",
-        bio: data.bio ?? "",
-        email: data.email ?? "",
-      });
-      setAvatarUrl(data.avatarUrl ?? null);
-      setUsername(data.username ?? "");
-      setBio(data.bio ?? "");
-      setDisplayName(data.displayName ?? "");
-      setCoverUrl(data.coverUrl ?? null);
-      setEmail(data.email ?? "");
-    } catch (error) {
-      console.error(error);
-    }
-  }
+    api.users
+      .me()
+      .then((data) => {
+        if (cancelled) return;
+
+        setOriginal({
+          username: data.username ?? "",
+          displayName: data.displayName ?? "",
+          bio: data.bio ?? "",
+          email: data.email ?? "",
+        });
+        setAvatarUrl(data.avatarUrl ?? null);
+        setUsername(data.username ?? "");
+        setBio(data.bio ?? "");
+        setDisplayName(data.displayName ?? "");
+        setCoverUrl(data.coverUrl ?? null);
+        setEmail(data.email ?? "");
+      })
+      .catch(console.error);
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function saveProfile() {
     if (!username.trim()) {
@@ -241,6 +251,31 @@ export default function EditProfileScreen() {
     ]);
   }
 
+  function changeTheme() {
+    const chooseTheme = (nextPreference: ThemePreference) => {
+      void setPreference(nextPreference);
+    };
+
+    Alert.alert(t("settings:chooseTheme"), undefined, [
+      {
+        text: t("settings:systemTheme"),
+        onPress: () => chooseTheme("system"),
+      },
+      {
+        text: t("settings:lightTheme"),
+        onPress: () => chooseTheme("light"),
+      },
+      {
+        text: t("settings:darkTheme"),
+        onPress: () => chooseTheme("dark"),
+      },
+      {
+        text: t("common:cancel"),
+        style: "cancel",
+      },
+    ]);
+  }
+
   async function pickAvatar() {
     await pickImage([1, 1], setNewAvatarUri);
   }
@@ -273,8 +308,14 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
-      <ScrollView className="flex-1 bg-white">
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
+      <ScrollView
+        className="flex-1 bg-white dark:bg-black"
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+      >
         <View className="flex-row items-center px-5 pt-4">
           <IconButton
             icon={CaretLeftIcon}
@@ -282,14 +323,14 @@ export default function EditProfileScreen() {
             onPress={handleBack}
           />
 
-          <Text className="ml-2 text-2xl font-bold text-black">
+          <Text className="ml-2 text-2xl font-bold text-black dark:text-white">
             {t("profile:editProfile")}
           </Text>
         </View>
         <View className="px-5 pb-10">
           <TouchableOpacity
             onPress={() => pickImage([3, 1], setNewCoverUri)}
-            className="mt-6 h-40 overflow-hidden rounded-3xl bg-gray-100"
+            className="mt-6 h-40 overflow-hidden rounded-3xl bg-gray-100 dark:bg-gray-800"
           >
             {newCoverUri || coverUrl ? (
               <Image
@@ -311,7 +352,7 @@ export default function EditProfileScreen() {
           >
             <Avatar uri={displayedAvatar} username={username} size={96} />
 
-            <Text className="mt-3 font-semibold text-black">
+            <Text className="mt-3 font-semibold text-black dark:text-white">
               {t("profile:changeProfilePhoto")}
             </Text>
           </TouchableOpacity>
@@ -320,6 +361,21 @@ export default function EditProfileScreen() {
             title={t("settings:language")}
             onPress={changeLanguage}
             variant="secondary"
+          />
+
+          <AppButton
+            title={`${t("settings:theme")}: ${t(
+              `settings:${
+                preference === "dark"
+                  ? "darkTheme"
+                  : preference === "light"
+                    ? "lightTheme"
+                    : "systemTheme"
+              }`,
+            )}`}
+            onPress={changeTheme}
+            variant="secondary"
+            className="mt-3"
           />
 
           <SectionTitle title={t("profile:account")} />
@@ -394,6 +450,8 @@ export default function EditProfileScreen() {
 
 function SectionTitle({ title }: { title: string }) {
   return (
-    <Text className="mt-8 mb-3 text-xl font-bold text-black">{title}</Text>
+    <Text className="mb-3 mt-8 text-xl font-bold text-black dark:text-white">
+      {title}
+    </Text>
   );
 }

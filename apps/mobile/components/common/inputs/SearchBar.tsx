@@ -35,7 +35,7 @@ export default function SearchBar({
   const input = (
     <TextInput
       editable={editable}
-      className="border-0 bg-[#F5F4F5] h-full"
+      className="h-full border-0 bg-[#F5F4F5] dark:bg-gray-900"
       style={{
         textAlign: isRtl ? "right" : "left",
         writingDirection: isRtl ? "rtl" : "ltr",

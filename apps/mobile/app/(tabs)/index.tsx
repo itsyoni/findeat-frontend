@@ -6,63 +6,70 @@ import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  feedQueryKey,
+  updatePostInFeedCache,
+  useFeed,
+} from "@/hooks/useFeed";
 import { api } from "@/lib/api";
 import { searchGlobal } from "@/services/search";
-import { Post, PostType } from "@findeat/types/post";
+import { PostType } from "@findeat/types/post";
 import { SearchResultItem } from "@findeat/types/search";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+import type { FeedPage } from "@findeat/types";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, Alert, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 export default function HomeScreen() {
   const { t } = useTranslation("common");
   const { user, isLoading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+  const { isDark } = useAppTheme();
 
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [feedHeight, setFeedHeight] = useState(0);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
   const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
 
-  const loadPosts = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const posts = await api.posts.feed(activeFeed);
-      setPosts(posts);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, activeFeed]);
+  const feed = useFeed(activeFeed, !!user && !authLoading);
+  const posts = useMemo(
+    () => feed.data?.pages.flatMap((page) => page.items) ?? [],
+    [feed.data],
+  );
 
   async function onRefresh() {
-    setRefreshing(true);
-    await loadPosts();
-    setRefreshing(false);
+    queryClient.setQueryData<InfiniteData<FeedPage>>(
+      feedQueryKey(activeFeed),
+      (current) =>
+        current
+          ? {
+              pages: current.pages.slice(0, 1),
+              pageParams: current.pageParams.slice(0, 1),
+            }
+          : current,
+    );
+
+    await feed.refetch();
   }
 
   async function toggleLike(postId: string, isLiked: boolean) {
-    setPosts((prev) =>
-      prev.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              isLiked: !isLiked,
-              likesCount: Math.max(0, post.likesCount + (isLiked ? -1 : 1)),
-            }
-          : post,
-      ),
+    updatePostInFeedCache(queryClient, (post) =>
+      post.id === postId
+        ? {
+            ...post,
+            isLiked: !isLiked,
+            likesCount: Math.max(0, post.likesCount + (isLiked ? -1 : 1)),
+          }
+        : post,
     );
 
     try {
@@ -70,16 +77,14 @@ export default function HomeScreen() {
     } catch (error) {
       console.error("toggle like failed", error);
 
-      setPosts((prev) =>
-        prev.map((post) =>
-          post.id === postId
-            ? {
-                ...post,
-                isLiked,
-                likesCount: Math.max(0, post.likesCount + (isLiked ? 1 : -1)),
-              }
-            : post,
-        ),
+      updatePostInFeedCache(queryClient, (post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked,
+              likesCount: Math.max(0, post.likesCount + (isLiked ? 1 : -1)),
+            }
+          : post,
       );
     }
   }
@@ -89,32 +94,30 @@ export default function HomeScreen() {
     restaurantId: string,
     isWantToTry: boolean,
   ) {
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.restaurant?.id !== restaurantId) return post;
+    updatePostInFeedCache(queryClient, (post) => {
+      if (post.restaurant?.id !== restaurantId) return post;
 
-        return {
-          ...post,
-          restaurantSavesCount: Math.max(
-            0,
-            post.restaurantSavesCount + (isWantToTry ? -1 : 1),
-          ),
-          restaurant: {
-            ...post.restaurant,
-            userSaves: isWantToTry
-              ? []
-              : [
-                  {
-                    id: "",
-                    wantToTry: true,
-                    visited: false,
-                    favorite: false,
-                  },
-                ],
-          },
-        };
-      }),
-    );
+      return {
+        ...post,
+        restaurantSavesCount: Math.max(
+          0,
+          (post.restaurantSavesCount ?? 0) + (isWantToTry ? -1 : 1),
+        ),
+        restaurant: {
+          ...post.restaurant,
+          userSaves: isWantToTry
+            ? []
+            : [
+                {
+                  id: "",
+                  wantToTry: true,
+                  visited: false,
+                  favorite: false,
+                },
+              ],
+        },
+      };
+    });
 
     try {
       if (isWantToTry) {
@@ -124,14 +127,17 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error("toggle want to try failed", error);
-      await loadPosts();
+      await feed.refetch();
+      Alert.alert("Could not save post", "Please try again.");
     }
   }
 
   async function deletePost(postId: string) {
     try {
       await api.posts.delete(postId);
-      setPosts((prev) => prev.filter((post) => post.id !== postId));
+      updatePostInFeedCache(queryClient, (post) =>
+        post.id === postId ? null : post,
+      );
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not delete post");
@@ -139,15 +145,18 @@ export default function HomeScreen() {
   }
 
   function handleCommentAdded(postId: string) {
-    setPosts((currentPosts) =>
-      currentPosts.map((post) =>
-        post.id === postId
-          ? {
-              ...post,
-              commentsCount: post.commentsCount + 1,
-            }
-          : post,
-      ),
+    updatePostInFeedCache(queryClient, (post) =>
+      post.id === postId
+        ? { ...post, commentsCount: post.commentsCount + 1 }
+        : post,
+    );
+  }
+
+  function handlePostShared(postId: string) {
+    updatePostInFeedCache(queryClient, (post) =>
+      post.id === postId
+        ? { ...post, sharesCount: (post.sharesCount ?? 0) + 1 }
+        : post,
     );
   }
 
@@ -172,25 +181,19 @@ export default function HomeScreen() {
     });
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      if (authLoading || !user) return;
-
-      setLoading(true);
-      loadPosts();
-    }, [authLoading, user, loadPosts]),
-  );
-
-  if (authLoading || loading) {
+  if (authLoading || feed.isPending) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
       {isSearching ? (
         <Animated.View
           key="search"
@@ -237,8 +240,14 @@ export default function HomeScreen() {
                 <ContentFeedList
                   posts={posts}
                   height={feedHeight}
-                  refreshing={refreshing}
+                  refreshing={feed.isRefetching && !feed.isFetchingNextPage}
                   onRefresh={onRefresh}
+                  onEndReached={() => {
+                    if (feed.hasNextPage && !feed.isFetchingNextPage) {
+                      void feed.fetchNextPage();
+                    }
+                  }}
+                  loadingMore={feed.isFetchingNextPage}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}
@@ -249,8 +258,14 @@ export default function HomeScreen() {
               ) : (
                 <ReviewFeed
                   posts={posts}
-                  refreshing={refreshing}
+                  refreshing={feed.isRefetching && !feed.isFetchingNextPage}
                   onRefresh={onRefresh}
+                  onEndReached={() => {
+                    if (feed.hasNextPage && !feed.isFetchingNextPage) {
+                      void feed.fetchNextPage();
+                    }
+                  }}
+                  loadingMore={feed.isFetchingNextPage}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}
@@ -268,6 +283,7 @@ export default function HomeScreen() {
           <SharePostBottomSheet
             postId={sharePostId}
             onClose={() => setSharePostId(null)}
+            onShared={handlePostShared}
           />
           <CommentsBottomSheet
             postId={selectedPostId}

@@ -10,6 +10,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 function toAppLanguage(language?: User["language"]) {
   return language === "HE" ? "he" : "en";
@@ -25,6 +26,7 @@ async function syncLanguage(user: User) {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient();
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -59,6 +61,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(TOKEN_KEY, accessToken);
     await syncLanguage(user);
 
+    queryClient.clear();
+
     setToken(accessToken);
     setUser(user);
   }
@@ -79,12 +83,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await AsyncStorage.setItem(TOKEN_KEY, accessToken);
     await syncLanguage(user);
 
+    queryClient.clear();
+
     setToken(accessToken);
     setUser(user);
   }
 
   async function logout() {
     await AsyncStorage.removeItem(TOKEN_KEY);
+
+    queryClient.clear();
 
     setToken(null);
     setUser(null);

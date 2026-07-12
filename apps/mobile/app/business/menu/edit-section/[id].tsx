@@ -1,4 +1,4 @@
-import { AppButton, TextInput } from "@/components/common";
+import { AppButton, TextInput , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { getErrorMessage } from "@findeat/utils";
@@ -10,7 +10,6 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EditMenuSectionScreen() {
   const params = useLocalSearchParams<{
@@ -89,7 +88,7 @@ export default function EditMenuSectionScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <KeyboardAvoidingView
         className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -128,6 +127,6 @@ export default function EditMenuSectionScreen() {
           />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

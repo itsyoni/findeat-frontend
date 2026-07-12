@@ -14,7 +14,7 @@ export default function Avatar({ uri, size = 40, style }: Props) {
     return (
       <View
         style={{ width: size, height: size, borderRadius: size / 2 }}
-        className="items-center justify-center bg-gray-200"
+        className="items-center justify-center bg-gray-200 dark:bg-gray-800"
       >
         <UserIcon size={size * 0.55} color="#9CA3AF" weight="fill" />
       </View>

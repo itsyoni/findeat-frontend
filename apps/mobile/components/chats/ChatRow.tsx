@@ -5,6 +5,7 @@ import { UsersThreeIcon } from "phosphor-react-native";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import Avatar from "../common/Avatar";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   chat: Chat;
@@ -12,6 +13,7 @@ type Props = {
 
 export default function ChatRow({ chat }: Props) {
   const { user } = useAuth();
+  const { t } = useTranslation("chat");
 
   const otherUser = chat.participants.find((p) => p.userId !== user?.id)?.user;
 
@@ -31,27 +33,29 @@ export default function ChatRow({ chat }: Props) {
       : otherUser?.avatarUrl;
 
   const subtitle = isGroupChat
-    ? `${chat.participants.length} members`
+    ? t("members", { count: chat.participants.length })
     : isRestaurantChat
-      ? "Restaurant chat"
+      ? t("restaurantChat")
       : otherUser?.isOnline
-        ? "Online now"
+        ? t("onlineNow")
         : chat.lastMessage
           ? null
-          : "No messages yet";
+          : t("noMessages");
 
   const unreadCount = chat.unreadCount ?? 0;
   const hasUnread = unreadCount > 0;
   const isMine = chat.lastMessageSenderId === user?.id;
 
   const lastMessageText = chat.lastMessage
-    ? `${isMine ? "You: " : ""}${chat.lastMessage}`
+    ? `${isMine ? `${t("you")}: ` : ""}${chat.lastMessage}`
     : subtitle;
 
   return (
     <TouchableOpacity
       className={`flex-row items-center gap-4 p-5 ${
-        hasUnread ? "bg-gray-100" : "bg-white"
+        hasUnread
+          ? "bg-gray-100 dark:bg-gray-800"
+          : "bg-white dark:bg-black"
       }`}
       onPress={() =>
         router.push({
@@ -67,21 +71,25 @@ export default function ChatRow({ chat }: Props) {
           <UsersThreeIcon size={26} color="#6B7280" weight="fill" />
         </View>
       ) : (
-        <Avatar uri={imageUrl} username={title ?? "Chat"} size={48} />
+        <Avatar uri={imageUrl} username={title ?? t("chat")} size={48} />
       )}
 
       <View className="flex-1">
         <Text
-          className={`text-lg text-black ${
+          className={`text-lg text-black dark:text-white ${
             hasUnread ? "font-bold" : "font-semibold"
           }`}
         >
-          {title ?? "Chat"}
+          {title ?? t("chat")}
         </Text>
 
         <Text
           numberOfLines={1}
-          className={hasUnread ? "font-semibold text-black" : "text-gray-500"}
+          className={
+            hasUnread
+              ? "font-semibold text-black dark:text-white"
+              : "text-gray-500 dark:text-gray-400"
+          }
         >
           {lastMessageText}
         </Text>

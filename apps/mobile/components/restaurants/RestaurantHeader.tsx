@@ -35,7 +35,7 @@ export default function RestaurantHeader({
           />
         </View>
 
-        <Text className="mt-4 text-3xl font-bold text-black">
+        <Text className="mt-4 text-3xl font-bold text-black dark:text-white">
           {restaurant.name}
         </Text>
 

@@ -119,6 +119,7 @@ export default function ProfileContentFeedScreen() {
       <SharePostBottomSheet
         postId={sharePostId}
         onClose={() => setSharePostId(null)}
+        onShared={() => void refresh()}
       />
 
       <CommentsBottomSheet

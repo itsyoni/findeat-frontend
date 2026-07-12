@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import { CreateReviewDraft } from "@findeat/types/review";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView } from "@/components/common";
 import DishCard from "../components/DishCard";
 
 type Props = {
@@ -23,7 +23,7 @@ export default function PreviewStep({
       : draft.restaurant?.name;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <ThemedSafeAreaView>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -32,10 +32,12 @@ export default function PreviewStep({
         }}
       >
         <TouchableOpacity onPress={onBack}>
-          <Text className="font-bold text-black">← Back</Text>
+          <Text className="font-bold text-black dark:text-white">← Back</Text>
         </TouchableOpacity>
 
-        <Text className="mt-6 text-3xl font-bold text-black">Preview</Text>
+        <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
+          Preview
+        </Text>
 
         {!!restaurantName && (
           <Text className="mt-2 text-gray-500">📍 {restaurantName}</Text>
@@ -51,7 +53,7 @@ export default function PreviewStep({
 
         <View className="mt-6 rounded-3xl border border-gray-200 p-4">
           {!!draft.overallRating && (
-            <Text className="text-xl font-bold text-black">
+            <Text className="text-xl font-bold text-black dark:text-white">
               ⭐ {draft.overallRating}/10
             </Text>
           )}
@@ -81,11 +83,13 @@ export default function PreviewStep({
           </View>
 
           {!!draft.summary && (
-            <Text className="mt-4 text-base text-black">{draft.summary}</Text>
+            <Text className="mt-4 text-base text-black dark:text-white">
+              {draft.summary}
+            </Text>
           )}
         </View>
 
-        <Text className="mt-8 text-xl font-bold text-black">
+        <Text className="mt-8 text-xl font-bold text-black dark:text-white">
           What I ordered
         </Text>
 
@@ -107,6 +111,6 @@ export default function PreviewStep({
           </Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

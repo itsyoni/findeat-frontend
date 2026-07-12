@@ -14,7 +14,10 @@ export default function Screen({
   edges = ["top"],
 }: Props) {
   return (
-    <SafeAreaView edges={edges} className={`flex-1 bg-white ${className}`}>
+    <SafeAreaView
+      edges={edges}
+      className={`flex-1 bg-white dark:bg-black ${className}`}
+    >
       {children}
     </SafeAreaView>
   );

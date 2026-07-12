@@ -1,8 +1,8 @@
-import { TextInput } from "@/components/common";
+import { TextInput , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Dish, Restaurant } from "@findeat/types";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
   restaurant: Restaurant | null;
@@ -25,26 +24,27 @@ export default function SelectMenuDishStep({
 }: Props) {
   const [fullRestaurant, setFullRestaurant] = useState<Restaurant | null>(null);
   const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const loadRestaurant = useCallback(async () => {
-    if (!restaurant?.id) return;
-
-    try {
-      setLoading(true);
-
-      const fullRestaurant = await api.restaurants.get(restaurant.id);
-      setFullRestaurant(fullRestaurant);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [restaurant?.id]);
+  const [loading, setLoading] = useState(!!restaurant?.id);
 
   useEffect(() => {
-    void loadRestaurant();
-  }, [loadRestaurant]);
+    if (!restaurant?.id) return;
+
+    let cancelled = false;
+
+    api.restaurants
+      .get(restaurant.id)
+      .then((fullRestaurant) => {
+        if (!cancelled) setFullRestaurant(fullRestaurant);
+      })
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [restaurant?.id]);
 
   const filteredMenus = useMemo(() => {
     const menus = fullRestaurant?.menus ?? [];
@@ -67,7 +67,7 @@ export default function SelectMenuDishStep({
   }, [fullRestaurant, query]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
@@ -77,15 +77,15 @@ export default function SelectMenuDishStep({
         }}
       >
         <TouchableOpacity onPress={onBack}>
-          <Text className="font-bold text-black">← Back</Text>
+          <Text className="font-bold text-black dark:text-white">← Back</Text>
         </TouchableOpacity>
 
-        <Text className="mt-6 text-3xl font-bold text-black">
+        <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
           Choose from menu
         </Text>
 
         <TextInput
-          className="mt-6 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
+          className="mt-6 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
           placeholder="Search dishes..."
           value={query}
           onChangeText={setQuery}
@@ -99,7 +99,7 @@ export default function SelectMenuDishStep({
 
         {!loading && filteredMenus.length === 0 && (
           <View className="mt-10 rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-8">
-            <Text className="text-center font-bold text-black">
+            <Text className="text-center font-bold text-black dark:text-white">
               No dishes found
             </Text>
             <Text className="mt-2 text-center text-gray-500">
@@ -112,7 +112,7 @@ export default function SelectMenuDishStep({
           <View className="mt-8 gap-8">
             {filteredMenus.map((menu) => (
               <View key={menu.id}>
-                <Text className="mb-3 text-xl font-bold text-black">
+                <Text className="mb-3 text-xl font-bold text-black dark:text-white">
                   {menu.title}
                 </Text>
 
@@ -120,7 +120,7 @@ export default function SelectMenuDishStep({
                   {menu.items.map((dish) => (
                     <TouchableOpacity
                       key={dish.id}
-                      className="rounded-2xl border border-gray-200 bg-white p-3"
+                      className="rounded-2xl border border-gray-200 bg-white p-3 dark:border-gray-700 dark:bg-gray-900"
                       activeOpacity={0.85}
                       onPress={() => onSelect(dish)}
                     >
@@ -139,12 +139,12 @@ export default function SelectMenuDishStep({
 
                         <View className="flex-1">
                           <View className="flex-row justify-between gap-3">
-                            <Text className="flex-1 font-bold text-black">
+                            <Text className="flex-1 font-bold text-black dark:text-white">
                               {dish.name}
                             </Text>
 
                             {dish.price != null && (
-                              <Text className="font-bold text-black">
+                              <Text className="font-bold text-black dark:text-white">
                                 ₪{dish.price}
                               </Text>
                             )}
@@ -174,6 +174,6 @@ export default function SelectMenuDishStep({
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

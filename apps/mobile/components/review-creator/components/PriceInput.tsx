@@ -11,10 +11,10 @@ type Props = {
 export default function PriceInput({ label, value, onChange }: Props) {
   return (
     <View>
-      <Text className="mb-3 font-bold text-black">{label}</Text>
+      <Text className="mb-3 font-bold text-black dark:text-white">{label}</Text>
 
       <TextInput
-        className="rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
+        className="rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
         placeholder="₪0"
         keyboardType="decimal-pad"
         value={value != null ? String(value) : ""}

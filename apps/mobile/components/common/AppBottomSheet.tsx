@@ -1,8 +1,10 @@
-import BottomSheet, {
+import {
   BottomSheetBackdrop,
   BottomSheetFooterProps,
+  BottomSheetModal,
 } from "@gorhom/bottom-sheet";
-import { ReactNode, useCallback } from "react";
+import { ReactNode, useCallback, useEffect, useRef } from "react";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Props = {
   open: boolean;
@@ -21,6 +23,36 @@ export default function AppBottomSheet({
   footerComponent,
   snapPoints,
 }: Props) {
+  if (!open) return null;
+
+  return (
+    <PresentedBottomSheet
+      onClose={onClose}
+      footerComponent={footerComponent}
+      snapPoints={snapPoints}
+    >
+      {children}
+    </PresentedBottomSheet>
+  );
+}
+
+function PresentedBottomSheet({
+  onClose,
+  children,
+  footerComponent,
+  snapPoints,
+}: Omit<Props, "open">) {
+  const { isDark } = useAppTheme();
+  const modalRef = useRef<BottomSheetModal>(null);
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      modalRef.current?.present();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
   const renderBackdrop = useCallback(
     (props: React.ComponentProps<typeof BottomSheetBackdrop>) => (
       <BottomSheetBackdrop
@@ -30,31 +62,33 @@ export default function AppBottomSheet({
         disappearsOnIndex={-1}
         pressBehavior="close"
         style={{
-          backgroundColor: "#fff",
+          backgroundColor: isDark ? "#000" : "#fff",
         }}
       />
     ),
-    [],
+    [isDark],
   );
 
-  if (!open) return null;
-
   return (
-    <BottomSheet
+    <BottomSheetModal
+      ref={modalRef}
       index={0}
       snapPoints={snapPoints}
       enableDynamicSizing={false}
       enablePanDownToClose
       enableContentPanningGesture
       enableHandlePanningGesture
-      onClose={onClose}
+      onDismiss={onClose}
       backdropComponent={renderBackdrop}
       footerComponent={footerComponent}
       backgroundStyle={{
-        backgroundColor: "white",
+        backgroundColor: isDark ? "#111827" : "white",
+      }}
+      handleIndicatorStyle={{
+        backgroundColor: isDark ? "#6B7280" : "#D1D5DB",
       }}
     >
       {children}
-    </BottomSheet>
+    </BottomSheetModal>
   );
 }

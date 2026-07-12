@@ -13,6 +13,8 @@ import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Avatar from "./Avatar";
 import Text from "./AppText";
+import { useTranslation } from "react-i18next";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Props = {
   postId: string | null;
@@ -68,6 +70,8 @@ function CommentFooter({
   onAddComment,
   ...footerProps
 }: CommentFooterProps) {
+  const { t } = useTranslation("chat");
+  const { isDark } = useAppTheme();
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -90,17 +94,28 @@ function CommentFooter({
   return (
     <BottomSheetFooter
       {...footerProps}
-      bottomInset={bottomInset}
+      bottomInset={0}
       style={{
-        backgroundColor: "white",
+        backgroundColor: isDark ? "#111827" : "white",
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 10,
       }}
     >
-      <View style={{ backgroundColor: "white" }}>
-        <View className="border-t border-gray-200 bg-white px-4 pb-3 pt-3">
+      <View className="bg-white dark:bg-gray-900">
+        <View
+          className="border-t border-gray-200 bg-white px-4 pt-3 dark:border-gray-700 dark:bg-gray-900"
+          style={{
+            backgroundColor: isDark ? "#111827" : "white",
+            paddingBottom: bottomInset,
+          }}
+        >
           <View className="flex-row items-center gap-2">
             <BottomSheetTextInput
-              className="flex-1 rounded-2xl border border-gray-200 px-4 py-3 text-black"
-              placeholder="Add a comment..."
+              className="flex-1 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-black dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+              placeholder={t("addComment")}
               placeholderTextColor="#9CA3AF"
               value={content}
               onChangeText={setContent}
@@ -119,7 +134,7 @@ function CommentFooter({
               }}
             >
               <Text className="font-bold text-white">
-                {submitting ? "Sending..." : "Send"}
+                {submitting ? t("sending") : t("send")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -134,6 +149,7 @@ export default function CommentsBottomSheet({
   onClose,
   onCommentAdded,
 }: Props) {
+  const { t } = useTranslation("chat");
   const { comments, loading, addComment } = useComments(postId);
   const insets = useSafeAreaInsets();
 
@@ -184,14 +200,18 @@ export default function CommentsBottomSheet({
 
         <View className="min-w-0 flex-1">
           <View className="flex-row items-center">
-            <Text className="font-bold text-black">@{item.user.username}</Text>
+            <Text className="font-bold text-black dark:text-white">
+              @{item.user.username}
+            </Text>
 
             <Text className="ml-2 text-xs text-gray-400">
               {formatCommentTime(item.createdAt)}
             </Text>
           </View>
 
-          <Text className="mt-1 text-gray-700">{item.content}</Text>
+          <Text className="mt-1 text-gray-700 dark:text-gray-300">
+            {item.content}
+          </Text>
         </View>
       </TouchableOpacity>
     ),
@@ -220,7 +240,9 @@ export default function CommentsBottomSheet({
           flexGrow: 1,
         }}
         ListHeaderComponent={
-          <Text className="mb-5 text-xl font-bold text-black">Comments</Text>
+          <Text className="mb-5 text-xl font-bold text-black dark:text-white">
+            {t("comments")}
+          </Text>
         }
         ListEmptyComponent={
           loading ? (
@@ -230,11 +252,11 @@ export default function CommentsBottomSheet({
           ) : (
             <View className="flex-1 items-center justify-center py-10">
               <Text className="text-center text-base text-gray-400">
-                No comments yet.
+                {t("noComments")}
               </Text>
 
               <Text className="mt-1 text-center text-sm text-gray-400">
-                Be the first to comment!
+                {t("firstComment")}
               </Text>
             </View>
           )
