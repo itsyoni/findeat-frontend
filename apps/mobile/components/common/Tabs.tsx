@@ -18,7 +18,7 @@ export default function Tabs<T extends string>({
   onChange,
 }: Props<T>) {
   return (
-    <View className="flex-row border-b border-gray-100 bg-white">
+    <View className="flex-row border-b border-gray-100 bg-white dark:border-gray-800 dark:bg-black">
       {tabs.map((tab) => {
         const isActive = activeTab === tab.value;
 
@@ -31,7 +31,9 @@ export default function Tabs<T extends string>({
             <Text
               weight="bold"
               className={`text-center ${
-                isActive ? "text-black" : "text-gray-400"
+                isActive
+                  ? "text-black dark:text-white"
+                  : "text-gray-400 dark:text-gray-500"
               }`}
             >
               {tab.label}

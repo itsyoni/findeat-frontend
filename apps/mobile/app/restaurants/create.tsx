@@ -77,7 +77,7 @@ export default function CreateRestaurantScreen() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-white px-6 pt-10">
+    <ScrollView className="flex-1 bg-white px-6 pt-10 dark:bg-black">
       <Text className="text-3xl font-bold mb-8">Create Restaurant</Text>
 
       <TouchableOpacity

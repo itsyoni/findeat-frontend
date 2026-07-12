@@ -1,17 +1,18 @@
-import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
-import FeedPostList from "@/components/posts/review/ReviewFeed";
+import { CommentsBottomSheet } from "@/components/common";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
-import BottomSheet from "@gorhom/bottom-sheet";
-import { useMemo, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
+import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
+import { useMemo, useState } from "react";
+import { ActivityIndicator, Alert, View } from "react-native";
+import ReviewFeed from "@/components/posts/review/ReviewFeed";
 
 export default function ProfileReviewsFeedScreen() {
-  const commentsSheetRef = useRef<BottomSheet>(null);
-
   const { profile, loading, refresh } = useMyProfile();
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [sharePostId, setSharePostId] = useState<string | null>(null);
+  const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
 
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, "REVIEW"),
@@ -35,29 +36,56 @@ export default function ProfileReviewsFeedScreen() {
 
   function openComments(postId: string) {
     setSelectedPostId(postId);
-    commentsSheetRef.current?.snapToIndex(0);
+  }
+
+  async function deletePost(postId: string) {
+    try {
+      await api.posts.delete(postId);
+      await refresh();
+      setOptionsPostId(null);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not delete post");
+    }
   }
 
   if (loading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white">
-      <FeedPostList
+    <View className="flex-1 bg-white dark:bg-black">
+      <ReviewFeed
         posts={posts}
         refreshing={false}
         onRefresh={refresh}
         onToggleLike={toggleLike}
         onOpenComments={openComments}
         onToggleWantToTry={toggleWantToTry}
+        onOpenSharePost={setSharePostId}
+        onOpenPostOptions={setOptionsPostId}
       />
 
-      <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
+      <PostOptionsBottomSheet
+        postId={optionsPostId}
+        onClose={() => setOptionsPostId(null)}
+        onDelete={deletePost}
+      />
+
+      <SharePostBottomSheet
+        postId={sharePostId}
+        onClose={() => setSharePostId(null)}
+        onShared={() => void refresh()}
+      />
+
+      <CommentsBottomSheet
+        postId={selectedPostId}
+        onClose={() => setSelectedPostId(null)}
+      />
     </View>
   );
 }

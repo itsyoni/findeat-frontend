@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import {
   BookBookmarkIcon,
   ChatCircleIcon,
+  DotsThreeOutlineIcon,
   HeartIcon,
   ShareFatIcon,
 } from "phosphor-react-native";
@@ -22,11 +23,14 @@ import Animated, {
   withSequence,
   withSpring,
 } from "react-native-reanimated";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Props = {
   post: Post;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
+  onOpenSharePost: (postId: string) => void;
+  onOpenPostOptions: (postId: string) => void;
   onToggleWantToTry: (
     postId: string,
     restaurantId: string,
@@ -58,10 +62,13 @@ export default function ReviewPost({
   onToggleLike,
   onOpenComments,
   onToggleWantToTry,
+  onOpenSharePost,
+  onOpenPostOptions,
 }: Props) {
+  const { isDark } = useAppTheme();
+  const actionColor = isDark ? "#E5E7EB" : "#212121";
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
-
   const review = post.reviewPost;
   const items = review?.items ?? [];
 
@@ -113,10 +120,10 @@ export default function ReviewPost({
 
   function handleLike() {
     if (!post.isLiked) {
-      likeScale.value = 1;
-      likeScale.value = withSequence(withSpring(1.25), withSpring(1));
+      likeScale.set(1);
+      likeScale.set(withSequence(withSpring(1.25), withSpring(1)));
     } else {
-      likeScale.value = 1;
+      likeScale.set(1);
     }
 
     onToggleLike(post.id, post.isLiked);
@@ -128,46 +135,58 @@ export default function ReviewPost({
   }
 
   return (
-    <View className="mb-6 bg-white pb-6">
-      <TouchableOpacity
-        className="mb-3 flex-row items-center gap-3 px-4"
-        activeOpacity={0.8}
-        onPress={() => {
-          if (isRestaurantPost && post.authorRestaurant?.id) {
+    <View className="mb-6 bg-white pb-6 dark:bg-black">
+      <View className="mb-3 flex-row items-center justify-between px-4">
+        <TouchableOpacity
+          className="flex-1 flex-row items-center gap-3"
+          activeOpacity={0.8}
+          onPress={() => {
+            if (isRestaurantPost && post.authorRestaurant?.id) {
+              router.push({
+                pathname: "/restaurants/[id]",
+                params: { id: post.authorRestaurant.id },
+              });
+              return;
+            }
+
+            if (!post.author?.id) return;
+
             router.push({
-              pathname: "/restaurants/[id]",
-              params: { id: post.authorRestaurant.id },
+              pathname: "/(users)/[id]",
+              params: { id: post.author.id },
             });
-            return;
-          }
+          }}
+        >
+          <Avatar
+            uri={displayAvatar}
+            username={displayName ?? "User"}
+            size={42}
+          />
 
-          if (!post.author?.id) return;
-
-          router.push({
-            pathname: "/(users)/[id]",
-            params: { id: post.author.id },
-          });
-        }}
-      >
-        <Avatar
-          uri={displayAvatar}
-          username={displayName ?? "User"}
-          size={42}
-        />
-
-        <View>
-          <Text className="font-bold text-black">
-            {isRestaurantPost ? displayName : `@${displayName}`}
-          </Text>
-
-          {!!post.restaurant && (
-            <Text className="text-xs text-gray-500">
-              📍 {post.restaurant.name}
-              {post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
+          <View className="flex-1">
+            <Text className="font-bold text-black dark:text-white">
+              {isRestaurantPost ? displayName : `@${displayName}`}
             </Text>
-          )}
-        </View>
-      </TouchableOpacity>
+
+            {!!post.restaurant && (
+              <Text className="text-xs text-gray-500">
+                📍 {post.restaurant.name}
+                {post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
+              </Text>
+            )}
+          </View>
+        </TouchableOpacity>
+
+        {post.canDelete && (
+          <TouchableOpacity
+            className="ml-3 p-2"
+            activeOpacity={0.8}
+            onPress={() => onOpenPostOptions(post.id)}
+          >
+            <DotsThreeOutlineIcon size={28} color="#6B7280" weight="fill" />
+          </TouchableOpacity>
+        )}
+      </View>
 
       <FlatList
         horizontal
@@ -310,43 +329,54 @@ export default function ReviewPost({
               <Animated.View style={likeAnimatedStyle}>
                 <HeartIcon
                   weight={post.isLiked ? "fill" : "regular"}
-                  color={post.isLiked ? "#FF3040" : "#212121"}
+                  color={post.isLiked ? "#FF3040" : actionColor}
                   size={28}
                 />
               </Animated.View>
 
-              <Text className="text-base text-black">{post.likesCount}</Text>
+              <Text className="text-base text-black dark:text-white">
+                {post.likesCount}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={() => onOpenComments(post.id)}
               className="flex-col items-center gap-1"
             >
-              <ChatCircleIcon weight="regular" color="#212121" size={28} />
-              <Text className="text-base text-black">{post.commentsCount}</Text>
+              <ChatCircleIcon weight="regular" color={actionColor} size={28} />
+              <Text className="text-base text-black dark:text-white">
+                {post.commentsCount}
+              </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity className="flex-col items-center gap-1">
-              <ShareFatIcon weight="regular" color="#212121" size={28} />
-              <Text className="text-base text-black">{post.commentsCount}</Text>
+            <TouchableOpacity
+              onPress={() => onOpenSharePost(post.id)}
+              className="items-center justify-center"
+            >
+              <ShareFatIcon weight="regular" color={actionColor} size={28} />
+              <Text className="text-base text-black dark:text-white">
+                {post.sharesCount ?? 0}
+              </Text>
             </TouchableOpacity>
           </View>
 
           <TouchableOpacity onPress={handleWantToTry}>
             <BookBookmarkIcon
               weight={isWantToTry ? "fill" : "regular"}
-              color={isWantToTry ? "#F7D786" : "#212121"}
+              color={isWantToTry ? "#F7D786" : actionColor}
               size={28}
             />
 
-            <Text className="text-center text-lg text-black">
-              {post.restaurantSavesCount}
+            <Text className="text-center text-lg text-black dark:text-white">
+              {post.restaurantSavesCount ?? 0}
             </Text>
           </TouchableOpacity>
         </View>
 
         {!!activeSlide?.text && (
-          <Text className="mt-3 text-gray-700">{activeSlide.text}</Text>
+          <Text className="mt-3 text-gray-700 dark:text-gray-300">
+            {activeSlide.text}
+          </Text>
         )}
       </View>
     </View>

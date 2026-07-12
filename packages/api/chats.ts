@@ -1,9 +1,10 @@
+import { Chat, Message, SendMessagePayload } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
 export function createChatsApi(api: AxiosInstance) {
   return {
     async list() {
-      const { data } = await api.get("/chats");
+      const { data } = await api.get<Chat[]>("/chats");
       return data;
     },
 
@@ -38,17 +39,20 @@ export function createChatsApi(api: AxiosInstance) {
     },
 
     async get(id: string) {
-      const { data } = await api.get(`/chats/${id}`);
+      const { data } = await api.get<Chat>(`/chats/${id}`);
       return data;
     },
 
     async messages(id: string) {
-      const { data } = await api.get(`/chats/${id}/messages`);
+      const { data } = await api.get<Message[]>(`/chats/${id}/messages`);
       return data;
     },
 
-    async sendMessage(id: string, content: string) {
-      const { data } = await api.post(`/chats/${id}/messages`, { content });
+    async sendMessage(id: string, payload: SendMessagePayload) {
+      const { data } = await api.post<Message>(
+        `/chats/${id}/messages`,
+        payload,
+      );
       return data;
     },
 

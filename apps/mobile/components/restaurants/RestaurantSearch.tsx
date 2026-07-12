@@ -61,7 +61,7 @@ export default function RestaurantSearch({
       <View className="mt-6 rounded-2xl border border-gray-200 p-4">
         <Text className="text-xs text-gray-400">Restaurant</Text>
 
-        <Text className="mt-1 text-base font-bold text-black">
+        <Text className="mt-1 text-base font-bold text-black dark:text-white">
           {selectedName}
         </Text>
 
@@ -87,7 +87,7 @@ export default function RestaurantSearch({
             setGoogleRestaurants([]);
           }}
         >
-          <Text className="font-bold text-black">Change</Text>
+          <Text className="font-bold text-black dark:text-white">Change</Text>
         </TouchableOpacity>
       </View>
     );
@@ -96,7 +96,7 @@ export default function RestaurantSearch({
   return (
     <View className="mt-6">
       <TextInput
-        className="rounded-2xl border border-gray-200 px-4 py-4 text-base text-black"
+        className="rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
         placeholder="Search restaurant..."
         placeholderTextColor="#9CA3AF"
         value={query}
@@ -118,7 +118,9 @@ export default function RestaurantSearch({
             })
           }
         >
-          <Text className="font-bold text-black">{restaurant.name}</Text>
+          <Text className="font-bold text-black dark:text-white">
+            {restaurant.name}
+          </Text>
 
           {!!restaurant.city && (
             <Text className="mt-1 text-gray-500">{restaurant.city}</Text>
@@ -142,7 +144,9 @@ export default function RestaurantSearch({
           className="border-b border-gray-100 py-4"
           onPress={() => onSelect(restaurant)}
         >
-          <Text className="font-bold text-black">{restaurant.name}</Text>
+          <Text className="font-bold text-black dark:text-white">
+            {restaurant.name}
+          </Text>
 
           {!!restaurant.address && (
             <Text className="mt-1 text-gray-500">{restaurant.address}</Text>

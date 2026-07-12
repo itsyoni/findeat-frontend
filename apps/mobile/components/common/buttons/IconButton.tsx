@@ -1,6 +1,7 @@
 import type { IconProps } from "phosphor-react-native";
 import type { ComponentType } from "react";
 import { TouchableOpacity } from "react-native";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Variant = "primary" | "secondary" | "outline" | "ghost";
 
@@ -14,9 +15,9 @@ type Props = {
 };
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-black",
-  secondary: "bg-gray-100",
-  outline: "border border-gray-200 bg-white",
+  primary: "bg-black dark:bg-white",
+  secondary: "bg-gray-100 dark:bg-gray-800",
+  outline: "border border-gray-200 bg-white dark:border-gray-700 dark:bg-black",
   ghost: "bg-transparent",
 };
 
@@ -35,6 +36,10 @@ export default function IconButton({
   disabled = false,
   className = "",
 }: Props) {
+  const { isDark } = useAppTheme();
+  const iconColor =
+    isDark && variant !== "primary" ? "white" : iconColors[variant];
+
   return (
     <TouchableOpacity
       disabled={disabled}
@@ -43,7 +48,7 @@ export default function IconButton({
         variantClasses[variant]
       } ${disabled ? "opacity-50" : ""} ${className}`}
     >
-      <Icon size={size} color={iconColors[variant]} weight="bold" />
+      <Icon size={size} color={iconColor} weight="bold" />
     </TouchableOpacity>
   );
 }

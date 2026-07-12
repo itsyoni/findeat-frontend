@@ -1,4 +1,8 @@
-import { LoadingScreen } from "@/components/common";
+import {
+  IconButton,
+  LoadingScreen,
+  ThemedSafeAreaView,
+} from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import Tabs from "@/components/common/Tabs";
@@ -14,6 +18,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, TouchableOpacity, View } from "react-native";
+import { CaretLeftIcon } from "phosphor-react-native";
 
 type ConnectionsTab = "followers" | "following" | "friends";
 
@@ -106,7 +111,15 @@ export default function ConnectionsScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white pt-4">
+    <ThemedSafeAreaView edges={["top"]} className="pt-4">
+      <View className="px-4 pb-2">
+        <IconButton
+          icon={CaretLeftIcon}
+          variant="ghost"
+          onPress={() => router.back()}
+        />
+      </View>
+
       <Tabs
         activeTab={activeTab}
         onChange={setActiveTab}
@@ -159,7 +172,7 @@ export default function ConnectionsScreen() {
                 />
 
                 <View className="ml-4 flex-1">
-                  <Text className="text-lg font-bold text-black">
+                  <Text className="text-lg font-bold text-black dark:text-white">
                     @{user.username}
                   </Text>
 
@@ -195,6 +208,6 @@ export default function ConnectionsScreen() {
         }}
         ListEmptyComponent={<Text className="text-gray-500">No users yet</Text>}
       />
-    </View>
+    </ThemedSafeAreaView>
   );
 }

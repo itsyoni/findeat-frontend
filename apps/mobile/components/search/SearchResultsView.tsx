@@ -47,10 +47,7 @@ export default function SearchResultsView<T>({
 
     const q = query.trim();
 
-    if (!q) {
-      setRemoteResults([]);
-      return;
-    }
+    if (!q) return;
 
     const timeout = setTimeout(async () => {
       try {
@@ -87,12 +84,17 @@ export default function SearchResultsView<T>({
         <Animated.View layout={LinearTransition.springify()} className="flex-1">
           <SearchBar
             value={query}
-            onChangeText={setQuery}
+            onChangeText={(text) => {
+              setQuery(text);
+              if (!text.trim()) setRemoteResults([]);
+            }}
             placeholder={placeholder}
             autoFocus
             rightAccessory={
               <TouchableOpacity className="px-2" onPress={onCancel}>
-                <Text className="font-semibold text-black">Cancel</Text>
+                <Text className="font-semibold text-black dark:text-white">
+                  Cancel
+                </Text>
               </TouchableOpacity>
             }
           />

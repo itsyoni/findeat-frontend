@@ -11,7 +11,7 @@ export default function DishCard({ item }: Props) {
   const price = item.customPrice;
 
   return (
-    <View className="rounded-3xl border border-gray-200 bg-white p-4">
+    <View className="rounded-3xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
       {item.imageUri && (
         <Image
           source={{ uri: item.imageUri }}
@@ -22,7 +22,9 @@ export default function DishCard({ item }: Props) {
 
       <View className="flex-row items-start justify-between gap-4">
         <View className="flex-1">
-          <Text className="text-lg font-bold text-black">{name}</Text>
+          <Text className="text-lg font-bold text-black dark:text-white">
+            {name}
+          </Text>
 
           {!!item.rating && (
             <Text className="mt-1 text-gray-500">⭐ {item.rating}/10</Text>
@@ -34,7 +36,7 @@ export default function DishCard({ item }: Props) {
         </View>
 
         {price != null && (
-          <Text className="font-bold text-black">₪{price}</Text>
+          <Text className="font-bold text-black dark:text-white">₪{price}</Text>
         )}
       </View>
     </View>

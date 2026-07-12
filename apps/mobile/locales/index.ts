@@ -4,6 +4,7 @@ import enCreate from "./en/create.json";
 import enProfile from "./en/profile.json";
 import enSettings from "./en/settings.json";
 import enMap from "./en/map.json";
+import enChat from "./en/chat.json";
 
 import heCommon from "./he/common.json";
 import heAuth from "./he/auth.json";
@@ -11,6 +12,7 @@ import heCreate from "./he/create.json";
 import heProfile from "./he/profile.json";
 import heSettings from "./he/settings.json";
 import heMap from "./he/map.json";
+import heChat from "./he/chat.json";
 
 export const resources = {
   en: {
@@ -20,6 +22,7 @@ export const resources = {
     profile: enProfile,
     settings: enSettings,
     map: enMap,
+    chat: enChat,
   },
   he: {
     common: heCommon,
@@ -28,5 +31,6 @@ export const resources = {
     profile: heProfile,
     settings: heSettings,
     map: heMap,
+    chat: heChat,
   },
 };

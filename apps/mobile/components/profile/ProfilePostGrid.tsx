@@ -46,10 +46,8 @@ export default function ProfilePostGrid({ posts, onPressPost }: Props) {
 
                 {post.type === "REVIEW" && (
                   <>
-                    {/* Dark overlay */}
                     <View className="absolute inset-0 bg-[#0000004D]" />
 
-                    {/* Rating badge */}
                     <View className="absolute right-2 top-2 rounded-full bg-[#00000099] px-3 py-1">
                       <Text className="text-xs font-bold text-white">
                         ⭐ {post.reviewPost?.overallRating}

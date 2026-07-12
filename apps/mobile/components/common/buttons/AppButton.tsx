@@ -2,6 +2,7 @@ import Text from "@/components/common/AppText";
 import type { IconProps } from "phosphor-react-native";
 import type { ComponentType } from "react";
 import { ActivityIndicator, TouchableOpacity } from "react-native";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Variant = "primary" | "secondary" | "outline" | "danger";
 
@@ -17,16 +18,16 @@ type Props = {
 };
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-black",
-  secondary: "bg-gray-100",
-  outline: "border border-gray-200 bg-white",
+  primary: "bg-black dark:bg-white",
+  secondary: "bg-gray-100 dark:bg-gray-800",
+  outline: "border border-gray-200 bg-white dark:border-gray-700 dark:bg-black",
   danger: "bg-red-500",
 };
 
 const textClasses: Record<Variant, string> = {
-  primary: "text-white",
-  secondary: "text-black",
-  outline: "text-black",
+  primary: "text-white dark:text-black",
+  secondary: "text-black dark:text-white",
+  outline: "text-black dark:text-white",
   danger: "text-white",
 };
 
@@ -40,9 +41,18 @@ export default function AppButton({
   disabled = false,
   className = "",
 }: Props) {
+  const { isDark } = useAppTheme();
   const isDisabled = disabled || loading;
   const textColor =
-    variant === "primary" || variant === "danger" ? "white" : "black";
+    variant === "danger"
+      ? "white"
+      : variant === "primary"
+        ? isDark
+          ? "black"
+          : "white"
+        : isDark
+          ? "white"
+          : "black";
 
   return (
     <TouchableOpacity

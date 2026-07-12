@@ -9,15 +9,22 @@ import {
 } from "phosphor-react-native";
 import React from "react";
 import { View } from "react-native";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 export default function TabLayout() {
   const { user } = useAuth();
+  const { isDark } = useAppTheme();
+  const iconColor = isDark ? "#FFF" : "#000";
 
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
+        tabBarStyle: {
+          backgroundColor: isDark ? "#000" : "#FFF",
+          borderTopColor: isDark ? "#1F2937" : "#E5E7EB",
+        },
       }}
     >
       <Tabs.Screen
@@ -27,7 +34,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <HouseIcon
               size={28}
-              color="#000"
+              color={iconColor}
               weight={focused ? "fill" : "regular"}
             />
           ),
@@ -41,7 +48,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <ChatCircleIcon
               size={28}
-              color="#000"
+              color={iconColor}
               weight={focused ? "fill" : "regular"}
             />
           ),
@@ -55,7 +62,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <PlusCircleIcon
               size={28}
-              color="#000"
+              color={iconColor}
               weight={focused ? "fill" : "regular"}
             />
           ),
@@ -69,7 +76,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <MapPinIcon
               size={28}
-              color="#000"
+              color={iconColor}
               weight={focused ? "fill" : "regular"}
             />
           ),
@@ -89,7 +96,7 @@ export default function TabLayout() {
                 alignItems: "center",
                 justifyContent: "center",
                 borderWidth: focused ? 2 : 0,
-                borderColor: "#000",
+                borderColor: iconColor,
               }}
             >
               <Avatar

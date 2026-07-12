@@ -4,7 +4,7 @@ import { api } from "@/lib/api";
 import { Chat } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView } from "@/components/common";
 
 export default function GroupDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -20,20 +20,23 @@ export default function GroupDetailsScreen() {
   const [chat, setChat] = useState<Chat | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const loadGroup = useCallback(async () => {
-    try {
-      const chat = await api.chats.get(id);
-      setChat(chat);
-    } catch (error) {
-      console.error("load group failed", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
-
   useEffect(() => {
-    void loadGroup();
-  }, [loadGroup]);
+    let cancelled = false;
+
+    api.chats
+      .get(id)
+      .then((chat) => {
+        if (!cancelled) setChat(chat);
+      })
+      .catch((error) => console.error("load group failed", error))
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
 
   if (loading || !chat) {
     return (
@@ -61,7 +64,7 @@ export default function GroupDetailsScreen() {
         }}
       />
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ThemedSafeAreaView>
         <View className="items-center border-b border-gray-100 px-6 py-8">
           <Avatar
             uri={chat.imageUrl}
@@ -127,7 +130,7 @@ export default function GroupDetailsScreen() {
             </TouchableOpacity>
           )}
         />
-      </SafeAreaView>
+      </ThemedSafeAreaView>
     </>
   );
 }

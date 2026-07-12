@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 type Props = TextInputProps & {
   leftIcon?: ReactNode;
@@ -43,6 +44,7 @@ export default function TextInput({
   placeholderTextColor,
   ...props
 }: Props) {
+  const { isDark } = useAppTheme();
   const [hidden, setHidden] = useState(isPassword);
   const isRtl = startsWithRtl(value);
   const Input = useBottomSheetInput ? BottomSheetTextInput : RNTextInput;
@@ -50,7 +52,7 @@ export default function TextInput({
 
   return (
     <View
-      className={`flex-row rounded-2xl border border-gray-300 px-4 ${
+      className={`flex-row rounded-2xl border border-gray-300 px-4 dark:border-gray-700 ${
         isMultiline ? "items-start" : "items-center"
       } ${className ?? ""}`}
     >
@@ -71,7 +73,7 @@ export default function TextInput({
             flex: 1,
             paddingVertical: 16,
             fontSize: 16,
-            color: "#000",
+            color: isDark ? "#FFF" : "#000",
             fontFamily: "CabinetRegular",
             writingDirection: isRtl ? "rtl" : "ltr",
             minHeight: isMultiline ? 120 : undefined,

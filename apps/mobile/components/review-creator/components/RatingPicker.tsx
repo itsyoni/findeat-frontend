@@ -13,9 +13,9 @@ export default function RatingPicker({ label, value = 0, onChange }: Props) {
   return (
     <View>
       <View className="mb-3 flex-row items-center justify-between">
-        <Text className="font-bold text-black">{label}</Text>
+        <Text className="font-bold text-black dark:text-white">{label}</Text>
 
-        <Text className="font-bold text-black">{value}/10</Text>
+        <Text className="font-bold text-black dark:text-white">{value}/10</Text>
       </View>
 
       <View className="flex-row gap-2">

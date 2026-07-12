@@ -2,7 +2,7 @@ import Text from "@/components/common/AppText";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 import { SelectedRestaurant } from "@findeat/types/restaurant";
 import { TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView } from "@/components/common";
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
@@ -16,8 +16,10 @@ export default function RestaurantStep({
   onNext,
 }: Props) {
   return (
-    <SafeAreaView className="flex-1 bg-white px-6 pt-8">
-      <Text className="text-3xl font-bold text-black">Where did you eat?</Text>
+    <ThemedSafeAreaView className="px-6 pt-8">
+      <Text className="text-3xl font-bold text-black dark:text-white">
+        Where did you eat?
+      </Text>
 
       <RestaurantSearch
         selectedRestaurant={selectedRestaurant}
@@ -41,6 +43,6 @@ export default function RestaurantStep({
           Continue
         </Text>
       </TouchableOpacity>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

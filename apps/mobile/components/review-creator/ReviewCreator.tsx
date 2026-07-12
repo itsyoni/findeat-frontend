@@ -12,6 +12,8 @@ import DishSourceStep from "./steps/DishSourceStep";
 import PreviewStep from "./steps/PreviewStep";
 import RestaurantStep from "./steps/RestaurantStep";
 import SelectMenuDishStep from "./steps/SelectMenuDishStep";
+import { prependPostToFeedCache } from "@/hooks/useFeed";
+import { useQueryClient } from "@tanstack/react-query";
 
 const initialDraft: CreateReviewDraft = {
   restaurant: null,
@@ -20,6 +22,7 @@ const initialDraft: CreateReviewDraft = {
 };
 
 export default function ReviewCreator() {
+  const queryClient = useQueryClient();
   const [step, setStep] = useState<CreateReviewStep>("RESTAURANT");
   const [draft, setDraft] = useState<CreateReviewDraft>(initialDraft);
   const [loading, setLoading] = useState(false);
@@ -116,6 +119,8 @@ export default function ReviewCreator() {
         items: uploadedItems,
       });
 
+      prependPostToFeedCache(queryClient, createdPost);
+
       router.replace({
         pathname: "/(tabs)",
         params: {
@@ -133,7 +138,7 @@ export default function ReviewCreator() {
   }
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-white dark:bg-black">
       {step === "RESTAURANT" && (
         <RestaurantStep
           selectedRestaurant={draft.restaurant}

@@ -11,7 +11,7 @@ void i18n.use(initReactI18next).init({
   lng: "en",
   fallbackLng: "en",
   defaultNS: "common",
-  ns: ["common", "auth", "create", "profile", "settings", "map"],
+  ns: ["common", "auth", "create", "profile", "settings", "map", "chat"],
   interpolation: {
     escapeValue: false,
   },

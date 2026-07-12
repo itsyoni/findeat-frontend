@@ -23,7 +23,7 @@ export default function FormInput({
         {...props}
         multiline={multiline}
         isPassword={isPassword}
-        className={`border-0 bg-[#f8f8f8] ${multiline ? "min-h-32" : ""}`}
+        className={`border-0 bg-[#f8f8f8] dark:bg-gray-900 ${multiline ? "min-h-32" : ""}`}
       />
     </>
   );

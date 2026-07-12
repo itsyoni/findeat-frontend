@@ -12,7 +12,9 @@
     "typecheck:mobile": "npm --workspace apps/mobile run typecheck",
     "typecheck:web": "npm --workspace apps/web run typecheck",
     "lint:mobile": "npm --workspace apps/mobile run lint",
-    "lint:web": "npm --workspace apps/web run lint"
+    "lint:web": "npm --workspace apps/web run lint",
+    "typecheck": "npm run typecheck:mobile && npm run typecheck:web",
+    "lint": "npm run lint:mobile && npm run lint:web"
   },
   "overrides": {
     "lightningcss": "1.30.1"

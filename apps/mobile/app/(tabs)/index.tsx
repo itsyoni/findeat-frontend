@@ -1,4 +1,4 @@
-import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
+import { CommentsBottomSheet } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
@@ -6,58 +6,87 @@ import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  feedQueryKey,
+  updatePostInFeedCache,
+  useFeed,
+} from "@/hooks/useFeed";
 import { api } from "@/lib/api";
 import { searchGlobal } from "@/services/search";
-import { Post, PostType } from "@findeat/types/post";
+import { PostType } from "@findeat/types/post";
 import { SearchResultItem } from "@findeat/types/search";
-import BottomSheet from "@gorhom/bottom-sheet";
-import { router, useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { InfiniteData, useQueryClient } from "@tanstack/react-query";
+import type { FeedPage } from "@findeat/types";
+import { router } from "expo-router";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
+import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 export default function HomeScreen() {
   const { t } = useTranslation("common");
   const { user, isLoading: authLoading } = useAuth();
-  const commentsSheetRef = useRef<BottomSheet>(null);
+  const queryClient = useQueryClient();
+  const { isDark } = useAppTheme();
 
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [feedHeight, setFeedHeight] = useState(0);
+  const [sharePostId, setSharePostId] = useState<string | null>(null);
+  const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
 
-  const loadPosts = useCallback(async () => {
-    if (!user) return;
-
-    try {
-      const posts = await api.posts.feed(activeFeed);
-      setPosts(posts);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  }, [user, activeFeed]);
+  const feed = useFeed(activeFeed, !!user && !authLoading);
+  const posts = useMemo(
+    () => feed.data?.pages.flatMap((page) => page.items) ?? [],
+    [feed.data],
+  );
 
   async function onRefresh() {
-    setRefreshing(true);
-    await loadPosts();
-    setRefreshing(false);
+    queryClient.setQueryData<InfiniteData<FeedPage>>(
+      feedQueryKey(activeFeed),
+      (current) =>
+        current
+          ? {
+              pages: current.pages.slice(0, 1),
+              pageParams: current.pageParams.slice(0, 1),
+            }
+          : current,
+    );
+
+    await feed.refetch();
   }
 
   async function toggleLike(postId: string, isLiked: boolean) {
-    if (isLiked) {
-      await api.posts.unlike(postId);
-    } else {
-      await api.posts.like(postId);
-    }
+    updatePostInFeedCache(queryClient, (post) =>
+      post.id === postId
+        ? {
+            ...post,
+            isLiked: !isLiked,
+            likesCount: Math.max(0, post.likesCount + (isLiked ? -1 : 1)),
+          }
+        : post,
+    );
 
-    await loadPosts();
+    try {
+      await api.posts.toggleLike(postId, isLiked);
+    } catch (error) {
+      console.error("toggle like failed", error);
+
+      updatePostInFeedCache(queryClient, (post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked,
+              likesCount: Math.max(0, post.likesCount + (isLiked ? 1 : -1)),
+            }
+          : post,
+      );
+    }
   }
 
   async function toggleWantToTry(
@@ -65,32 +94,30 @@ export default function HomeScreen() {
     restaurantId: string,
     isWantToTry: boolean,
   ) {
-    setPosts((prev) =>
-      prev.map((post) => {
-        if (post.restaurant?.id !== restaurantId) return post;
+    updatePostInFeedCache(queryClient, (post) => {
+      if (post.restaurant?.id !== restaurantId) return post;
 
-        return {
-          ...post,
-          restaurantSavesCount: Math.max(
-            0,
-            post.restaurantSavesCount + (isWantToTry ? -1 : 1),
-          ),
-          restaurant: {
-            ...post.restaurant,
-            userSaves: isWantToTry
-              ? []
-              : [
-                  {
-                    id: "",
-                    wantToTry: true,
-                    visited: false,
-                    favorite: false,
-                  },
-                ],
-          },
-        };
-      }),
-    );
+      return {
+        ...post,
+        restaurantSavesCount: Math.max(
+          0,
+          (post.restaurantSavesCount ?? 0) + (isWantToTry ? -1 : 1),
+        ),
+        restaurant: {
+          ...post.restaurant,
+          userSaves: isWantToTry
+            ? []
+            : [
+                {
+                  id: "",
+                  wantToTry: true,
+                  visited: false,
+                  favorite: false,
+                },
+              ],
+        },
+      };
+    });
 
     try {
       if (isWantToTry) {
@@ -100,13 +127,41 @@ export default function HomeScreen() {
       }
     } catch (error) {
       console.error("toggle want to try failed", error);
-      await loadPosts();
+      await feed.refetch();
+      Alert.alert("Could not save post", "Please try again.");
     }
+  }
+
+  async function deletePost(postId: string) {
+    try {
+      await api.posts.delete(postId);
+      updatePostInFeedCache(queryClient, (post) =>
+        post.id === postId ? null : post,
+      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not delete post");
+    }
+  }
+
+  function handleCommentAdded(postId: string) {
+    updatePostInFeedCache(queryClient, (post) =>
+      post.id === postId
+        ? { ...post, commentsCount: post.commentsCount + 1 }
+        : post,
+    );
+  }
+
+  function handlePostShared(postId: string) {
+    updatePostInFeedCache(queryClient, (post) =>
+      post.id === postId
+        ? { ...post, sharesCount: (post.sharesCount ?? 0) + 1 }
+        : post,
+    );
   }
 
   function openComments(postId: string) {
     setSelectedPostId(postId);
-    commentsSheetRef.current?.snapToIndex(0);
   }
 
   function handleSearchSelect(item: SearchResultItem) {
@@ -126,25 +181,19 @@ export default function HomeScreen() {
     });
   }
 
-  useFocusEffect(
-    useCallback(() => {
-      if (authLoading || !user) return;
-
-      setLoading(true);
-      loadPosts();
-    }, [authLoading, user, loadPosts]),
-  );
-
-  if (authLoading || loading) {
+  if (authLoading || feed.isPending) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: "white" }}>
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
       {isSearching ? (
         <Animated.View
           key="search"
@@ -191,25 +240,56 @@ export default function HomeScreen() {
                 <ContentFeedList
                   posts={posts}
                   height={feedHeight}
-                  refreshing={refreshing}
+                  refreshing={feed.isRefetching && !feed.isFetchingNextPage}
                   onRefresh={onRefresh}
+                  onEndReached={() => {
+                    if (feed.hasNextPage && !feed.isFetchingNextPage) {
+                      void feed.fetchNextPage();
+                    }
+                  }}
+                  loadingMore={feed.isFetchingNextPage}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}
+                  onDeletePost={deletePost}
+                  onOpenSharePost={setSharePostId}
+                  onOpenPostOptions={setOptionsPostId}
                 />
               ) : (
                 <ReviewFeed
                   posts={posts}
-                  refreshing={refreshing}
+                  refreshing={feed.isRefetching && !feed.isFetchingNextPage}
                   onRefresh={onRefresh}
+                  onEndReached={() => {
+                    if (feed.hasNextPage && !feed.isFetchingNextPage) {
+                      void feed.fetchNextPage();
+                    }
+                  }}
+                  loadingMore={feed.isFetchingNextPage}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}
+                  onOpenSharePost={setSharePostId}
+                  onOpenPostOptions={setOptionsPostId}
                 />
               ))}
           </View>
+          <PostOptionsBottomSheet
+            postId={optionsPostId}
+            onClose={() => setOptionsPostId(null)}
+            onDelete={deletePost}
+          />
 
-          <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
+          <SharePostBottomSheet
+            postId={sharePostId}
+            onClose={() => setSharePostId(null)}
+            onShared={handlePostShared}
+          />
+          <CommentsBottomSheet
+            postId={selectedPostId}
+            onClose={() => setSelectedPostId(null)}
+            onCommentAdded={handleCommentAdded}
+          />
         </Animated.View>
       )}
     </SafeAreaView>

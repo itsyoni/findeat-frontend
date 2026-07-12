@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import { ReviewDishDraft } from "@findeat/types/review";
 import { ScrollView, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView } from "@/components/common";
 import DishCard from "../components/DishCard";
 
 type Props = {
@@ -18,7 +18,7 @@ export default function DishesStep({
   onNext,
 }: Props) {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -27,16 +27,16 @@ export default function DishesStep({
         }}
       >
         <TouchableOpacity onPress={onBack}>
-          <Text className="font-bold text-black">← Back</Text>
+          <Text className="font-bold text-black dark:text-white">← Back</Text>
         </TouchableOpacity>
 
-        <Text className="mt-6 text-3xl font-bold text-black">
+        <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
           What did you order?
         </Text>
 
         {items.length === 0 ? (
           <View className="mt-10 items-center justify-center rounded-3xl border border-dashed border-gray-300 bg-gray-50 px-6 py-16">
-            <Text className="text-center text-lg font-bold text-black">
+            <Text className="text-center text-lg font-bold text-black dark:text-white">
               No dishes yet
             </Text>
 
@@ -56,7 +56,9 @@ export default function DishesStep({
           className="mt-6 rounded-2xl border border-black py-4"
           onPress={onAddDish}
         >
-          <Text className="text-center font-bold text-black">+ Add dish</Text>
+          <Text className="text-center font-bold text-black dark:text-white">
+            + Add dish
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -75,6 +77,6 @@ export default function DishesStep({
           </Text>
         </TouchableOpacity>
       </ScrollView>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

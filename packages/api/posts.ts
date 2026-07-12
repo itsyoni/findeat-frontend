@@ -1,7 +1,13 @@
-import type { Post, PostType } from "@findeat/types";
+import type { Comment, FeedPage, Post, PostType } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
 export function createPostsApi(api: AxiosInstance) {
+  const commentsCache = new Map<
+    string,
+    { comments: Comment[]; expiresAt: number }
+  >();
+  const commentsCacheTtlMs = 5_000;
+
   return {
     async createContent(payload: {
       description: string;
@@ -9,6 +15,7 @@ export function createPostsApi(api: AxiosInstance) {
       restaurantId?: string;
     }) {
       const { data } = await api.post<Post>("/posts/content", payload);
+
       return data;
     },
 
@@ -32,6 +39,7 @@ export function createPostsApi(api: AxiosInstance) {
       }>;
     }) {
       const { data } = await api.post<Post>("/posts/review", payload);
+
       return data;
     },
 
@@ -60,11 +68,23 @@ export function createPostsApi(api: AxiosInstance) {
       return data;
     },
 
-    async feed(type?: PostType) {
-      const { data } = await api.get<Post[]>("/posts/feed", {
-        params: type ? { type } : undefined,
+    async feed(
+      type?: PostType,
+      options?: { cursor?: string; limit?: number },
+    ) {
+      const { data } = await api.get<FeedPage>("/posts/feed", {
+        params: {
+          ...(type ? { type } : {}),
+          ...(options?.cursor ? { cursor: options.cursor } : {}),
+          ...(options?.limit ? { limit: options.limit } : {}),
+        },
       });
 
+      return data;
+    },
+
+    async get(id: string) {
+      const { data } = await api.get<Post>(`/posts/${id}`);
       return data;
     },
 
@@ -79,17 +99,39 @@ export function createPostsApi(api: AxiosInstance) {
     },
 
     async addComment(id: string, content: string) {
-      const { data } = await api.post(`/posts/${id}/comments`, { content });
+      const { data } = await api.post<Comment>(`/posts/${id}/comments`, {
+        content,
+      });
+
+      commentsCache.delete(id);
+
       return data;
     },
 
     async comments(id: string) {
-      const { data } = await api.get(`/posts/${id}/comments`);
+      const cached = commentsCache.get(id);
+
+      if (cached && cached.expiresAt > Date.now()) {
+        return cached.comments;
+      }
+
+      const { data } = await api.get<Comment[]>(`/posts/${id}/comments`);
+
+      commentsCache.set(id, {
+        comments: data,
+        expiresAt: Date.now() + commentsCacheTtlMs,
+      });
+
       return data;
     },
 
     async toggleLike(id: string, isLiked: boolean) {
       return isLiked ? this.unlike(id) : this.like(id);
+    },
+
+    async delete(id: string) {
+      const { data } = await api.delete(`/posts/${id}`);
+      return data;
     },
   };
 }

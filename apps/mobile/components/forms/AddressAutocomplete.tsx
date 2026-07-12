@@ -33,29 +33,17 @@ export default function AddressAutocomplete({ onSelect }: Props) {
   const [selectedText, setSelectedText] = useState("");
 
   useEffect(() => {
-    if (!query.trim() || query === selectedText) {
-      setResults([]);
-      return;
-    }
+    if (!query.trim() || query === selectedText) return;
 
     const timeout = setTimeout(() => {
-      searchAddress(query);
-    }, 350);
+      const token = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
-    return () => clearTimeout(timeout);
-  }, [query, selectedText]);
+      if (!token) {
+        console.error("Missing Mapbox access token");
+        return;
+      }
 
-  async function searchAddress(text: string) {
-    const token = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN;
-
-    if (!token) {
-      console.error("Missing Mapbox access token");
-      return;
-    }
-
-    try {
-      const encodedQuery = encodeURIComponent(text);
-
+      const encodedQuery = encodeURIComponent(query);
       const url =
         `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedQuery}.json` +
         `?access_token=${token}` +
@@ -64,14 +52,14 @@ export default function AddressAutocomplete({ onSelect }: Props) {
         `&language=he,en` +
         `&types=address,poi,place`;
 
-      const res = await fetch(url);
-      const data = await res.json();
+      fetch(url)
+        .then((res) => res.json())
+        .then((data) => setResults(data.features ?? []))
+        .catch(console.error);
+    }, 350);
 
-      setResults(data.features ?? []);
-    } catch (error) {
-      console.error(error);
-    }
-  }
+    return () => clearTimeout(timeout);
+  }, [query, selectedText]);
 
   function getCity(feature: MapboxFeature) {
     const context = feature.context ?? [];
@@ -108,7 +96,10 @@ export default function AddressAutocomplete({ onSelect }: Props) {
         placeholder="Search address..."
         placeholderTextColor="#9CA3AF"
         value={query}
-        onChangeText={setQuery}
+        onChangeText={(text) => {
+          setQuery(text);
+          setResults([]);
+        }}
       />
 
       {results.length > 0 && (

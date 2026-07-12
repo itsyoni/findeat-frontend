@@ -1,11 +1,10 @@
-import { AppButton, LoadingScreen } from "@/components/common";
+import { AppButton, LoadingScreen , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Menu } from "@findeat/types";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { FlatList, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function BusinessMenuScreen() {
   const [loading, setLoading] = useState(true);
@@ -33,7 +32,7 @@ export default function BusinessMenuScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <View className="px-5 py-4">
         <Text className="text-3xl font-bold text-black">Menu & dishes</Text>
         <Text className="mt-2 text-gray-500">
@@ -94,6 +93,6 @@ export default function BusinessMenuScreen() {
           </View>
         )}
       />
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

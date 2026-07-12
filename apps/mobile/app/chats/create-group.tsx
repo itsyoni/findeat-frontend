@@ -1,4 +1,4 @@
-import { TextInput } from "@/components/common";
+import { TextInput , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
@@ -15,7 +15,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function CreateGroupScreen() {
   const [selectedUsers, setSelectedUsers] = useState<SearchResultItem[]>([]);
@@ -76,7 +75,7 @@ export default function CreateGroupScreen() {
         }}
       />
 
-      <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+      <ThemedSafeAreaView>
         <View className="border-b border-gray-100 px-5 pb-4">
           <Text className="text-3xl font-bold text-black">New group</Text>
 
@@ -138,7 +137,7 @@ export default function CreateGroupScreen() {
           keyExtractor={(item) => item.id}
           renderItem={(item) => <SearchResultRow item={item} />}
         />
-      </SafeAreaView>
+      </ThemedSafeAreaView>
     </>
   );
 }

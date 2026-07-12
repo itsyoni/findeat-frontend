@@ -1,10 +1,10 @@
 import Text from "@/components/common/AppText";
 import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ThemedSafeAreaView } from "@/components/common";
 
 export default function BusinessReviewsScreen() {
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <ThemedSafeAreaView>
       <View className="px-5 pt-6">
         <Text className="text-3xl font-bold text-black">Reviews</Text>
         <Text className="mt-2 text-gray-500">
@@ -17,6 +17,6 @@ export default function BusinessReviewsScreen() {
           </Text>
         </View>
       </View>
-    </SafeAreaView>
+    </ThemedSafeAreaView>
   );
 }

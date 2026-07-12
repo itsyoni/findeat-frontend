@@ -43,7 +43,7 @@ export default function ProfileScreen() {
 
   if (loading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-white">
+      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
         <ActivityIndicator />
       </View>
     );
@@ -52,7 +52,7 @@ export default function ProfileScreen() {
   const isAdmin = profile.email === "admin@gmail.com";
 
   return (
-    <View style={{ flex: 1, backgroundColor: "white" }}>
+    <View className="flex-1 bg-white dark:bg-black">
       <PersonalProfileHeader profile={profile} />
 
       {isAdmin && (

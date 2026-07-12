@@ -16,7 +16,7 @@ export default function RestaurantMenuSection({
     <View>
       {featuredItems.length > 0 && (
         <>
-          <Text className="mt-6 text-xl font-bold text-black">
+          <Text className="mt-6 text-xl font-bold text-black dark:text-white">
             Featured dishes
           </Text>
 
@@ -26,14 +26,18 @@ export default function RestaurantMenuSection({
         </>
       )}
 
-      <Text className="mt-8 text-xl font-bold text-black">Menu</Text>
+      <Text className="mt-8 text-xl font-bold text-black dark:text-white">
+        Menu
+      </Text>
 
       {restaurant.menus.length === 0 ? (
         <Text className="mt-2 text-gray-500">No menu yet</Text>
       ) : (
         restaurant.menus.map((menu) => (
           <View key={menu.id} className="mt-5">
-            <Text className="text-lg font-bold text-black">{menu.title}</Text>
+            <Text className="text-lg font-bold text-black dark:text-white">
+              {menu.title}
+            </Text>
 
             {!!menu.description && (
               <Text className="mt-1 text-gray-500">{menu.description}</Text>

@@ -14,35 +14,41 @@ import { useTranslation } from "react-i18next";
 import { TouchableOpacity } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 export default function ChatsScreen() {
   const { t } = useTranslation("common");
+  const { isDark } = useAppTheme();
+
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      loadChats();
-    }, []),
-  );
-
-  async function loadChats() {
+  const loadChats = useCallback(async () => {
     try {
-      const chats = await api.chats.list();
-      setChats(chats);
+      const nextChats = await api.chats.list();
+      setChats(nextChats);
     } catch (error) {
-      console.error(error);
+      console.error("Failed to load chats", error);
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadChats();
+    }, [loadChats]),
+  );
 
   async function onRefresh() {
-    setRefreshing(true);
-    await loadChats();
-    setRefreshing(false);
+    try {
+      setRefreshing(true);
+      await loadChats();
+    } finally {
+      setRefreshing(false);
+    }
   }
 
   function handleSearchSelect(item: SearchResultItem) {
@@ -80,7 +86,9 @@ export default function ChatsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
       {isSearching ? (
         <Animated.View
           key="search"

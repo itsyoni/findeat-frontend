@@ -11,7 +11,7 @@ export default function DishCard({ item }: Props) {
 
   return (
     <View
-      className={`mt-3 rounded-2xl border border-gray-200 bg-white p-4 ${
+      className={`mt-3 rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900 ${
         isUnavailable ? "opacity-50" : ""
       }`}
     >
@@ -30,10 +30,14 @@ export default function DishCard({ item }: Props) {
 
         <View className="flex-1">
           <View className="flex-row justify-between gap-3">
-            <Text className="flex-1 font-bold text-black">{item.name}</Text>
+            <Text className="flex-1 font-bold text-black dark:text-white">
+              {item.name}
+            </Text>
 
             {item.price != null && (
-              <Text className="font-bold text-black">₪{item.price}</Text>
+              <Text className="font-bold text-black dark:text-white">
+                ₪{item.price}
+              </Text>
             )}
           </View>
 
