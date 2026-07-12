@@ -4,6 +4,7 @@ export * from "./comment";
 export * from "./connection";
 export * from "./map";
 export * from "./menu";
+export * from "./notification";
 export * from "./post";
 export * from "./profile";
 export * from "./restaurant";

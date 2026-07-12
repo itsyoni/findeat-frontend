@@ -10,40 +10,30 @@ import { router } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LANGUAGE_KEY } from "@/constants/storage";
 import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  ThemePreference,
-  useAppTheme,
-} from "@/contexts/ThemeContext";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 export default function EditProfileScreen() {
-  const { t, i18n } = useTranslation(["profile", "common", "settings"]);
-  const { preference, setPreference } = useAppTheme();
+  const { t } = useTranslation(["profile", "common"]);
   const { isDark } = useAppTheme();
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [newCoverUri, setNewCoverUri] = useState<string | null>(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const { logout, refreshUser } = useAuth();
+  const { refreshUser } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [newAvatarUri, setNewAvatarUri] = useState<string | null>(null);
   const [original, setOriginal] = useState<{
     username: string;
     displayName: string;
     bio: string;
-    email: string;
   }>({
     username: "",
     displayName: "",
     bio: "",
-    email: "",
   });
 
   const displayedAvatar = newAvatarUri || avatarUrl;
@@ -52,8 +42,6 @@ export default function EditProfileScreen() {
     username !== original.username ||
     displayName !== original.displayName ||
     bio !== (original.bio ?? "") ||
-    email !== original.email ||
-    password.trim() !== "" ||
     newAvatarUri !== null ||
     newCoverUri !== null;
 
@@ -69,14 +57,12 @@ export default function EditProfileScreen() {
           username: data.username ?? "",
           displayName: data.displayName ?? "",
           bio: data.bio ?? "",
-          email: data.email ?? "",
         });
         setAvatarUrl(data.avatarUrl ?? null);
         setUsername(data.username ?? "");
         setBio(data.bio ?? "");
         setDisplayName(data.displayName ?? "");
         setCoverUrl(data.coverUrl ?? null);
-        setEmail(data.email ?? "");
       })
       .catch(console.error);
 
@@ -115,8 +101,6 @@ export default function EditProfileScreen() {
       await api.users.updateMe({
         displayName: displayName.trim(),
         username: username.trim(),
-        email: email.trim(),
-        password: password.trim() || undefined,
         bio: bio.trim() || null,
         avatarUrl: finalAvatarUrl ?? undefined,
         coverUrl: finalCoverUrl,
@@ -223,59 +207,6 @@ export default function EditProfileScreen() {
     ]);
   }
 
-  async function setAppLanguage(language: "en" | "he") {
-    await i18n.changeLanguage(language);
-    await AsyncStorage.setItem(LANGUAGE_KEY, language);
-
-    await api.users.updateMe({
-      language: language === "he" ? "HE" : "EN",
-    });
-
-    await refreshUser();
-  }
-
-  function changeLanguage() {
-    Alert.alert(t("settings:chooseLanguage"), undefined, [
-      {
-        text: t("settings:english"),
-        onPress: () => setAppLanguage("en"),
-      },
-      {
-        text: t("settings:hebrew"),
-        onPress: () => setAppLanguage("he"),
-      },
-      {
-        text: t("common:cancel"),
-        style: "cancel",
-      },
-    ]);
-  }
-
-  function changeTheme() {
-    const chooseTheme = (nextPreference: ThemePreference) => {
-      void setPreference(nextPreference);
-    };
-
-    Alert.alert(t("settings:chooseTheme"), undefined, [
-      {
-        text: t("settings:systemTheme"),
-        onPress: () => chooseTheme("system"),
-      },
-      {
-        text: t("settings:lightTheme"),
-        onPress: () => chooseTheme("light"),
-      },
-      {
-        text: t("settings:darkTheme"),
-        onPress: () => chooseTheme("dark"),
-      },
-      {
-        text: t("common:cancel"),
-        style: "cancel",
-      },
-    ]);
-  }
-
   async function pickAvatar() {
     await pickImage([1, 1], setNewAvatarUri);
   }
@@ -357,27 +288,6 @@ export default function EditProfileScreen() {
             </Text>
           </TouchableOpacity>
 
-          <AppButton
-            title={t("settings:language")}
-            onPress={changeLanguage}
-            variant="secondary"
-          />
-
-          <AppButton
-            title={`${t("settings:theme")}: ${t(
-              `settings:${
-                preference === "dark"
-                  ? "darkTheme"
-                  : preference === "light"
-                    ? "lightTheme"
-                    : "systemTheme"
-              }`,
-            )}`}
-            onPress={changeTheme}
-            variant="secondary"
-            className="mt-3"
-          />
-
           <SectionTitle title={t("profile:account")} />
 
           <FormInput
@@ -403,45 +313,12 @@ export default function EditProfileScreen() {
             multiline
           />
 
-          <FormInput
-            label={t("common:email")}
-            value={email}
-            onChangeText={setEmail}
-            placeholder={t("common:email")}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-
-          <FormInput
-            label={t("profile:newPassword")}
-            value={password}
-            onChangeText={setPassword}
-            placeholder={t("profile:passwordPlaceholder")}
-            isPassword
-          />
-
           <AppButton
             title={loading ? t("common:saving") : t("common:save")}
             onPress={saveProfile}
             disabled={loading}
           />
 
-          <AppButton
-            title={t("common:logout")}
-            onPress={() =>
-              Alert.alert(t("common:logout"), t("profile:logoutConfirmation"), [
-                {
-                  text: t("common:cancel"),
-                  style: "cancel",
-                },
-                {
-                  text: t("common:logout"),
-                  style: "destructive",
-                  onPress: logout,
-                },
-              ])
-            }
-          />
         </View>
       </ScrollView>
     </SafeAreaView>

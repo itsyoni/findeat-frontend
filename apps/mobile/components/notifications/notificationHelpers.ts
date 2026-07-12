@@ -1,0 +1,35 @@
+import type { AppNotification } from '@findeat/types';
+import type { Href } from 'expo-router';
+import type { TFunction } from 'i18next';
+
+export function notificationText(item: AppNotification, t: TFunction) {
+  const name = item.actor?.displayName || item.actor?.username || t('someone');
+  return t(`types.${item.type}`, { name, defaultValue: item.title || t('new') });
+}
+
+export function notificationHref(item: AppNotification): Href | null {
+  if (item.conversationId) return `/chats/${item.conversationId}`;
+  if (item.postId) return { pathname: '/(posts)/[id]', params: { id: item.postId } };
+  if (item.restaurantId) return `/restaurants/${item.restaurantId}`;
+  if (item.actorId) return { pathname: '/(users)/[id]', params: { id: item.actorId } };
+  return null;
+}
+
+export function relativeNotificationTime(value: string, locale: string) {
+  const elapsedSeconds = Math.max(
+    0,
+    Math.round((Date.now() - new Date(value).getTime()) / 1000),
+  );
+  const isHebrew = locale.toLowerCase().startsWith('he');
+
+  if (elapsedSeconds < 45) return isHebrew ? 'עכשיו' : 'now';
+
+  const minutes = Math.floor(elapsedSeconds / 60);
+  if (minutes < 60) return isHebrew ? `לפני ${minutes} דק׳` : `${minutes}m ago`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return isHebrew ? `לפני ${hours} שע׳` : `${hours}h ago`;
+
+  const days = Math.floor(hours / 24);
+  return isHebrew ? `לפני ${days} ימים` : `${days}d ago`;
+}

@@ -12,6 +12,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useAppTheme } from "@/contexts/ThemeContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -50,7 +51,9 @@ export default function RootLayout() {
           <ThemeProvider>
             <QueryClientProvider client={queryClient}>
               <AuthProvider>
-                <RootNavigator />
+                <NotificationProvider>
+                  <RootNavigator />
+                </NotificationProvider>
               </AuthProvider>
             </QueryClientProvider>
           </ThemeProvider>
@@ -89,6 +92,8 @@ function RootNavigator() {
         <Stack.Screen name="(users)" options={{ headerShown: false }} />
         <Stack.Screen name="(profile)" options={{ headerShown: false }} />
         <Stack.Screen name="business/index" />
+        <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
+        <Stack.Screen name="settings" options={{ headerShown: false }} />
       </Stack>
 
       <StatusBar style={isDark ? "light" : "dark"} />

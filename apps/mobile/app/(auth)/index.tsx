@@ -1,5 +1,7 @@
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
+import EmailVerificationForm from "@/components/auth/EmailVerificationForm";
+import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 import Text from "@/components/common/AppText";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import { CaretLeftIcon } from "phosphor-react-native";
@@ -7,20 +9,30 @@ import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ImageBackground, TouchableOpacity, View } from "react-native";
 import Animated, {
+  FadeInLeft,
   FadeInRight,
   FadeOutLeft,
+  FadeOutRight,
   LinearTransition,
+  runOnJS,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LANGUAGE_KEY } from "@/constants/storage";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
-type AuthMode = "login" | "signup" | "restaurant-signup";
+type AuthMode = "login" | "signup" | "restaurant-signup" | "verify-email" | "forgot-password";
 
 export default function AuthIndexScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
-  const { t } = useTranslation("auth");
+  const { isDark } = useAppTheme();
+  const { t, i18n } = useTranslation("auth");
   const [step, setStep] = useState(0);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [authMode, setAuthMode] = useState<AuthMode>("login");
+  const [pendingEmail, setPendingEmail] = useState("");
+  const [transitionDirection, setTransitionDirection] = useState<1 | -1>(1);
 
   const steps = [
     {
@@ -53,6 +65,7 @@ export default function AuthIndexScreen() {
 
   function handleContinue() {
     if (step < steps.length - 1) {
+      setTransitionDirection(1);
       setStep((prev) => prev + 1);
       return;
     }
@@ -66,7 +79,34 @@ export default function AuthIndexScreen() {
       return;
     }
 
-    if (step > 0) setStep((prev) => prev - 1);
+    if (step > 0) {
+      setTransitionDirection(-1);
+      setStep((prev) => prev - 1);
+    }
+  }
+
+  function handleSwipe(translationX: number) {
+    if (translationX < -60 && step < steps.length - 1) {
+      setTransitionDirection(1);
+      setStep((currentStep) => currentStep + 1);
+    } else if (translationX > 60 && step > 0) {
+      setTransitionDirection(-1);
+      setStep((currentStep) => currentStep - 1);
+    }
+  }
+
+  const swipeGesture = Gesture.Pan()
+    .enabled(!sheetOpen)
+    .activeOffsetX([-20, 20])
+    .failOffsetY([-20, 20])
+    .onEnd((event) => {
+      runOnJS(handleSwipe)(event.translationX);
+    });
+
+  async function toggleLanguage() {
+    const nextLanguage = i18n.language.startsWith("he") ? "en" : "he";
+    await i18n.changeLanguage(nextLanguage);
+    await AsyncStorage.setItem(LANGUAGE_KEY, nextLanguage);
   }
 
   function IndicatorDot({ active }: { active: boolean }) {
@@ -90,15 +130,19 @@ export default function AuthIndexScreen() {
       >
         <View className="absolute inset-0 bg-black/35" />
 
-        <SafeAreaView
-          style={{
-            flex: 1,
-            justifyContent: "space-between",
-            paddingHorizontal: 32,
-            paddingVertical: 32,
-          }}
-        >
-          <View style={{ zIndex: 100 }}>
+        <GestureDetector gesture={swipeGesture}>
+          <SafeAreaView
+            style={{
+              flex: 1,
+              justifyContent: "space-between",
+              paddingHorizontal: 32,
+              paddingVertical: 32,
+            }}
+          >
+          <View
+            style={{ zIndex: 100 }}
+            className="flex-row items-center justify-between"
+          >
             {step > 0 || sheetOpen ? (
               <TouchableOpacity onPress={handleBack}>
                 <CaretLeftIcon size={28} color="white" />
@@ -106,14 +150,26 @@ export default function AuthIndexScreen() {
             ) : (
               <View style={{ width: 28 }} />
             )}
+
+            <TouchableOpacity
+              onPress={() => void toggleLanguage()}
+              className="flex-row items-center rounded-full bg-black/35 px-3 py-2"
+            >
+              <Text className="mr-1.5 text-lg">
+                {i18n.language.startsWith("he") ? "🇺🇸" : "🇮🇱"}
+              </Text>
+              <Text weight="bold" className="text-sm text-white">
+                {i18n.language.startsWith("he") ? "EN" : "HE"}
+              </Text>
+            </TouchableOpacity>
           </View>
 
           {!sheetOpen && (
             <>
               <Animated.View
                 key={current.title}
-                entering={FadeInRight.duration(350)}
-                exiting={FadeOutLeft.duration(200)}
+                entering={(transitionDirection === 1 ? FadeInRight : FadeInLeft).duration(350)}
+                exiting={(transitionDirection === 1 ? FadeOutLeft : FadeOutRight).duration(200)}
               >
                 <Text
                   weight="black"
@@ -150,7 +206,8 @@ export default function AuthIndexScreen() {
               </View>
             </>
           )}
-        </SafeAreaView>
+          </SafeAreaView>
+        </GestureDetector>
 
         <BottomSheet
           ref={bottomSheetRef}
@@ -161,12 +218,12 @@ export default function AuthIndexScreen() {
           android_keyboardInputMode="adjustResize"
           onClose={() => setSheetOpen(false)}
           backgroundStyle={{
-            backgroundColor: "white",
+            backgroundColor: isDark ? "#111827" : "white",
             borderTopLeftRadius: 36,
             borderTopRightRadius: 36,
           }}
           handleIndicatorStyle={{
-            backgroundColor: "#D1D5DB",
+            backgroundColor: isDark ? "#6B7280" : "#D1D5DB",
             width: 48,
           }}
         >
@@ -181,6 +238,11 @@ export default function AuthIndexScreen() {
               <LoginForm
                 onSignup={() => setAuthMode("signup")}
                 onRestaurantSignup={() => setAuthMode("restaurant-signup")}
+                onForgotPassword={() => setAuthMode("forgot-password")}
+                onVerificationRequired={(email) => {
+                  setPendingEmail(email);
+                  setAuthMode("verify-email");
+                }}
               />
             )}
 
@@ -188,7 +250,22 @@ export default function AuthIndexScreen() {
               <SignupForm
                 onLogin={() => setAuthMode("login")}
                 onRestaurantSignup={() => setAuthMode("restaurant-signup")}
+                onVerificationRequired={(email) => {
+                  setPendingEmail(email);
+                  setAuthMode("verify-email");
+                }}
               />
+            )}
+
+            {authMode === "verify-email" && (
+              <EmailVerificationForm
+                email={pendingEmail}
+                onBack={() => setAuthMode("login")}
+              />
+            )}
+
+            {authMode === "forgot-password" && (
+              <ForgotPasswordForm onBack={() => setAuthMode("login")} />
             )}
           </BottomSheetScrollView>
         </BottomSheet>

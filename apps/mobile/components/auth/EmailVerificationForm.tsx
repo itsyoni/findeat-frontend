@@ -1,0 +1,58 @@
+import Text from '@/components/common/AppText';
+import { TextInput } from '@/components/common';
+import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
+import { getErrorMessage } from '@findeat/utils';
+import { useState } from 'react';
+import { Alert, TouchableOpacity, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
+
+type Props = { email: string; onBack: () => void };
+
+export default function EmailVerificationForm({ email, onBack }: Props) {
+  const { t } = useTranslation('auth');
+  const { verifyEmail } = useAuth();
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function submit() {
+    try {
+      setLoading(true);
+      await verifyEmail(email, code);
+    } catch (error) {
+      Alert.alert(t('verificationFailed'), getErrorMessage(error, t('invalidCode')));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resend() {
+    try {
+      await api.auth.resendVerification(email);
+      Alert.alert(t('codeSent'), t('checkInbox'));
+    } catch (error) {
+      Alert.alert(t('common:error'), getErrorMessage(error, t('resendFailed')));
+    }
+  }
+
+  return (
+    <View>
+      <Text weight="bold" className="text-center text-2xl text-[#212121] dark:text-white">{t('verifyEmail')}</Text>
+      <Text className="mb-6 mt-2 text-center text-gray-500">{t('verificationSent', { email })}</Text>
+      <TextInput
+        useBottomSheetInput
+        value={code}
+        onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 6))}
+        placeholder="000000"
+        keyboardType="number-pad"
+        maxLength={6}
+        className="border-0 bg-[#f8f8f8] text-center text-2xl tracking-[8px] dark:bg-gray-800"
+      />
+      <TouchableOpacity disabled={loading || code.length !== 6} onPress={() => void submit()} className="mt-4 rounded-2xl bg-[#212121] py-4 disabled:opacity-40 dark:bg-white">
+        <Text weight="bold" className="text-center text-white dark:text-black">{loading ? t('verifying') : t('verify')}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => void resend()} className="mt-5"><Text weight="bold" className="text-center text-[#212121] dark:text-white">{t('resendCode')}</Text></TouchableOpacity>
+      <TouchableOpacity onPress={onBack} className="mt-4"><Text className="text-center text-gray-500">{t('backToLogin')}</Text></TouchableOpacity>
+    </View>
+  );
+}

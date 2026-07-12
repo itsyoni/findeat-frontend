@@ -7,6 +7,7 @@ import { createMenuApi } from "./menu";
 import { createPostsApi } from "./posts";
 import { createRestaurantsApi } from "./restaurants";
 import { createUsersApi } from "./users";
+import { createNotificationsApi } from "./notifications";
 
 type GetToken = () => string | null | Promise<string | null>;
 
@@ -26,6 +27,7 @@ export function createApiFromClient(client: AxiosInstance) {
     menu: createMenuApi(client),
     posts: createPostsApi(client),
     chats: createChatsApi(client),
+    notifications: createNotificationsApi(client),
     admin: createAdminApi(client),
   };
 }

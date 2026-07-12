@@ -20,18 +20,21 @@ import type { FeedPage } from "@findeat/types";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, View } from "react-native";
+import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { useNotificationUnreadCount } from "@/hooks/useNotifications";
+import { BellIcon } from "phosphor-react-native";
 
 export default function HomeScreen() {
   const { t } = useTranslation("common");
   const { user, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const { isDark } = useAppTheme();
+  const unread = useNotificationUnreadCount(!!user && !authLoading);
 
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
@@ -220,6 +223,21 @@ export default function HomeScreen() {
             editable={false}
             placeholder={t("search")}
             onPress={() => setIsSearching(true)}
+            rightAccessory={
+              <TouchableOpacity
+                className="relative h-full aspect-square items-center justify-center rounded-2xl bg-black dark:bg-white"
+                onPress={() => router.push('/notifications')}
+              >
+                <BellIcon size={22} color={isDark ? '#000' : '#FFF'} weight="fill" />
+                {(unread.data?.count ?? 0) > 0 ? (
+                  <View className="absolute -right-1 -top-1 min-w-5 items-center justify-center rounded-full bg-red-500 px-1">
+                    <Text className="text-xs font-bold text-white">
+                      {(unread.data?.count ?? 0) > 99 ? '99+' : unread.data?.count}
+                    </Text>
+                  </View>
+                ) : null}
+              </TouchableOpacity>
+            }
           />
 
           <Tabs

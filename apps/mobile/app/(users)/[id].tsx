@@ -88,11 +88,15 @@ export default function UserProfileScreen() {
       <View>
         <View>
           <View className="relative">
-            <Image
-              source={{ uri: user.coverUrl ?? "fallback" }}
-              className="h-70 w-full bg-gray-200"
-              resizeMode="cover"
-            />
+            {user.coverUrl ? (
+              <Image
+                source={{ uri: user.coverUrl }}
+                className="h-70 w-full bg-gray-200"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="h-70 w-full bg-gray-200 dark:bg-gray-800" />
+            )}
 
             <SafeAreaView
               edges={["top"]}

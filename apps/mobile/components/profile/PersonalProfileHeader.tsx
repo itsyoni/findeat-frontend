@@ -6,6 +6,8 @@ import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { GearSixIcon } from "phosphor-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type Props = {
   profile: Profile;
@@ -17,11 +19,29 @@ export default function PersonalProfileHeader({ profile }: Props) {
   return (
     <View className="bg-white pb-5 dark:bg-black">
       <View className="items-center">
-        <Image
-          source={{ uri: profile.coverUrl ?? "fallback" }}
-          className="h-70 w-full bg-gray-200 rounded-b-4xl"
-          resizeMode="cover"
-        />
+        {profile.coverUrl ? (
+          <Image
+            source={{ uri: profile.coverUrl }}
+            className="h-70 w-full rounded-b-4xl bg-gray-200"
+            resizeMode="cover"
+          />
+        ) : (
+          <View className="h-70 w-full rounded-b-4xl bg-gray-200 dark:bg-gray-800" />
+        )}
+        <SafeAreaView
+          edges={["top"]}
+          pointerEvents="box-none"
+          style={{ position: "absolute", left: 0, right: 0, top: 0 }}
+        >
+          <View className="items-end px-4 pt-2">
+            <TouchableOpacity
+              onPress={() => router.push("/settings")}
+              className="h-11 w-11 items-center justify-center rounded-full bg-black/45"
+            >
+              <GearSixIcon size={24} color="white" weight="bold" />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
         <View className="-mt-15 px-5">
           <Avatar
             uri={profile.avatarUrl}

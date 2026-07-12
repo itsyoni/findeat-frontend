@@ -12,7 +12,9 @@ export type AuthContextType = {
     username: string,
     password: string,
     displayName: string,
-  ) => Promise<void>;
+  ) => Promise<{ email: string; emailVerificationRequired: true }>;
+
+  verifyEmail: (email: string, code: string) => Promise<void>;
 
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
