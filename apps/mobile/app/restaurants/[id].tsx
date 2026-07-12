@@ -350,9 +350,7 @@ export default function RestaurantScreen() {
         open={optionsOpen}
         onClose={() => setOptionsOpen(false)}
         type="RESTAURANT"
-        canClaim={
-          restaurant.status !== "CLAIMED" && restaurant.status !== "PENDING"
-        }
+        canClaim={restaurant.status !== "CLAIMED"}
         onClaim={() => void claimRestaurant()}
       />
     </>
