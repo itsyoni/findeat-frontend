@@ -15,6 +15,7 @@ import {
   Pressable,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { Socket } from "socket.io-client";
@@ -171,6 +172,7 @@ export default function ChatScreen() {
       socketRef.current?.emit("send_message", {
         conversationId,
         userId: user?.id,
+        type: "TEXT",
         content: trimmedContent,
       });
 
@@ -347,7 +349,65 @@ export default function ChatScreen() {
                       </Text>
                     )}
 
-                    <Text className="text-black">{item.content}</Text>
+                    {item.type === "POST" ? (
+                      item.post ? (
+                        <Pressable
+                          className="overflow-hidden rounded-xl bg-white"
+                          onPress={() =>
+                            router.push({
+                              pathname: "/(posts)/[id]",
+                              params: { id: item.post!.id },
+                            })
+                          }
+                        >
+                          {(() => {
+                            const image =
+                              item.post.contentPost?.imageUrl ??
+                              item.post.reviewPost?.coverImageUrl;
+
+                            const description =
+                              item.post.contentPost?.description ??
+                              item.post.reviewPost?.summary;
+
+                            return (
+                              <>
+                                {!!image && (
+                                  <Image
+                                    source={{ uri: image }}
+                                    className="h-40 w-56"
+                                    resizeMode="cover"
+                                  />
+                                )}
+
+                                <View className="p-3">
+                                  <Text className="font-bold text-black">
+                                    {item.post.restaurant?.name ??
+                                      "FindEat post"}
+                                  </Text>
+
+                                  {!!description && (
+                                    <Text
+                                      numberOfLines={2}
+                                      className="mt-1 text-sm text-gray-600"
+                                    >
+                                      {description}
+                                    </Text>
+                                  )}
+                                </View>
+                              </>
+                            );
+                          })()}
+                        </Pressable>
+                      ) : (
+                        <View className="items-center rounded-xl bg-gray-100 px-5 py-6">
+                          <Text className="text-center text-sm font-medium text-gray-500">
+                            This post has been deleted
+                          </Text>
+                        </View>
+                      )
+                    ) : (
+                      <Text className="text-black">{item.content}</Text>
+                    )}
                   </View>
                 </View>
               );

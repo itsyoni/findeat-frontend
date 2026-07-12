@@ -1,14 +1,16 @@
-import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
+import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
+import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
+import { CommentsBottomSheet } from "@/components/common";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
-import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   Dimensions,
   TouchableOpacity,
   View,
@@ -19,10 +21,11 @@ const { height } = Dimensions.get("window");
 
 export default function ProfileContentFeedScreen() {
   const { postId } = useLocalSearchParams<{ postId: string }>();
-  const commentsSheetRef = useRef<BottomSheet>(null);
 
   const { profile, loading, refresh } = useMyProfile();
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [sharePostId, setSharePostId] = useState<string | null>(null);
+  const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
 
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, "CONTENT"),
@@ -53,7 +56,16 @@ export default function ProfileContentFeedScreen() {
 
   function openComments(postId: string) {
     setSelectedPostId(postId);
-    commentsSheetRef.current?.snapToIndex(0);
+  }
+
+  async function deletePost(postId: string) {
+    try {
+      await api.posts.delete(postId);
+      await refresh();
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not delete post");
+    }
   }
 
   if (loading || !profile) {
@@ -93,9 +105,26 @@ export default function ProfileContentFeedScreen() {
         onOpenComments={openComments}
         initialIndex={initialIndex}
         onToggleWantToTry={toggleWantToTry}
+        onDeletePost={deletePost}
+        onOpenSharePost={setSharePostId}
+        onOpenPostOptions={setOptionsPostId}
       />
 
-      <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
+      <PostOptionsBottomSheet
+        postId={optionsPostId}
+        onClose={() => setOptionsPostId(null)}
+        onDelete={deletePost}
+      />
+
+      <SharePostBottomSheet
+        postId={sharePostId}
+        onClose={() => setSharePostId(null)}
+      />
+
+      <CommentsBottomSheet
+        postId={selectedPostId}
+        onClose={() => setSelectedPostId(null)}
+      />
     </View>
   );
 }

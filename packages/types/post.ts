@@ -96,4 +96,5 @@ export type Post = {
   restaurantSavesCount: number;
   commentsCount: number;
   isLiked: boolean;
+  canDelete: boolean;
 };

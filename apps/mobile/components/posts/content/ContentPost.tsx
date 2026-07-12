@@ -9,8 +9,10 @@ import {
   HeartIcon,
   MapPinLineIcon,
   ShareFatIcon,
+  DotsThreeOutlineIcon,
 } from "phosphor-react-native";
 import { Image, TouchableOpacity, View } from "react-native";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -23,6 +25,8 @@ type Props = {
   height: number;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
+  onOpenSharePost: (postId: string) => void;
+  onOpenPostOptions: (postId: string) => void;
   onToggleWantToTry: (
     postId: string,
     restaurantId: string,
@@ -36,6 +40,8 @@ export default function ContentPost({
   onToggleLike,
   onOpenComments,
   onToggleWantToTry,
+  onOpenSharePost,
+  onOpenPostOptions,
 }: Props) {
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
@@ -53,6 +59,22 @@ export default function ContentPost({
 
   const imageUrl = content?.imageUrl;
   const description = content?.description;
+
+  const heartOverlayScale = useSharedValue(0);
+  const heartOverlayOpacity = useSharedValue(0);
+  const heartOverlayX = useSharedValue(0);
+  const heartOverlayY = useSharedValue(0);
+  const heartOverlayRotation = useSharedValue(0);
+
+  const heartOverlayStyle = useAnimatedStyle(() => ({
+    opacity: heartOverlayOpacity.value,
+    left: heartOverlayX.value - 55,
+    top: heartOverlayY.value - 55,
+    transform: [
+      { rotate: `${heartOverlayRotation.value}deg` },
+      { scale: heartOverlayScale.value },
+    ],
+  }));
 
   const likeScale = useSharedValue(1);
 
@@ -77,13 +99,46 @@ export default function ContentPost({
     textShadowRadius: 8,
   };
 
+  const doubleTap = Gesture.Tap()
+    .numberOfTaps(2)
+    .runOnJS(true)
+    .onEnd((event, success) => {
+      if (!success) return;
+
+      handleDoubleTapLike(event.x, event.y);
+    });
+
+  function handleDoubleTapLike(x: number, y: number) {
+    heartOverlayX.set(x);
+    heartOverlayY.set(y);
+
+    const randomRotation = Math.random() * 30 - 15;
+    heartOverlayRotation.set(randomRotation);
+
+    heartOverlayOpacity.set(1);
+    heartOverlayScale.set(0.4);
+
+    heartOverlayScale.set(
+      withSequence(withSpring(1.25), withSpring(1), withSpring(0)),
+    );
+
+    heartOverlayOpacity.set(
+      withSequence(withSpring(1), withSpring(1), withSpring(0)),
+    );
+
+    if (post.isLiked) return;
+
+    likeScale.set(1);
+    likeScale.set(withSequence(withSpring(1.35), withSpring(1)));
+
+    onToggleLike(post.id, false);
+  }
+
   function handleLike() {
     if (!post.isLiked) {
       likeScale.set(1);
-
       likeScale.set(withSequence(withSpring(1.25), withSpring(1)));
     } else {
-      // Reset immediately if unliking
       likeScale.set(1);
     }
 
@@ -97,160 +152,201 @@ export default function ContentPost({
   }
 
   return (
-    <View style={{ height }}>
-      {imageUrl ? (
-        <Image
-          source={{ uri: imageUrl }}
-          className="absolute inset-0 h-full w-full"
-          resizeMode="cover"
-        />
-      ) : (
-        <View className="absolute inset-0 items-center justify-center bg-gray-900">
-          <Text
-            style={textShadow}
-            className="px-8 text-center text-2xl font-bold text-white"
-          >
-            {description}
-          </Text>
-        </View>
-      )}
-
-      <LinearGradient
-        colors={[
-          "transparent",
-          "rgba(0,0,0,0.1)",
-          "rgba(0,0,0,0.25)",
-          "rgba(0,0,0,0.5)",
-        ]}
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: 280,
-        }}
-      />
-
-      <View className="absolute bottom-8 left-4 right-20">
-        <TouchableOpacity
-          className="mb-3 flex-row items-center gap-3"
-          activeOpacity={0.8}
-          onPress={() => {
-            if (isOfficialPost && post.restaurant) {
-              router.push({
-                pathname: "/restaurants/[id]",
-                params: { id: post.restaurant.id },
-              });
-              return;
-            }
-
-            if (!post.author?.id) return;
-
-            router.push({
-              pathname: "/(users)/[id]",
-              params: { id: post.author.id },
-            });
-          }}
+    <GestureDetector gesture={doubleTap}>
+      <View style={{ height }}>
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              position: "absolute",
+              width: 110,
+              height: 110,
+              zIndex: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            },
+            heartOverlayStyle,
+          ]}
         >
-          <Avatar uri={displayAvatar} username={displayName ?? ""} size={42} />
-
-          <View>
-            <Text className="font-bold text-white">
-              {isOfficialPost ? displayName : `@${displayName}`}
+          <HeartIcon
+            size={110}
+            color="#FF3040"
+            weight="fill"
+            style={iconShadow}
+          />
+        </Animated.View>
+        {imageUrl ? (
+          <Image
+            source={{ uri: imageUrl }}
+            className="absolute inset-0 h-full w-full"
+            resizeMode="cover"
+          />
+        ) : (
+          <View className="absolute inset-0 items-center justify-center bg-gray-900">
+            <Text
+              style={textShadow}
+              className="px-8 text-center text-2xl font-bold text-white"
+            >
+              {description}
             </Text>
-
-            {isOfficialPost && (
-              <Text className="mt-1 text-xs font-semibold text-[#F7D786]">
-                Official restaurant
-              </Text>
-            )}
           </View>
-        </TouchableOpacity>
+        )}
 
-        {!!post.restaurant && (
+        <LinearGradient
+          colors={[
+            "transparent",
+            "rgba(0,0,0,0.1)",
+            "rgba(0,0,0,0.25)",
+            "rgba(0,0,0,0.5)",
+          ]}
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            height: 280,
+          }}
+        />
+
+        {post.canDelete && (
           <TouchableOpacity
-            className="mb-3 self-start rounded-full bg-[#00000080] px-3 py-2"
+            className="absolute right-4 top-4 z-10 p-1"
             activeOpacity={0.8}
-            onPress={() =>
-              router.push({
-                pathname: "/restaurants/[id]",
-                params: { id: post.restaurant!.id },
-              })
-            }
+            onPress={() => onOpenPostOptions(post.id)}
           >
-            <View className="flex-row items-center">
-              <MapPinLineIcon size={16} color="white" weight="fill" />
-              <Text className="ml-2 font-semibold text-white">
-                {post.restaurant.name}
-              </Text>
-            </View>
+            <DotsThreeOutlineIcon
+              size={30}
+              color="white"
+              weight="fill"
+              style={iconShadow}
+            />
           </TouchableOpacity>
         )}
+        <View className="absolute bottom-8 left-4 right-20">
+          <TouchableOpacity
+            className="mb-3 flex-row items-center gap-3"
+            activeOpacity={0.8}
+            onPress={() => {
+              if (isOfficialPost && post.restaurant) {
+                router.push({
+                  pathname: "/restaurants/[id]",
+                  params: { id: post.restaurant.id },
+                });
+                return;
+              }
 
-        {!!description && (
-          <Text className="text-base text-white">{description}</Text>
-        )}
-      </View>
+              if (!post.author?.id) return;
 
-      <View className="absolute bottom-26 right-4 items-center gap-5">
-        <TouchableOpacity onPress={handleLike}>
-          <Animated.View style={likeAnimatedStyle}>
-            <HeartIcon
-              weight="fill"
-              color={post.isLiked ? "#FF3040" : "#FFFFFFCC"}
-              size={35}
-              style={[
-                iconShadow,
-                post.isLiked && {
-                  shadowColor: "#FF3040",
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                },
-              ]}
+              router.push({
+                pathname: "/(users)/[id]",
+                params: { id: post.author.id },
+              });
+            }}
+          >
+            <Avatar
+              uri={displayAvatar}
+              username={displayName ?? ""}
+              size={42}
             />
-          </Animated.View>
 
-          <Text style={textShadow} className="text-center text-lg text-white">
-            {post.likesCount}
-          </Text>
-        </TouchableOpacity>
+            <View>
+              <Text className="font-bold text-white">
+                {isOfficialPost ? displayName : `@${displayName}`}
+              </Text>
 
-        <TouchableOpacity onPress={() => onOpenComments(post.id)}>
-          <ChatCircleIcon
-            weight="fill"
-            color="#FFFFFFCC"
-            size={35}
-            style={iconShadow}
-          />
-          <Text style={textShadow} className="text-center text-lg text-white">
-            {post.commentsCount}
-          </Text>
-        </TouchableOpacity>
+              {isOfficialPost && (
+                <Text className="mt-1 text-xs font-semibold text-[#F7D786]">
+                  Official restaurant
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
 
-        <TouchableOpacity>
-          <ShareFatIcon
-            weight="fill"
-            color="#FFFFFFCC"
-            size={35}
-            style={iconShadow}
-          />
-          <Text style={textShadow} className="text-center text-lg text-white">
-            {post.commentsCount}
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleWantToTry}>
-          <BookBookmarkIcon
-            weight="fill"
-            color={isWantToTry ? "#F7D786" : "#FFFFFFCC"}
-            size={35}
-            style={iconShadow}
-          />
+          {!!post.restaurant && (
+            <TouchableOpacity
+              className="mb-3 self-start rounded-full bg-[#00000080] px-3 py-2"
+              activeOpacity={0.8}
+              onPress={() =>
+                router.push({
+                  pathname: "/restaurants/[id]",
+                  params: { id: post.restaurant!.id },
+                })
+              }
+            >
+              <View className="flex-row items-center">
+                <MapPinLineIcon size={16} color="white" weight="fill" />
+                <Text className="ml-2 font-semibold text-white">
+                  {post.restaurant.name}
+                </Text>
+              </View>
+            </TouchableOpacity>
+          )}
 
-          <Text style={textShadow} className="text-center text-lg text-white">
-            {post.restaurantSavesCount}
-          </Text>
-        </TouchableOpacity>
+          {!!description && (
+            <Text className="text-base text-white">{description}</Text>
+          )}
+        </View>
+
+        <View className="absolute bottom-26 right-4 items-center gap-5">
+          <TouchableOpacity onPress={handleLike}>
+            <Animated.View style={likeAnimatedStyle}>
+              <HeartIcon
+                weight="fill"
+                color={post.isLiked ? "#FF3040" : "#FFFFFFCC"}
+                size={35}
+                style={[
+                  iconShadow,
+                  post.isLiked && {
+                    shadowColor: "#FF3040",
+                    shadowOpacity: 0.5,
+                    shadowRadius: 8,
+                  },
+                ]}
+              />
+            </Animated.View>
+
+            <Text style={textShadow} className="text-center text-lg text-white">
+              {post.likesCount}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => onOpenComments(post.id)}>
+            <ChatCircleIcon
+              weight="fill"
+              color="#FFFFFFCC"
+              size={35}
+              style={iconShadow}
+            />
+            <Text style={textShadow} className="text-center text-lg text-white">
+              {post.commentsCount}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => onOpenSharePost(post.id)}>
+            <ShareFatIcon
+              weight="fill"
+              color="#FFFFFFCC"
+              size={35}
+              style={iconShadow}
+            />
+            <Text style={textShadow} className="text-center text-lg text-white">
+              {post.commentsCount}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleWantToTry}>
+            <BookBookmarkIcon
+              weight="fill"
+              color={isWantToTry ? "#F7D786" : "#FFFFFFCC"}
+              size={35}
+              style={iconShadow}
+            />
+
+            <Text style={textShadow} className="text-center text-lg text-white">
+              {post.restaurantSavesCount}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </GestureDetector>
   );
 }

@@ -1,7 +1,14 @@
+import { Post } from "./post";
 import { Restaurant } from "./restaurant";
 import { UserSummary } from "./user";
 
 export type ChatType = "DIRECT" | "GROUP" | "RESTAURANT";
+
+export type SendMessagePayload =
+  | { type: "TEXT"; content: string }
+  | { type: "POST"; postId: string }
+  | { type: "RESTAURANT"; restaurantId: string }
+  | { type: "IMAGE"; imageUrl: string };
 
 export type Chat = {
   id: string;
@@ -35,6 +42,13 @@ export type Message = {
   type?: "TEXT" | "IMAGE" | "POST" | "RESTAURANT" | "POLL" | "SYSTEM";
   content: string | null;
   imageUrl?: string | null;
+
+  postId?: string | null;
+  post?: Post | null;
+
+  restaurantId?: string | null;
+  restaurant?: Restaurant | null;
+
   createdAt: string;
   senderId: string;
   sender: UserSummary;

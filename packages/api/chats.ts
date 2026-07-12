@@ -1,3 +1,4 @@
+import { SendMessagePayload } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
 export function createChatsApi(api: AxiosInstance) {
@@ -47,8 +48,8 @@ export function createChatsApi(api: AxiosInstance) {
       return data;
     },
 
-    async sendMessage(id: string, content: string) {
-      const { data } = await api.post(`/chats/${id}/messages`, { content });
+    async sendMessage(id: string, payload: SendMessagePayload) {
+      const { data } = await api.post(`/chats/${id}/messages`, payload);
       return data;
     },
 

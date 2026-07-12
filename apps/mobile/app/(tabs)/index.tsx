@@ -1,4 +1,4 @@
-import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
+import { CommentsBottomSheet } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
@@ -10,18 +10,18 @@ import { api } from "@/lib/api";
 import { searchGlobal } from "@/services/search";
 import { Post, PostType } from "@findeat/types/post";
 import { SearchResultItem } from "@findeat/types/search";
-import BottomSheet from "@gorhom/bottom-sheet";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Alert, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
+import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
+import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 
 export default function HomeScreen() {
   const { t } = useTranslation("common");
   const { user, isLoading: authLoading } = useAuth();
-  const commentsSheetRef = useRef<BottomSheet>(null);
 
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [posts, setPosts] = useState<Post[]>([]);
@@ -30,6 +30,8 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [feedHeight, setFeedHeight] = useState(0);
+  const [sharePostId, setSharePostId] = useState<string | null>(null);
+  const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
 
   const loadPosts = useCallback(async () => {
     if (!user) return;
@@ -51,13 +53,35 @@ export default function HomeScreen() {
   }
 
   async function toggleLike(postId: string, isLiked: boolean) {
-    if (isLiked) {
-      await api.posts.unlike(postId);
-    } else {
-      await api.posts.like(postId);
-    }
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              isLiked: !isLiked,
+              likesCount: Math.max(0, post.likesCount + (isLiked ? -1 : 1)),
+            }
+          : post,
+      ),
+    );
 
-    await loadPosts();
+    try {
+      await api.posts.toggleLike(postId, isLiked);
+    } catch (error) {
+      console.error("toggle like failed", error);
+
+      setPosts((prev) =>
+        prev.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                isLiked,
+                likesCount: Math.max(0, post.likesCount + (isLiked ? 1 : -1)),
+              }
+            : post,
+        ),
+      );
+    }
   }
 
   async function toggleWantToTry(
@@ -104,9 +128,31 @@ export default function HomeScreen() {
     }
   }
 
+  async function deletePost(postId: string) {
+    try {
+      await api.posts.delete(postId);
+      setPosts((prev) => prev.filter((post) => post.id !== postId));
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Could not delete post");
+    }
+  }
+
+  function handleCommentAdded(postId: string) {
+    setPosts((currentPosts) =>
+      currentPosts.map((post) =>
+        post.id === postId
+          ? {
+              ...post,
+              commentsCount: post.commentsCount + 1,
+            }
+          : post,
+      ),
+    );
+  }
+
   function openComments(postId: string) {
     setSelectedPostId(postId);
-    commentsSheetRef.current?.snapToIndex(0);
   }
 
   function handleSearchSelect(item: SearchResultItem) {
@@ -196,6 +242,9 @@ export default function HomeScreen() {
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}
+                  onDeletePost={deletePost}
+                  onOpenSharePost={setSharePostId}
+                  onOpenPostOptions={setOptionsPostId}
                 />
               ) : (
                 <ReviewFeed
@@ -205,11 +254,26 @@ export default function HomeScreen() {
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}
+                  onOpenSharePost={setSharePostId}
+                  onOpenPostOptions={setOptionsPostId}
                 />
               ))}
           </View>
+          <PostOptionsBottomSheet
+            postId={optionsPostId}
+            onClose={() => setOptionsPostId(null)}
+            onDelete={deletePost}
+          />
 
-          <CommentsBottomSheet ref={commentsSheetRef} postId={selectedPostId} />
+          <SharePostBottomSheet
+            postId={sharePostId}
+            onClose={() => setSharePostId(null)}
+          />
+          <CommentsBottomSheet
+            postId={selectedPostId}
+            onClose={() => setSelectedPostId(null)}
+            onCommentAdded={handleCommentAdded}
+          />
         </Animated.View>
       )}
     </SafeAreaView>

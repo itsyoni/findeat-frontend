@@ -1,5 +1,5 @@
 import { LoadingScreen } from "@/components/common";
-import { CommentsBottomSheet } from "@/components/common/CommentsBottomSheet";
+import { CommentsBottomSheet } from "@/components/common";
 import FeedPostList from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";

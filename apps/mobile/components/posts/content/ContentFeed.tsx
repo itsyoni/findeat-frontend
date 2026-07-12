@@ -1,6 +1,7 @@
 import { Post } from "@findeat/types/post";
 import { FlatList } from "react-native";
 import ContentPost from "./ContentPost";
+import EmptyPostsState from "../EmptyPostsState";
 
 type Props = {
   posts: Post[];
@@ -9,6 +10,9 @@ type Props = {
   onRefresh: () => void;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
+  onDeletePost: (postId: string) => void;
+  onOpenSharePost: (postId: string) => void;
+  onOpenPostOptions: (postId: string) => void;
   onToggleWantToTry: (
     postId: string,
     restaurantId: string,
@@ -25,7 +29,10 @@ export default function ContentFeed({
   onToggleLike,
   onOpenComments,
   onToggleWantToTry,
+  onDeletePost,
   initialIndex = 0,
+  onOpenSharePost,
+  onOpenPostOptions,
 }: Props) {
   return (
     <FlatList
@@ -37,6 +44,10 @@ export default function ContentFeed({
       showsVerticalScrollIndicator={false}
       decelerationRate="fast"
       initialScrollIndex={initialIndex}
+      contentContainerStyle={{
+        flexGrow: 1,
+      }}
+      ListEmptyComponent={<EmptyPostsState type="CONTENT" />}
       getItemLayout={(_, index) => ({
         length: height,
         offset: height * index,
@@ -49,6 +60,8 @@ export default function ContentFeed({
           onToggleLike={onToggleLike}
           onOpenComments={onOpenComments}
           onToggleWantToTry={onToggleWantToTry}
+          onOpenSharePost={onOpenSharePost}
+          onOpenPostOptions={onOpenPostOptions}
         />
       )}
     />

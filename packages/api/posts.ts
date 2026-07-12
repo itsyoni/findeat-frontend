@@ -1,4 +1,4 @@
-import type { Post, PostType } from "@findeat/types";
+import type { Comment, Post, PostType } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
 export function createPostsApi(api: AxiosInstance) {
@@ -9,6 +9,7 @@ export function createPostsApi(api: AxiosInstance) {
       restaurantId?: string;
     }) {
       const { data } = await api.post<Post>("/posts/content", payload);
+
       return data;
     },
 
@@ -32,6 +33,7 @@ export function createPostsApi(api: AxiosInstance) {
       }>;
     }) {
       const { data } = await api.post<Post>("/posts/review", payload);
+
       return data;
     },
 
@@ -68,6 +70,11 @@ export function createPostsApi(api: AxiosInstance) {
       return data;
     },
 
+    async get(id: string) {
+      const { data } = await api.get<Post>(`/posts/${id}`);
+      return data;
+    },
+
     async like(id: string) {
       const { data } = await api.post(`/posts/${id}/like`);
       return data;
@@ -79,17 +86,26 @@ export function createPostsApi(api: AxiosInstance) {
     },
 
     async addComment(id: string, content: string) {
-      const { data } = await api.post(`/posts/${id}/comments`, { content });
+      const { data } = await api.post<Comment>(`/posts/${id}/comments`, {
+        content,
+      });
+
       return data;
     },
 
     async comments(id: string) {
-      const { data } = await api.get(`/posts/${id}/comments`);
+      const { data } = await api.get<Comment[]>(`/posts/${id}/comments`);
+
       return data;
     },
 
     async toggleLike(id: string, isLiked: boolean) {
       return isLiked ? this.unlike(id) : this.like(id);
+    },
+
+    async delete(id: string) {
+      const { data } = await api.delete(`/posts/${id}`);
+      return data;
     },
   };
 }
