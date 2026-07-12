@@ -1,5 +1,6 @@
 import { api } from "@/lib/api";
 import type { FeedPage, Post, PostType } from "@findeat/types";
+import type { UserRestaurant } from "@findeat/types";
 import {
   InfiniteData,
   QueryClient,
@@ -49,6 +50,49 @@ export function updatePostInFeedCache(
       };
     },
   );
+}
+
+export function updateRestaurantStatusInFeedCache(
+  queryClient: QueryClient,
+  restaurantId: string,
+  status: Partial<UserRestaurant>,
+) {
+  updatePostInFeedCache(queryClient, (post) => {
+    if (post.restaurant?.id !== restaurantId) return post;
+
+    const currentStatus = post.restaurant.userSaves?.[0];
+    const nextStatus = {
+      id: currentStatus?.id ?? "",
+      wantToTry: currentStatus?.wantToTry ?? false,
+      visited: currentStatus?.visited ?? false,
+      favorite: currentStatus?.favorite ?? false,
+      ...currentStatus,
+      ...status,
+    };
+    const wasSaved = !!(
+      currentStatus?.wantToTry ||
+      currentStatus?.visited ||
+      currentStatus?.favorite
+    );
+    const isSaved = !!(
+      nextStatus.wantToTry ||
+      nextStatus.visited ||
+      nextStatus.favorite
+    );
+
+    return {
+      ...post,
+      restaurantSavesCount: Math.max(
+        0,
+        (post.restaurantSavesCount ?? 0) +
+          (wasSaved === isSaved ? 0 : isSaved ? 1 : -1),
+      ),
+      restaurant: {
+        ...post.restaurant,
+        userSaves: [nextStatus],
+      },
+    };
+  });
 }
 
 export function prependPostToFeedCache(

@@ -5,7 +5,7 @@ import FormInput from "@/components/forms/FormInput";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
-import * as ImagePicker from "expo-image-picker";
+import ImageCropPicker from "react-native-image-crop-picker";
 import { router } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
@@ -124,50 +124,40 @@ export default function EditProfileScreen() {
     aspect: [number, number],
     onSelect: (uri: string) => void,
   ) {
+    const isAvatar = aspect[0] === aspect[1];
+    const cropOptions = {
+      width: isAvatar ? 1000 : 1800,
+      height: isAvatar ? 1000 : 600,
+      cropping: true,
+      cropperCircleOverlay: isAvatar,
+      freeStyleCropEnabled: false,
+      mediaType: "photo" as const,
+      compressImageQuality: 0.8,
+      forceJpg: true,
+      cropperToolbarTitle: isAvatar
+        ? t("profile:cropProfilePhoto")
+        : t("profile:cropCoverPhoto"),
+    };
+
     async function openCamera() {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-
-      if (!permission.granted) {
-        Alert.alert(
-          t("common:permissionRequired"),
-          t("profile:cameraPermission"),
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsEditing: true,
-        aspect: [16, 9],
-        quality: 0.8,
-      });
-
-      if (!result.canceled) {
-        onSelect(result.assets[0].uri);
+      try {
+        const image = await ImageCropPicker.openCamera(cropOptions);
+        onSelect(image.path);
+      } catch (error) {
+        if ((error as { code?: string }).code !== "E_PICKER_CANCELLED") {
+          Alert.alert(t("common:error"), t("profile:imagePickerError"));
+        }
       }
     }
 
     async function openLibrary() {
-      const permission =
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (!permission.granted) {
-        Alert.alert(
-          t("common:permissionRequired"),
-          t("profile:libraryPermission"),
-        );
-        return;
-      }
-
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsEditing: true,
-        aspect,
-        quality: 0.8,
-      });
-
-      if (!result.canceled) {
-        onSelect(result.assets[0].uri);
+      try {
+        const image = await ImageCropPicker.openPicker(cropOptions);
+        onSelect(image.path);
+      } catch (error) {
+        if ((error as { code?: string }).code !== "E_PICKER_CANCELLED") {
+          Alert.alert(t("common:error"), t("profile:imagePickerError"));
+        }
       }
     }
 

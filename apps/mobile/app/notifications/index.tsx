@@ -7,39 +7,142 @@ import {
   useNotifications,
 } from '@/hooks/useNotifications';
 import { api } from '@/lib/api';
-import type { AppNotification } from '@findeat/types';
-import { useQueryClient } from '@tanstack/react-query';
+import type {
+  AppNotification,
+  NotificationsPage,
+  UserRelationship,
+} from '@findeat/types';
+import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { ArrowLeftIcon, BellIcon } from 'phosphor-react-native';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  getNextRelationshipAfterToggle,
+  isFollowingRelationship,
+} from '@findeat/utils';
 
 export default function NotificationsScreen() {
   const { t } = useTranslation('notifications');
   const { isDark } = useAppTheme();
   const queryClient = useQueryClient();
+  const [relationshipOverrides, setRelationshipOverrides] = useState<
+    Record<string, UserRelationship>
+  >({});
+  const hasUnreadRef = useRef(false);
   const notifications = useNotifications();
   const items = useMemo(
     () => notifications.data?.pages.flatMap((page) => page.items) ?? [],
     [notifications.data],
   );
 
-  async function open(item: AppNotification) {
-    if (!item.readAt) await api.notifications.markRead(item.id);
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: notificationsQueryKey }),
-      queryClient.invalidateQueries({ queryKey: notificationUnreadQueryKey }),
-    ]);
+  const hasUnread = items.some((item) => !item.readAt);
+
+  useEffect(() => {
+    hasUnreadRef.current = hasUnread;
+  }, [hasUnread]);
+
+  useEffect(() => {
+    return () => {
+      if (!hasUnreadRef.current) return;
+
+      void api.notifications.markAllRead().catch((error) =>
+        console.error('mark notifications read failed', error),
+      );
+      queryClient.setQueryData(notificationUnreadQueryKey, { count: 0 });
+      queryClient.setQueriesData(
+        { queryKey: notificationsQueryKey, exact: true },
+        (current: InfiniteData<NotificationsPage> | undefined) =>
+          current
+            ? {
+                ...current,
+                pages: current.pages.map((page) => ({
+                  ...page,
+                  items: page.items.map((item) => ({
+                    ...item,
+                    readAt: item.readAt ?? new Date().toISOString(),
+                  })),
+                })),
+              }
+            : current,
+      );
+    };
+  }, [queryClient]);
+
+  function openActor(item: AppNotification) {
+    if (item.actorId) {
+      router.push({ pathname: '/(users)/[id]', params: { id: item.actorId } });
+      return;
+    }
+
     const href = notificationHref(item);
     if (href) router.push(href);
   }
 
-  async function markAllRead() {
-    await api.notifications.markAllRead();
-    queryClient.setQueryData(notificationUnreadQueryKey, { count: 0 });
-    void queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
+  async function toggleFollow(item: AppNotification) {
+    if (!item.actorId) return;
+
+    const current =
+      relationshipOverrides[item.actorId] ?? item.actorRelationship ?? 'NONE';
+    const wasFollowing = isFollowingRelationship(current);
+    const optimisticRelationship = getNextRelationshipAfterToggle(current);
+    setRelationshipOverrides((values) => ({
+      ...values,
+      [item.actorId!]: optimisticRelationship,
+    }));
+
+    try {
+      const result = await api.users.toggleFollow(item.actorId, wasFollowing);
+      setRelationshipOverrides((values) => ({
+        ...values,
+        [item.actorId!]: result.relationship,
+      }));
+    } catch (error) {
+      console.error('notification follow action failed', error);
+      setRelationshipOverrides((values) => ({
+        ...values,
+        [item.actorId!]: current,
+      }));
+    }
+  }
+
+  function notificationAction(item: AppNotification) {
+    const isFollowNotification = ['FOLLOW', 'FOLLOW_BACK', 'FRIEND'].includes(item.type);
+
+    if (isFollowNotification && item.actorId) {
+      const relationship =
+        relationshipOverrides[item.actorId] ?? item.actorRelationship ?? 'NONE';
+      const following = isFollowingRelationship(relationship);
+      return {
+        label:
+          relationship === 'FRIENDS'
+            ? t('friends')
+            : relationship === 'FOLLOWING'
+              ? t('following')
+              : relationship === 'FOLLOWED_BY'
+                ? t('followBack')
+                : t('follow'),
+        active: following,
+        isPost: false,
+        preview: undefined,
+        run: () => void toggleFollow(item),
+      };
+    }
+
+    if (item.postId) {
+      return {
+        label: undefined,
+        active: true,
+        isPost: true,
+        preview: item.postPreview,
+        run: () =>
+          router.push({ pathname: '/(posts)/[id]', params: { id: item.postId! } }),
+      };
+    }
+
+    return null;
   }
 
   return (
@@ -49,11 +152,6 @@ export default function NotificationsScreen() {
           <ArrowLeftIcon size={24} color={isDark ? '#FFF' : '#111'} />
         </TouchableOpacity>
         <Text className="ml-2 flex-1 text-xl font-bold text-black dark:text-white">{t('title')}</Text>
-        {items.some((item) => !item.readAt) ? (
-          <TouchableOpacity onPress={() => void markAllRead()} className="p-2">
-            <Text className="font-semibold text-blue-500">{t('markAllRead')}</Text>
-          </TouchableOpacity>
-        ) : null}
       </View>
 
       {notifications.isPending ? (
@@ -62,7 +160,21 @@ export default function NotificationsScreen() {
         <FlatList
           data={items}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => <NotificationRow item={item} onPress={() => void open(item)} />}
+          renderItem={({ item }) => {
+            const action = notificationAction(item);
+
+            return (
+              <NotificationRow
+                item={item}
+                onPress={() => openActor(item)}
+                onAction={action?.run}
+                actionLabel={action?.label}
+                actionActive={action?.active}
+                isPostAction={action?.isPost}
+                postPreview={action?.preview}
+              />
+            );
+          }}
           onEndReached={() => {
             if (notifications.hasNextPage && !notifications.isFetchingNextPage) {
               void notifications.fetchNextPage();

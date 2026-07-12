@@ -3,8 +3,10 @@ import Avatar from "@/components/common/Avatar";
 import Tabs from "@/components/common/Tabs";
 import ProfileManagedRestaurants from "@/components/profile/ProfileManagedRestaurants";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
+import ProfileActionsBottomSheet from "@/components/profile/ProfileActionsBottomSheet";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { api } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 import { PostType } from "@findeat/types/post";
 import {
   filterPostsByType,
@@ -13,15 +15,19 @@ import {
   isFollowingRelationship,
   isFriendRelationship,
 } from "@findeat/utils";
-import { router, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon } from "phosphor-react-native";
+import { Redirect, router, useLocalSearchParams } from "expo-router";
+import { CaretLeftIcon, DotsThreeIcon } from "phosphor-react-native";
 import { useMemo, useState } from "react";
 import { ActivityIndicator, Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
+  const { user: currentUser } = useAuth();
+  const { t } = useTranslation(["common", "profile"]);
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
+  const [optionsOpen, setOptionsOpen] = useState(false);
   const {
     profile: user,
     setProfile: setUser,
@@ -75,6 +81,10 @@ export default function UserProfileScreen() {
     }
   }
 
+  if (currentUser?.id === id) {
+    return <Redirect href="/(tabs)/profile" />;
+  }
+
   if (loading || !user) {
     return (
       <View className="flex-1 items-center justify-center bg-white dark:bg-black">
@@ -85,17 +95,17 @@ export default function UserProfileScreen() {
 
   return (
     <View className="flex-1 bg-white dark:bg-black">
-      <View>
+      <View className="flex-1">
         <View>
           <View className="relative">
             {user.coverUrl ? (
               <Image
                 source={{ uri: user.coverUrl }}
-                className="h-70 w-full bg-gray-200"
+                className="h-52 w-full bg-gray-200"
                 resizeMode="cover"
               />
             ) : (
-              <View className="h-70 w-full bg-gray-200 dark:bg-gray-800" />
+              <View className="h-52 w-full bg-gray-200 dark:bg-gray-800" />
             )}
 
             <SafeAreaView
@@ -107,50 +117,49 @@ export default function UserProfileScreen() {
                 right: 0,
               }}
             >
-              <TouchableOpacity
-                className="ml-4 mt-2 h-11 w-11 items-center justify-center rounded-full bg-black/30"
-                onPress={() => router.back()}
-              >
-                <CaretLeftIcon size={24} color="white" />
-              </TouchableOpacity>
+              <View className="mt-2 flex-row items-center justify-between px-4">
+                <TouchableOpacity
+                  className="h-11 w-11 items-center justify-center rounded-full bg-black/30"
+                  onPress={() => router.back()}
+                >
+                  <CaretLeftIcon size={24} color="white" />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  className="h-11 w-11 items-center justify-center rounded-full bg-black/30"
+                  onPress={() => setOptionsOpen(true)}
+                >
+                  <DotsThreeIcon size={25} color="white" weight="bold" />
+                </TouchableOpacity>
+              </View>
             </SafeAreaView>
           </View>
-          <View className="-mt-15 px-5">
-            <Avatar
-              uri={user.avatarUrl}
-              username={user.username}
-              size={100}
-              style={{
-                outlineStyle: "solid",
-                outlineWidth: 5,
-                outlineColor: "white",
-              }}
-            />
+          <View className="-mt-12 items-center px-5">
+            <View className="rounded-full bg-white p-1.5 dark:bg-black">
+              <Avatar uri={user.avatarUrl} username={user.username} size={100} />
+            </View>
           </View>
         </View>
-        <View className="px-5">
-          <Text className="mt-5 text-3xl font-bold text-black dark:text-white">
-            @{user.username}
+        <View className="items-center px-5">
+          <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
+            {user.username}
           </Text>
 
-          <ProfileManagedRestaurants memberships={user.restaurantMemberships} />
-
-          {!!user.email && (
-            <Text className="mt-2 text-gray-500">{user.email}</Text>
-          )}
+          <View className="w-full">
+            <ProfileManagedRestaurants memberships={user.restaurantMemberships} />
+          </View>
 
           {!!user.bio && (
-            <Text className="mt-3 text-black dark:text-white">{user.bio}</Text>
+            <Text className="mt-4 text-center text-base text-black dark:text-white">{user.bio}</Text>
           )}
 
-          <View className="mt-6 flex-row">
-            <View className="mr-8">
-              <Text className="text-xl font-bold">{user.posts.length}</Text>
-              <Text className="text-gray-500">Posts</Text>
+          <View className="mt-5 w-full flex-row">
+            <View className="flex-1">
+              <Text className="text-center text-xl font-bold text-black dark:text-white">{user.posts.length}</Text>
+              <Text className="mt-1 text-center text-sm text-gray-500">{t("profile:posts")}</Text>
             </View>
 
             <TouchableOpacity
-              className="mr-8"
+              className="flex-1"
               onPress={() =>
                 router.push({
                   pathname: "/(users)/connections",
@@ -158,11 +167,12 @@ export default function UserProfileScreen() {
                 })
               }
             >
-              <Text className="text-xl font-bold">{user.followersCount}</Text>
-              <Text className="text-gray-500">Followers</Text>
+              <Text className="text-center text-xl font-bold text-black dark:text-white">{user.followersCount}</Text>
+              <Text className="mt-1 text-center text-sm text-gray-500">{t("profile:followers")}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
+              className="flex-1"
               onPress={() =>
                 router.push({
                   pathname: "/(users)/connections",
@@ -170,23 +180,21 @@ export default function UserProfileScreen() {
                 })
               }
             >
-              <Text className="text-xl font-bold">{user.followingCount}</Text>
-              <Text className="text-gray-500">Following</Text>
+              <Text className="text-center text-xl font-bold text-black dark:text-white">{user.followingCount}</Text>
+              <Text className="mt-1 text-center text-sm text-gray-500">{t("profile:following")}</Text>
             </TouchableOpacity>
           </View>
 
-          <View className="mt-6 flex-row gap-3">
+          <View className="mt-5 w-full flex-row gap-3">
             <TouchableOpacity
-              className={`flex-1 rounded-2xl py-4 ${getRelationshipButtonColor(
-                user.relationship,
-              )}`}
+              className={`flex-1 rounded-2xl py-4 ${getRelationshipButtonColor(user.relationship)}`}
               onPress={toggleFollow}
             >
               <Text
                 className={`text-center font-bold ${
                   isFriendRelationship(user.relationship)
                     ? "text-black"
-                    : "text-white"
+                    : "text-white dark:text-black"
                 }`}
               >
                 {getRelationshipButtonText(user.relationship)}
@@ -194,11 +202,11 @@ export default function UserProfileScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-1 rounded-2xl border border-gray-200 py-4"
+              className="flex-1 rounded-2xl border border-gray-200 py-4 dark:border-gray-700"
               onPress={startChat}
             >
               <Text className="text-center font-bold text-black dark:text-white">
-                Message
+                {t("profile:message")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -208,14 +216,15 @@ export default function UserProfileScreen() {
           activeTab={activeFeed}
           onChange={setActiveFeed}
           tabs={[
-            { label: "Content", value: "CONTENT" },
-            { label: "Reviews", value: "REVIEW" },
+            { label: t("common:content"), value: "CONTENT" },
+            { label: t("common:reviews"), value: "REVIEW" },
           ]}
         />
 
         <View style={{ flex: 1 }}>
           <ProfilePostGrid
             posts={posts}
+            type={activeFeed}
             onPressPost={(postId) => {
               router.push({
                 pathname:
@@ -231,6 +240,12 @@ export default function UserProfileScreen() {
           />
         </View>
       </View>
+
+      <ProfileActionsBottomSheet
+        open={optionsOpen}
+        onClose={() => setOptionsOpen(false)}
+        type="USER"
+      />
     </View>
   );
 }

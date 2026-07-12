@@ -27,5 +27,20 @@
   "noComments": "אין תגובות עדיין.",
   "firstComment": "היה הראשון להגיב!",
   "you": "אתה",
-  "chat": "שיחה"
+  "chat": "שיחה",
+  "newGroup": "קבוצה חדשה",
+  "groupDetails": "פרטי הקבוצה",
+  "selectedMembers": "{{count}} נבחרו",
+  "groupMembers": "{{count}} משתתפים כולל אותך",
+  "searchFriends": "חיפוש חברים",
+  "noFriendsFound": "לא נמצאו חברים",
+  "searchFriendsToAdd": "חפש חברים שברצונך להוסיף לקבוצה.",
+  "next": "הבא",
+  "minimumGroupMembers": "יש לבחור לפחות 2 חברים",
+  "groupPhotoLater": "אפשר להוסיף תמונת קבוצה מאוחר יותר",
+  "groupName": "שם הקבוצה",
+  "groupNamePlaceholder": "בחר שם לקבוצה",
+  "participants": "משתתפים",
+  "createGroup": "יצירת קבוצה",
+  "createGroupError": "לא ניתן ליצור את הקבוצה. נסה שוב."
 }

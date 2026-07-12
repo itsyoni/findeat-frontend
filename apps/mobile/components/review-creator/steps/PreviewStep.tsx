@@ -3,6 +3,7 @@ import { CreateReviewDraft } from "@findeat/types/review";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { ThemedSafeAreaView } from "@/components/common";
 import DishCard from "../components/DishCard";
+import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 
 type Props = {
   draft: CreateReviewDraft;
@@ -40,7 +41,10 @@ export default function PreviewStep({
         </Text>
 
         {!!restaurantName && (
-          <Text className="mt-2 text-gray-500">📍 {restaurantName}</Text>
+          <View className="mt-2 flex-row items-center">
+            <Text className="text-gray-500">{restaurantName}</Text>
+            <RestaurantBadge />
+          </View>
         )}
 
         {draft.coverImageUri && (

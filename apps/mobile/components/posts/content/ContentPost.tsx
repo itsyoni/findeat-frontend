@@ -4,11 +4,12 @@ import { Post } from "@findeat/types/post";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {
-  BookBookmarkIcon,
+  BookmarkSimpleIcon,
   ChatCircleIcon,
+  CheckCircleIcon,
   HeartIcon,
-  MapPinLineIcon,
   ShareFatIcon,
+  StarIcon,
   DotsThreeOutlineIcon,
 } from "phosphor-react-native";
 import { Image, TouchableOpacity, View } from "react-native";
@@ -19,6 +20,7 @@ import Animated, {
   withSequence,
   withSpring,
 } from "react-native-reanimated";
+import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 
 type Props = {
   post: Post;
@@ -45,6 +47,8 @@ export default function ContentPost({
 }: Props) {
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
+  const isVisited = !!userRestaurant?.visited;
+  const isFavorite = !!userRestaurant?.favorite;
   const content = post.contentPost;
   const isRestaurantPost = !!post.authorRestaurantId && !!post.authorRestaurant;
   const isOfficialPost = isRestaurantPost && !!post.restaurant;
@@ -148,8 +152,29 @@ export default function ContentPost({
   function handleWantToTry() {
     if (!post.restaurant?.id) return;
 
+    if (isVisited) {
+      router.push({
+        pathname: "/restaurants/[id]",
+        params: { id: post.restaurant.id },
+      });
+      return;
+    }
+
     onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
   }
+
+  const PlaceStatusIcon = isFavorite
+    ? StarIcon
+    : isVisited
+      ? CheckCircleIcon
+      : BookmarkSimpleIcon;
+  const placeStatusColor = isFavorite
+    ? "#FF3040"
+    : isVisited
+      ? "#22C55E"
+      : isWantToTry
+        ? "#F7D786"
+        : "#FFFFFFCC";
 
   return (
     <GestureDetector gesture={doubleTap}>
@@ -247,12 +272,16 @@ export default function ContentPost({
               uri={displayAvatar}
               username={displayName ?? ""}
               size={42}
+              fallbackType={isOfficialPost ? "restaurant" : "user"}
             />
 
             <View>
-              <Text className="font-bold text-white">
-                {isOfficialPost ? displayName : `@${displayName}`}
-              </Text>
+              <View className="flex-row items-center">
+                <Text className="font-bold text-white">
+                  {isOfficialPost ? displayName : `@${displayName}`}
+                </Text>
+                {isOfficialPost ? <RestaurantBadge /> : null}
+              </View>
 
               {isOfficialPost && (
                 <Text className="mt-1 text-xs font-semibold text-[#F7D786]">
@@ -274,10 +303,10 @@ export default function ContentPost({
               }
             >
               <View className="flex-row items-center">
-                <MapPinLineIcon size={16} color="white" weight="fill" />
-                <Text className="ml-2 font-semibold text-white">
+                <Text className="font-semibold text-white">
                   {post.restaurant.name}
                 </Text>
+                <RestaurantBadge size={14} status={post.restaurant.status} />
               </View>
             </TouchableOpacity>
           )}
@@ -334,9 +363,9 @@ export default function ContentPost({
             </Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleWantToTry}>
-            <BookBookmarkIcon
+            <PlaceStatusIcon
               weight="fill"
-              color={isWantToTry ? "#F7D786" : "#FFFFFFCC"}
+              color={placeStatusColor}
               size={35}
               style={iconShadow}
             />

@@ -2,6 +2,11 @@ import type {
   ManagedRestaurant,
   Restaurant,
   RestaurantSearchResponse,
+  RestaurantPostSection,
+  RestaurantPostsPage,
+  RestaurantMapFilter,
+  RestaurantMapSort,
+  UserRestaurant,
 } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
@@ -67,6 +72,20 @@ export function createRestaurantsApi(api: AxiosInstance) {
       return data;
     },
 
+    async discoverForMap(options: {
+      latitude: number;
+      longitude: number;
+      radiusKm?: number;
+      limit?: number;
+      filter?: RestaurantMapFilter;
+      sort?: RestaurantMapSort;
+    }) {
+      const { data } = await api.get<Restaurant[]>("/restaurants/map/discover", {
+        params: options,
+      });
+      return data;
+    },
+
     async follow(id: string) {
       const { data } = await api.post(`/restaurants/${id}/follow`);
       return data;
@@ -121,8 +140,16 @@ export function createRestaurantsApi(api: AxiosInstance) {
       return data;
     },
 
+    async posts(id: string, section: RestaurantPostSection, cursor?: string) {
+      const { data } = await api.get<RestaurantPostsPage>(
+        `/restaurants/${id}/posts`,
+        { params: { section, cursor, limit: 18 } },
+      );
+      return data;
+    },
+
     async wantToTry(id: string, savedFromPostId?: string) {
-      const { data } = await api.post(`/restaurants/${id}/want-to-try`, {
+      const { data } = await api.post<UserRestaurant>(`/restaurants/${id}/want-to-try`, {
         savedFromPostId,
       });
 
@@ -136,6 +163,11 @@ export function createRestaurantsApi(api: AxiosInstance) {
 
     async visited(id: string) {
       const { data } = await api.post(`/restaurants/${id}/visited`);
+      return data;
+    },
+
+    async removeVisited(id: string) {
+      const { data } = await api.delete(`/restaurants/${id}/visited`);
       return data;
     },
 

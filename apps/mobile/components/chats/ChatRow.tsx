@@ -6,6 +6,7 @@ import { TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import Avatar from "../common/Avatar";
 import { useTranslation } from "react-i18next";
+import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 
 type Props = {
   chat: Chat;
@@ -71,17 +72,21 @@ export default function ChatRow({ chat }: Props) {
           <UsersThreeIcon size={26} color="#6B7280" weight="fill" />
         </View>
       ) : (
-        <Avatar uri={imageUrl} username={title ?? t("chat")} size={48} />
+        <Avatar
+          uri={imageUrl}
+          username={title ?? t("chat")}
+          size={48}
+          fallbackType={isRestaurantChat ? "restaurant" : "user"}
+        />
       )}
 
       <View className="flex-1">
-        <Text
-          className={`text-lg text-black dark:text-white ${
-            hasUnread ? "font-bold" : "font-semibold"
-          }`}
-        >
-          {title ?? t("chat")}
-        </Text>
+        <View className="flex-row items-center">
+          <Text numberOfLines={1} className={`shrink text-lg text-black dark:text-white ${hasUnread ? "font-bold" : "font-semibold"}`}>
+            {title ?? t("chat")}
+          </Text>
+          {isRestaurantChat ? <RestaurantBadge /> : null}
+        </View>
 
         <Text
           numberOfLines={1}

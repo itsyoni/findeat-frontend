@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import {
   feedQueryKey,
   updatePostInFeedCache,
+  updateRestaurantStatusInFeedCache,
   useFeed,
 } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
@@ -126,7 +127,8 @@ export default function HomeScreen() {
       if (isWantToTry) {
         await api.restaurants.removeWantToTry(restaurantId);
       } else {
-        await api.restaurants.wantToTry(restaurantId, postId);
+        const status = await api.restaurants.wantToTry(restaurantId, postId);
+        updateRestaurantStatusInFeedCache(queryClient, restaurantId, status);
       }
     } catch (error) {
       console.error("toggle want to try failed", error);
@@ -230,8 +232,11 @@ export default function HomeScreen() {
               >
                 <BellIcon size={22} color={isDark ? '#000' : '#FFF'} weight="fill" />
                 {(unread.data?.count ?? 0) > 0 ? (
-                  <View className="absolute -right-1 -top-1 min-w-5 items-center justify-center rounded-full bg-red-500 px-1">
-                    <Text className="text-xs font-bold text-white">
+                  <View
+                    className="absolute -right-1 -top-1 h-6 min-w-6 items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 dark:border-black"
+                    style={{ zIndex: 10 }}
+                  >
+                    <Text className="text-[10px] font-bold text-white">
                       {(unread.data?.count ?? 0) > 99 ? '99+' : unread.data?.count}
                     </Text>
                   </View>

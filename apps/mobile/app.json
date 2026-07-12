@@ -10,7 +10,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "FindEat uses your camera so you can capture food posts and profile photos.",
+        "NSPhotoLibraryUsageDescription": "FindEat uses your photo library so you can choose photos for posts and your profile."
       }
     },
     "android": {
@@ -20,7 +22,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["CAMERA"]
     },
     "web": {
       "output": "static",
@@ -45,7 +48,8 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-      "expo-notifications"
+      "expo-notifications",
+      "expo-camera"
     ],
     "experiments": {
       "typedRoutes": true,

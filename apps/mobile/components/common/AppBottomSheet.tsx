@@ -62,11 +62,11 @@ function PresentedBottomSheet({
         disappearsOnIndex={-1}
         pressBehavior="close"
         style={{
-          backgroundColor: isDark ? "#000" : "#fff",
+          backgroundColor: "#000",
         }}
       />
     ),
-    [isDark],
+    [],
   );
 
   return (
@@ -83,6 +83,7 @@ function PresentedBottomSheet({
       footerComponent={footerComponent}
       backgroundStyle={{
         backgroundColor: isDark ? "#111827" : "white",
+        borderRadius: 28,
       }}
       handleIndicatorStyle={{
         backgroundColor: isDark ? "#6B7280" : "#D1D5DB",

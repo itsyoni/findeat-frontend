@@ -20,5 +20,8 @@ export function useNotificationUnreadCount(enabled = true) {
     queryKey: notificationUnreadQueryKey,
     queryFn: () => api.notifications.unreadCount(),
     enabled,
+    refetchInterval: enabled ? 30_000 : false,
+    refetchOnMount: "always",
+    refetchOnReconnect: "always",
   });
 }

@@ -64,25 +64,31 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     let cancelled = false;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let registrationInFlight = false;
+    let lastRegisteredToken: string | null = null;
 
     async function registerPushToken(attempt = 0): Promise<void> {
-      const current = await Notifications.getPermissionsAsync();
-      const permission = current.status === 'granted'
-        ? current
-        : await Notifications.requestPermissionsAsync();
-      if (permission.status !== 'granted' || cancelled) return;
-
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-      if (typeof projectId !== 'string') return;
+      if (registrationInFlight || cancelled) return;
+      registrationInFlight = true;
 
       try {
+        const current = await Notifications.getPermissionsAsync();
+        const permission = current.status === 'granted'
+          ? current
+          : await Notifications.requestPermissionsAsync();
+        if (permission.status !== 'granted' || cancelled) return;
+
+        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+        if (typeof projectId !== 'string') return;
+
         const pushToken = await Notifications.getExpoPushTokenAsync({ projectId });
-        if (cancelled) return;
+        if (cancelled || pushToken.data === lastRegisteredToken) return;
         await api.notifications.registerPushToken({
           token: pushToken.data,
           platform: Platform.OS === 'ios' ? 'IOS' : 'ANDROID',
           deviceId: Device.modelId || undefined,
         });
+        lastRegisteredToken = pushToken.data;
       } catch (error) {
         if (cancelled) return;
         if (attempt < 3) {
@@ -94,6 +100,8 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
           return;
         }
         console.warn('Push notification registration failed after retries', error);
+      } finally {
+        registrationInFlight = false;
       }
     }
 
@@ -101,9 +109,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
     const responseSubscription = Notifications.addNotificationResponseReceivedListener((response) => {
       openPushData(response.notification.request.content.data);
-    });
-    const tokenSubscription = Notifications.addPushTokenListener(() => {
-      void registerPushToken();
     });
     const appStateSubscription = AppState.addEventListener('change', (state) => {
       if (state === 'active') void registerPushToken();
@@ -116,7 +121,6 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
       responseSubscription.remove();
-      tokenSubscription.remove();
       appStateSubscription.remove();
     };
   }, [user?.id]);

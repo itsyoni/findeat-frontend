@@ -27,5 +27,20 @@
   "noComments": "No comments yet.",
   "firstComment": "Be the first to comment!",
   "you": "You",
-  "chat": "Chat"
+  "chat": "Chat",
+  "newGroup": "New group",
+  "groupDetails": "Group details",
+  "selectedMembers": "{{count}} selected",
+  "groupMembers": "{{count}} members including you",
+  "searchFriends": "Search friends",
+  "noFriendsFound": "No friends found",
+  "searchFriendsToAdd": "Search for friends you want to add to the group.",
+  "next": "Next",
+  "minimumGroupMembers": "Choose at least 2 friends",
+  "groupPhotoLater": "You can add a group photo later",
+  "groupName": "Group name",
+  "groupNamePlaceholder": "Give your group a name",
+  "participants": "Participants",
+  "createGroup": "Create group",
+  "createGroupError": "Could not create the group. Please try again."
 }

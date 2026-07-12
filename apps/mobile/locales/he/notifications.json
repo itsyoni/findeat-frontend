@@ -3,6 +3,11 @@
   "new": "התראה חדשה",
   "someone": "מישהו",
   "markAllRead": "סימון הכל כנקרא",
+  "follow": "עקוב",
+  "followBack": "עקוב בחזרה",
+  "following": "עוקב",
+  "friends": "חברים",
+  "viewPost": "צפה בפוסט",
   "emptyTitle": "אין התראות עדיין",
   "emptyBody": "לייקים, תגובות, עוקבים והודעות יופיעו כאן.",
   "types": {

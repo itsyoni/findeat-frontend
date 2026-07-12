@@ -3,6 +3,11 @@
   "new": "New notification",
   "someone": "Someone",
   "markAllRead": "Mark all read",
+  "follow": "Follow",
+  "followBack": "Follow back",
+  "following": "Following",
+  "friends": "Friends",
+  "viewPost": "View post",
   "emptyTitle": "No notifications yet",
   "emptyBody": "Likes, comments, follows and messages will appear here.",
   "types": {

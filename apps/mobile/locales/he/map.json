@@ -2,5 +2,21 @@
   "searchRestaurants": "חיפוש מסעדות",
   "noRestaurantsFound": "לא נמצאו מסעדות",
   "map": "מפה",
-  "list": "רשימה"
+  "list": "רשימה",
+  "viewRestaurant": "צפייה במסעדה",
+  "filters": "סינון מפה",
+  "show": "הצגת מקומות",
+  "distance": "מרחק",
+  "sortBy": "מיון לפי",
+  "showPlaces": "הצגת מקומות",
+  "filterALL": "הכל",
+  "filterSAVED": "שמורים",
+  "filterWANT_TO_TRY": "רוצה לנסות",
+  "filterVISITED": "ביקרתי",
+  "filterFAVORITE": "מועדפים",
+  "filterCLAIMED": "מסעדות נתבעות",
+  "sortBEST": "הטובים באזור",
+  "sortDISTANCE": "הקרובים ביותר",
+  "sortRATING": "הדירוג הגבוה ביותר",
+  "sortMOST_REVIEWED": "הכי הרבה ביקורות"
 }

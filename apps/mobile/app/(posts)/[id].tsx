@@ -5,9 +5,11 @@ import ContentFeed from "@/components/posts/content/ContentFeed";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post, PostType } from "@findeat/types/post";
-import { Stack, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, View } from "react-native";
+import { Alert, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { CaretLeftIcon } from "phosphor-react-native";
 
 export default function PostScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -73,7 +75,19 @@ export default function PostScreen() {
     );
 
     try {
-      await api.posts.toggleLike(postId, isLiked);
+      const result = await api.posts.toggleLike(postId, isLiked);
+
+      setPosts((currentPosts) =>
+        currentPosts.map((post) =>
+          post.id === postId
+            ? {
+                ...post,
+                isLiked: result.isLiked,
+                likesCount: result.likesCount,
+              }
+            : post,
+        ),
+      );
     } catch (error) {
       console.error("Failed to toggle like", error);
 
@@ -213,12 +227,31 @@ export default function PostScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ title: "" }} />
+      <Stack.Screen options={{ headerShown: false }} />
 
       <View
         className="flex-1 bg-white dark:bg-black"
         onLayout={(event) => setFeedHeight(event.nativeEvent.layout.height)}
       >
+        <SafeAreaView
+          edges={["top"]}
+          pointerEvents="box-none"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 50,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="ml-4 mt-2 h-11 w-11 items-center justify-center rounded-full bg-black/50"
+          >
+            <CaretLeftIcon size={24} color="white" weight="bold" />
+          </TouchableOpacity>
+        </SafeAreaView>
+
         {feedHeight > 0 &&
           (activeFeed === "CONTENT" ? (
             <ContentFeed

@@ -2,15 +2,32 @@ import Avatar from '@/components/common/Avatar';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import type { AppNotification } from '@findeat/types';
 import { useTranslation } from 'react-i18next';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { GestureResponderEvent, Image, Text, TouchableOpacity, View } from 'react-native';
+import { ImagesSquareIcon } from 'phosphor-react-native';
 import {
   notificationText,
   relativeNotificationTime,
 } from './notificationHelpers';
 
-type Props = { item: AppNotification; onPress: () => void };
+type Props = {
+  item: AppNotification;
+  onPress: () => void;
+  onAction?: () => void;
+  actionLabel?: string;
+  actionActive?: boolean;
+  postPreview?: AppNotification['postPreview'];
+  isPostAction?: boolean;
+};
 
-export default function NotificationRow({ item, onPress }: Props) {
+export default function NotificationRow({
+  item,
+  onPress,
+  onAction,
+  actionLabel,
+  actionActive,
+  postPreview,
+  isPostAction,
+}: Props) {
   const { t, i18n } = useTranslation('notifications');
   const { isDark } = useAppTheme();
 
@@ -35,7 +52,65 @@ export default function NotificationRow({ item, onPress }: Props) {
           {relativeNotificationTime(item.createdAt, i18n.language)}
         </Text>
       </View>
-      {!item.readAt ? <View className="ml-3 h-2.5 w-2.5 rounded-full bg-blue-500" /> : null}
+
+      {onAction && isPostAction ? (
+        <TouchableOpacity
+          onPress={(event: GestureResponderEvent) => {
+            event.stopPropagation();
+            onAction();
+          }}
+          className="ml-3 h-17 w-13 overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
+        >
+          {postPreview?.imageUrl ? (
+            <Image
+              source={{ uri: postPreview.imageUrl }}
+              className="h-full w-full"
+              resizeMode="cover"
+            />
+          ) : postPreview?.text ? (
+            <View className="h-full w-full items-center justify-center bg-gray-900 px-1.5">
+              <Text numberOfLines={3} className="text-center text-[8px] text-white">
+                {postPreview.text}
+              </Text>
+            </View>
+          ) : (
+            <View className="h-full w-full items-center justify-center">
+              <ImagesSquareIcon size={23} color="#9CA3AF" weight="fill" />
+            </View>
+          )}
+          {postPreview?.type === 'REVIEW' && postPreview.rating != null ? (
+            <View className="absolute bottom-1 right-1 rounded bg-black/70 px-1 py-0.5">
+              <Text className="text-[8px] font-bold text-white">
+                ★ {postPreview.rating.toFixed(1)}
+              </Text>
+            </View>
+          ) : null}
+        </TouchableOpacity>
+      ) : onAction && actionLabel ? (
+        <TouchableOpacity
+          onPress={(event: GestureResponderEvent) => {
+            event.stopPropagation();
+            onAction();
+          }}
+          className={`ml-3 min-w-20 items-center rounded-xl px-3 py-2 ${
+            actionActive
+              ? 'border border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900'
+              : 'bg-black dark:bg-white'
+          }`}
+        >
+          <Text
+            className={`text-xs font-bold ${
+              actionActive
+                ? 'text-black dark:text-white'
+                : 'text-white dark:text-black'
+            }`}
+          >
+            {actionLabel}
+          </Text>
+        </TouchableOpacity>
+      ) : !item.readAt ? (
+        <View className="ml-3 h-2.5 w-2.5 rounded-full bg-blue-500" />
+      ) : null}
     </TouchableOpacity>
   );
 }

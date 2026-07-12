@@ -1,11 +1,11 @@
 import Avatar from "@/components/common/Avatar";
+import CreateLauncherButton from "@/components/create/CreateLauncherButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { Tabs } from "expo-router";
 import {
   ChatCircleIcon,
   HouseIcon,
   MapPinIcon,
-  PlusCircleIcon,
 } from "phosphor-react-native";
 import React from "react";
 import { View } from "react-native";
@@ -59,13 +59,7 @@ export default function TabLayout() {
         name="create"
         options={{
           title: "Create",
-          tabBarIcon: ({ focused }) => (
-            <PlusCircleIcon
-              size={28}
-              color={iconColor}
-              weight={focused ? "fill" : "regular"}
-            />
-          ),
+          tabBarButton: () => <CreateLauncherButton />,
         }}
       />
 

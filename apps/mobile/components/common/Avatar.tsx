@@ -1,4 +1,4 @@
-import { UserIcon } from "phosphor-react-native";
+import { StorefrontIcon, UserIcon } from "phosphor-react-native";
 import { Image, StyleProp, View, ViewStyle } from "react-native";
 import { SvgUri } from "react-native-svg";
 
@@ -7,16 +7,26 @@ type Props = {
   username?: string | null;
   size?: number;
   style?: StyleProp<ViewStyle>;
+  fallbackType?: "user" | "restaurant";
 };
 
-export default function Avatar({ uri, size = 40, style }: Props) {
+export default function Avatar({
+  uri,
+  size = 40,
+  style,
+  fallbackType = "user",
+}: Props) {
   if (!uri) {
     return (
       <View
         style={{ width: size, height: size, borderRadius: size / 2 }}
         className="items-center justify-center bg-gray-200 dark:bg-gray-800"
       >
-        <UserIcon size={size * 0.55} color="#9CA3AF" weight="fill" />
+        {fallbackType === "restaurant" ? (
+          <StorefrontIcon size={size * 0.5} color="#3B82F6" weight="fill" />
+        ) : (
+          <UserIcon size={size * 0.55} color="#9CA3AF" weight="fill" />
+        )}
       </View>
     );
   }

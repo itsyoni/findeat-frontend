@@ -3,11 +3,13 @@ import Avatar from "@/components/common/Avatar";
 import { Post } from "@findeat/types/post";
 import { router } from "expo-router";
 import {
-  BookBookmarkIcon,
+  BookmarkSimpleIcon,
   ChatCircleIcon,
+  CheckCircleIcon,
   DotsThreeOutlineIcon,
   HeartIcon,
   ShareFatIcon,
+  StarIcon,
 } from "phosphor-react-native";
 import { useState } from "react";
 import {
@@ -24,6 +26,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 
 type Props = {
   post: Post;
@@ -111,6 +114,8 @@ export default function ReviewPost({
 
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
+  const isVisited = !!userRestaurant?.visited;
+  const isFavorite = !!userRestaurant?.favorite;
 
   const likeScale = useSharedValue(1);
 
@@ -131,8 +136,30 @@ export default function ReviewPost({
 
   function handleWantToTry() {
     if (!post.restaurant?.id) return;
+
+    if (isVisited) {
+      router.push({
+        pathname: "/restaurants/[id]",
+        params: { id: post.restaurant.id },
+      });
+      return;
+    }
+
     onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
   }
+
+  const PlaceStatusIcon = isFavorite
+    ? StarIcon
+    : isVisited
+      ? CheckCircleIcon
+      : BookmarkSimpleIcon;
+  const placeStatusColor = isFavorite
+    ? "#FF3040"
+    : isVisited
+      ? "#22C55E"
+      : isWantToTry
+        ? "#D6A92D"
+        : actionColor;
 
   return (
     <View className="mb-6 bg-white pb-6 dark:bg-black">
@@ -161,18 +188,24 @@ export default function ReviewPost({
             uri={displayAvatar}
             username={displayName ?? "User"}
             size={42}
+            fallbackType={isRestaurantPost ? "restaurant" : "user"}
           />
 
           <View className="flex-1">
-            <Text className="font-bold text-black dark:text-white">
-              {isRestaurantPost ? displayName : `@${displayName}`}
-            </Text>
+            <View className="flex-row items-center">
+              <Text className="font-bold text-black dark:text-white">
+                {isRestaurantPost ? displayName : `@${displayName}`}
+              </Text>
+              {isRestaurantPost ? <RestaurantBadge /> : null}
+            </View>
 
             {!!post.restaurant && (
-              <Text className="text-xs text-gray-500">
-                📍 {post.restaurant.name}
-                {post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
-              </Text>
+              <View className="flex-row items-center">
+                <Text className="text-xs text-gray-500">
+                  {post.restaurant.name}{post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
+                </Text>
+                <RestaurantBadge size={12} status={post.restaurant.status} />
+              </View>
             )}
           </View>
         </TouchableOpacity>
@@ -361,9 +394,9 @@ export default function ReviewPost({
           </View>
 
           <TouchableOpacity onPress={handleWantToTry}>
-            <BookBookmarkIcon
-              weight={isWantToTry ? "fill" : "regular"}
-              color={isWantToTry ? "#F7D786" : actionColor}
+            <PlaceStatusIcon
+              weight="fill"
+              color={placeStatusColor}
               size={28}
             />
 

@@ -1,4 +1,5 @@
 import type { UserSummary } from './user';
+import type { UserRelationship } from './profile';
 
 export type NotificationType =
   | 'POST_LIKE'
@@ -20,10 +21,18 @@ export type AppNotification = {
   recipientId: string;
   actorId?: string | null;
   actor?: UserSummary | null;
+  actorIsFollowing?: boolean;
+  actorRelationship?: UserRelationship;
   type: NotificationType;
   title?: string | null;
   body?: string | null;
   postId?: string | null;
+  postPreview?: {
+    imageUrl?: string | null;
+    text?: string | null;
+    type?: 'CONTENT' | 'REVIEW';
+    rating?: number | null;
+  } | null;
   commentId?: string | null;
   conversationId?: string | null;
   restaurantId?: string | null;

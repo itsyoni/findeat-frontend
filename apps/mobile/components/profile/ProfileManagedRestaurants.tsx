@@ -3,6 +3,7 @@ import Avatar from "@/components/common/Avatar";
 import { Profile } from "@findeat/types/profile";
 import { router } from "expo-router";
 import { TouchableOpacity, View } from "react-native";
+import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 
 type Props = {
   memberships?: Profile["restaurantMemberships"];
@@ -28,6 +29,7 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
             uri={membership.restaurant.logoUrl}
             username={membership.restaurant.name}
             size={24}
+            fallbackType="restaurant"
           />
 
           <View className="ml-2 flex-row items-center">
@@ -38,6 +40,7 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
             <Text className="ml-2 text-sm font-semibold text-black">
               {membership.restaurant.name}
             </Text>
+            <RestaurantBadge size={14} status={membership.restaurant.status} />
           </View>
         </TouchableOpacity>
       ))}

@@ -5,7 +5,6 @@ import { Image, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 import { useTranslation } from "react-i18next";
-import { useAppTheme } from "@/contexts/ThemeContext";
 import { GearSixIcon } from "phosphor-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,18 +14,17 @@ type Props = {
 
 export default function PersonalProfileHeader({ profile }: Props) {
   const { t } = useTranslation(["common", "profile"]);
-  const { isDark } = useAppTheme();
   return (
     <View className="bg-white pb-5 dark:bg-black">
       <View className="items-center">
         {profile.coverUrl ? (
           <Image
             source={{ uri: profile.coverUrl }}
-            className="h-70 w-full rounded-b-4xl bg-gray-200"
+            className="h-52 w-full bg-gray-200"
             resizeMode="cover"
           />
         ) : (
-          <View className="h-70 w-full rounded-b-4xl bg-gray-200 dark:bg-gray-800" />
+          <View className="h-52 w-full bg-gray-200 dark:bg-gray-800" />
         )}
         <SafeAreaView
           edges={["top"]}
@@ -42,17 +40,8 @@ export default function PersonalProfileHeader({ profile }: Props) {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
-        <View className="-mt-15 px-5">
-          <Avatar
-            uri={profile.avatarUrl}
-            username={profile.username}
-            size={100}
-            style={{
-              outlineStyle: "solid",
-              outlineWidth: 7,
-              outlineColor: isDark ? "#000" : "#FFF",
-            }}
-          />
+        <View className="-mt-12 rounded-full bg-white p-1.5 dark:bg-black">
+          <Avatar uri={profile.avatarUrl} username={profile.username} size={100} />
         </View>
 
         <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
