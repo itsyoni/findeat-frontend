@@ -28,6 +28,10 @@
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "ascAppId": "ה678850083"
+      }
+    }
   }
 }
