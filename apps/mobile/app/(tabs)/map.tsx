@@ -7,6 +7,11 @@ import Tabs from "@/components/common/Tabs";
 import SearchResultsView from "@/components/search/SearchResultsView";
 import { api } from "@/lib/api";
 import {
+  DEFAULT_MAP_PREFERENCES,
+  getMapPreferences,
+  saveMapPreferences,
+} from "@/lib/mapPreferences";
+import {
   Restaurant,
   RestaurantMapFilter,
   RestaurantMapSort,
@@ -14,7 +19,7 @@ import {
 import { MapType } from "@findeat/types/map";
 import * as Location from "expo-location";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FlatList, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
@@ -25,6 +30,7 @@ import { CheckIcon, CrosshairIcon, FunnelIcon, XIcon } from "phosphor-react-nati
 import { useAppTheme } from "@/contexts/ThemeContext";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import RestaurantStats from "@/components/restaurants/RestaurantStats";
+import { useAuth } from "@/contexts/AuthContext";
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "");
 
@@ -32,14 +38,22 @@ export default function MapScreen() {
   const { restaurantId } = useLocalSearchParams<{ restaurantId?: string }>();
   const { t } = useTranslation(["common", "map", "restaurants"]);
   const { isDark } = useAppTheme();
+  const { user } = useAuth();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<MapType>("MAP");
   const [isSearching, setIsSearching] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const [mapFilter, setMapFilter] = useState<RestaurantMapFilter>("ALL");
-  const [mapSort, setMapSort] = useState<RestaurantMapSort>("BEST");
-  const [radiusKm, setRadiusKm] = useState<number | null>(50);
+  const [mapFilter, setMapFilter] = useState<RestaurantMapFilter>(
+    DEFAULT_MAP_PREFERENCES.filter,
+  );
+  const [mapSort, setMapSort] = useState<RestaurantMapSort>(
+    DEFAULT_MAP_PREFERENCES.sort,
+  );
+  const [radiusKm, setRadiusKm] = useState<number | null>(
+    DEFAULT_MAP_PREFERENCES.radiusKm,
+  );
+  const [filtersHydrated, setFiltersHydrated] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const temporaryRestaurantIdRef = useRef<string | null>(null);
   const handledRestaurantIdRef = useRef<string | null>(null);
@@ -50,6 +64,38 @@ export default function MapScreen() {
 
   const [userLocation, setUserLocation] =
     useState<Location.LocationObject | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    if (!user?.id) {
+      return () => {
+        active = false;
+      };
+    }
+
+    void getMapPreferences(user.id).then((preferences) => {
+      if (!active) return;
+      setMapFilter(preferences.filter);
+      setMapSort(preferences.sort);
+      setRadiusKm(preferences.radiusKm);
+      setFiltersHydrated(true);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!filtersHydrated || !user?.id) return;
+
+    void saveMapPreferences(user.id, {
+      filter: mapFilter,
+      sort: mapSort,
+      radiusKm,
+    }).catch((error) => console.error("Could not save map filters:", error));
+  }, [filtersHydrated, mapFilter, mapSort, radiusKm, user?.id]);
 
   const mapRestaurants = restaurants;
 
@@ -215,12 +261,14 @@ export default function MapScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      if (!filtersHydrated) return undefined;
+
       if (!userLocation) {
         void loadUserLocation();
       }
       void loadRestaurants();
       return dismissRestaurantPreview;
-    }, [dismissRestaurantPreview, loadRestaurants, loadUserLocation, userLocation]),
+    }, [dismissRestaurantPreview, filtersHydrated, loadRestaurants, loadUserLocation, userLocation]),
   );
 
   function selectRestaurant(restaurant: Restaurant) {

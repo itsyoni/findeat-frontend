@@ -14,9 +14,11 @@ import * as ImagePicker from "expo-image-picker";
 import { router, Stack } from "expo-router";
 import {
   ArrowCounterClockwiseIcon,
+  CameraIcon,
   CaretLeftIcon,
   CaretRightIcon,
   ImagesSquareIcon,
+  LockIcon,
   StorefrontIcon,
   XIcon,
 } from "phosphor-react-native";
@@ -27,6 +29,7 @@ import {
   Alert,
   Image,
   KeyboardAvoidingView,
+  Linking,
   Platform,
   ScrollView,
   TouchableOpacity,
@@ -149,6 +152,7 @@ export default function CreateContentScreen() {
 
   if (step === "CAMERA") {
     const permissionGranted = permission?.granted;
+    const canAskForCamera = permission?.canAskAgain !== false;
 
     return (
       <View className="flex-1 bg-black">
@@ -195,31 +199,81 @@ export default function CreateContentScreen() {
               </View>
             </SafeAreaView>
           </View>
+        ) : permission === null ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator color="white" size="large" />
+          </View>
         ) : (
-          <SafeAreaView className="flex-1 items-center justify-center px-8">
-            <ImagesSquareIcon size={58} color="#9CA3AF" />
-            <Text className="mt-5 text-center text-xl font-bold text-white">
-              {t("cameraPermissionTitle")}
-            </Text>
-            <Text className="mt-2 text-center text-gray-400">
-              {t("cameraPermissionBody")}
-            </Text>
+          <SafeAreaView className="flex-1 px-5 pb-4">
             <TouchableOpacity
-              onPress={() => void requestPermission()}
-              className="mt-6 w-full rounded-2xl bg-white py-4"
+              accessibilityRole="button"
+              accessibilityLabel={t("cancel")}
+              onPress={() => router.back()}
+              className="h-11 w-11 items-center justify-center rounded-full bg-white/10"
             >
-              <Text className="text-center font-bold text-black">
-                {t("allowCamera")}
+              <XIcon size={23} color="white" weight="bold" />
+            </TouchableOpacity>
+
+            <View className="flex-1 items-center justify-center px-3">
+              <View className="h-40 w-52 items-center justify-center overflow-hidden rounded-[36px] border border-white/10 bg-[#171717]">
+                <View
+                  className="absolute -left-6 -top-8 h-24 w-24 rounded-full"
+                  style={{ backgroundColor: "rgba(247, 215, 134, 0.15)" }}
+                />
+                <View
+                  className="absolute -bottom-10 -right-5 h-28 w-28 rounded-full"
+                  style={{ backgroundColor: "rgba(255, 107, 69, 0.15)" }}
+                />
+                <View className="h-20 w-20 items-center justify-center rounded-[26px] bg-[#F7D786] shadow-lg">
+                  <CameraIcon size={39} color="#171717" weight="fill" />
+                </View>
+              </View>
+
+              <View className="mt-6 rounded-full bg-white/10 px-3 py-1.5">
+                <Text className="text-xs font-bold text-[#F7D786]">
+                  {t("quickPost")}
+                </Text>
+              </View>
+              <Text className="mt-4 text-center text-[28px] font-bold leading-8 text-white">
+                {t(canAskForCamera ? "cameraPermissionTitle" : "cameraPermissionDeniedTitle")}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => void openGallery()} className="mt-5">
-              <Text className="font-bold text-[#F7D786]">
-                {t("chooseFromGallery")}
+              <Text className="mt-3 max-w-[330px] text-center text-[15px] leading-6 text-gray-400">
+                {t(canAskForCamera ? "cameraPermissionBody" : "cameraPermissionDeniedBody")}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.back()} className="mt-7">
-              <Text className="text-gray-400">{t("cancel")}</Text>
-            </TouchableOpacity>
+
+              <View className="mt-5 flex-row items-center rounded-2xl bg-white/5 px-4 py-3">
+                <LockIcon size={17} color="#A3A3A3" weight="fill" />
+                <Text className="ml-2 shrink text-xs leading-4 text-gray-400">
+                  {t("cameraPrivacy")}
+                </Text>
+              </View>
+            </View>
+
+            <View className="gap-3">
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={() =>
+                  void (canAskForCamera
+                    ? requestPermission()
+                    : Linking.openSettings())
+                }
+                className="w-full rounded-2xl bg-white py-4"
+              >
+                <Text className="text-center text-base font-bold text-black">
+                  {t(canAskForCamera ? "allowCamera" : "openSettings")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                accessibilityRole="button"
+                onPress={() => void openGallery()}
+                className="w-full flex-row items-center justify-center rounded-2xl border border-white/10 bg-white/5 py-4"
+              >
+                <ImagesSquareIcon size={21} color="#F7D786" weight="fill" />
+                <Text className="ml-2 text-center text-base font-bold text-white">
+                  {t("chooseFromGallery")}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </SafeAreaView>
         )}
         {capturing && (
