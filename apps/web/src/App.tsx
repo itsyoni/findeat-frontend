@@ -585,7 +585,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   const load = useCallback(async () => {
     try {
-      const me = await request<{ email: string; isAdmin?: boolean }>('/auth/me')
+      const me = await request<{ email: string; isAdmin?: boolean } | null>('/auth/me')
+      if (!me?.email) {
+        onLogout()
+        return
+      }
       const isAdminAccount = me.isAdmin === true || me.email.trim().toLowerCase() === 'yonagona@gmail.com'
       if (isAdminAccount) {
         setIsAdmin(true)
