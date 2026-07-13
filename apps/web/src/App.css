@@ -118,6 +118,14 @@ header>div { display:flex; align-items:center; gap:10px; }
 .admin-layout { min-height:100vh; background:#fbfaf8; }
 .admin-layout header .brand { padding:0; }
 .admin-content { width:min(1120px,100%); margin:auto; padding:48px 42px 75px; }
+.admin-chip { display:flex; align-items:center; gap:11px; padding:12px; border:1px solid #eadfd7; border-radius:14px; background:#fff8f4; }
+.admin-chip>span { display:grid; place-items:center; width:38px; height:38px; flex:0 0 auto; border-radius:12px; background:var(--ink); color:#fff; }
+.admin-chip strong,.admin-chip small { display:block; }
+.admin-chip strong { font-size:13px; }
+.admin-chip small { margin-top:3px; color:var(--muted); font-size:11px; }
+.nav-count { margin-left:auto; min-width:22px; padding:3px 6px; border-radius:20px; background:#ffe4da; color:#a6382a; text-align:center; font-size:10px; font-weight:900; }
+.nav-count.neutral { background:#ebe9e5; color:#555; }
+.admin-badge { padding:4px 9px; border-radius:20px; background:#f2e8ff; color:#7040a0; font-size:11px; font-weight:800; }
 .claim-count { padding:8px 12px; border-radius:20px; background:#fff0ea; color:#bf4629; font-size:13px; font-weight:800; }
 .claims-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
 .claim-card { padding:24px; border:1px solid var(--line); border-radius:20px; background:#fff; }
@@ -132,6 +140,31 @@ header>div { display:flex; align-items:center; gap:10px; }
 .claim-actions { display:grid; grid-template-columns:1fr 1.5fr; gap:9px; margin-top:22px; }
 .claim-actions .reject { color:#a6382a; }
 .claim-actions .approve { background:var(--green); }
+.admin-total { padding:8px 12px; border-radius:20px; background:#f0e9f8; color:#68418b; font-size:13px; font-weight:800; }
+.admin-search-card { padding:24px; }
+.admin-search-card>div:first-child h3,.admin-search-card>div:first-child p { margin:0; }
+.admin-search-card>div:first-child p { margin-top:5px; color:var(--muted); font-size:13px; }
+.admin-search-card form { display:grid; grid-template-columns:1fr auto; gap:10px; margin-top:20px; }
+.admin-search-results { margin-top:18px; border-top:1px solid var(--line); }
+.admin-user-row { display:flex; align-items:center; justify-content:space-between; gap:20px; min-height:76px; padding:13px 4px; border-bottom:1px solid var(--line); }
+.admin-user-row:last-child { border-bottom:0; }
+.admin-user-identity { display:flex; align-items:center; gap:12px; min-width:0; }
+.admin-user-identity>img,.admin-user-identity>span { display:grid; place-items:center; width:42px; height:42px; flex:0 0 auto; border-radius:50%; object-fit:cover; background:#eee7df; font-weight:900; }
+.admin-user-identity strong,.admin-user-identity small { display:block; }
+.admin-user-identity small { max-width:520px; margin-top:3px; overflow:hidden; color:var(--muted); font-size:12px; text-overflow:ellipsis; white-space:nowrap; }
+.primary.compact { padding:9px 13px; font-size:12px; white-space:nowrap; }
+.access-status,.primary-admin-label { padding:6px 9px; border-radius:9px; background:var(--soft); color:var(--muted); font-size:11px; font-weight:800; white-space:nowrap; }
+.primary-admin-label { background:#f0e9f8; color:#68418b; }
+.inline-empty { padding:24px 5px 6px; color:var(--muted); font-size:13px; text-align:center; }
+.admin-list-section { margin-top:28px; }
+.section-title h3,.section-title p { margin:0; }
+.section-title p { margin-top:5px; color:var(--muted); font-size:13px; }
+.admin-list { margin-top:15px; padding:0 20px; border:1px solid var(--line); border-radius:18px; background:#fff; }
+.admin-row-actions { display:flex; align-items:center; justify-content:flex-end; gap:7px; }
+.remove-admin,.confirm-remove,.cancel-remove { border:0; border-radius:9px; padding:8px 10px; background:transparent; color:#a6382a; font-size:11px; font-weight:800; white-space:nowrap; }
+.remove-admin:hover { background:#fff0ed; }
+.confirm-remove { background:#b33b2c; color:#fff; }
+.cancel-remove { color:var(--muted); }
 .review-summary { display:flex; flex-direction:column; align-items:flex-end; }
 .review-summary strong { font-size:30px; }
 .review-summary span { color:var(--muted); font-size:12px; }
@@ -181,4 +214,4 @@ header>div { display:flex; align-items:center; gap:10px; }
 .locked-metrics article { padding:15px; border:1px solid #eee4d1; border-radius:14px; background:#ffffffb8; }
 .locked-metrics span,.locked-metrics small { display:block; color:var(--muted); font-size:11px; }
 .locked-metrics strong { display:block; margin:8px 0; font-size:23px; }
-@media(max-width:800px){.dashboard{grid-template-columns:1fr} aside{position:static;height:auto;padding:14px}aside .brand,.aside-footer{display:none}.restaurant-chip{margin-bottom:10px}nav{grid-template-columns:repeat(3,1fr);margin:0}nav button{justify-content:center;font-size:12px}.nav-premium{display:none}header{padding:0 20px}.page-stack,.admin-content{padding:30px 18px}.stats,.claims-grid,.performance-stats,.performance-grid,.premium-insights{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-direction:column}.official-card{min-height:0}.phone-art{display:none}.dish-row{grid-template-columns:48px 1fr 50px 30px 35px 28px 28px}.dish-form,.profile-form{grid-template-columns:1fr}.image-picker,.profile-form .full,.profile-form .form-footer{grid-column:auto}.login-card{padding:28px}.login-card h1{font-size:35px}}
+@media(max-width:800px){.dashboard{grid-template-columns:1fr} aside{position:static;height:auto;padding:14px}aside .brand,.aside-footer,.admin-chip{display:none}.restaurant-chip{margin-bottom:10px}nav{grid-template-columns:repeat(3,1fr);margin:0}.admin-dashboard nav{grid-template-columns:repeat(2,1fr)}nav button{justify-content:center;font-size:12px}.nav-premium{display:none}header{padding:0 20px}.page-stack,.admin-content{padding:30px 18px}.stats,.claims-grid,.performance-stats,.performance-grid,.premium-insights{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-direction:column}.official-card{min-height:0}.phone-art{display:none}.dish-row{grid-template-columns:48px 1fr 50px 30px 35px 28px 28px}.dish-form,.profile-form{grid-template-columns:1fr}.image-picker,.profile-form .full,.profile-form .form-footer{grid-column:auto}.admin-user-row{align-items:flex-start;flex-direction:column}.admin-row-actions{width:100%;justify-content:flex-start}.admin-search-card form{grid-template-columns:1fr}.login-card{padding:28px}.login-card h1{font-size:35px}}

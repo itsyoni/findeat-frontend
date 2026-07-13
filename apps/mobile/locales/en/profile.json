@@ -34,6 +34,8 @@
   "ownerOfRestaurants_other": "Owner of {{count}} restaurants",
   "restaurantRoles_one": "1 restaurant role",
   "restaurantRoles_other": "{{count}} restaurant roles",
+  "managedRestaurantsTitle": "Restaurants",
+  "viewRestaurants": "View restaurants",
   "posts": "Posts",
   "followers": "Followers",
   "following": "Following",
