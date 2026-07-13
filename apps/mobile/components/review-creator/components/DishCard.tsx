@@ -1,12 +1,14 @@
 import Text from "@/components/common/AppText";
 import { ReviewDishDraft } from "@findeat/types/review";
-import { Image, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
+import { XIcon } from "phosphor-react-native";
 
 type Props = {
   item: ReviewDishDraft;
+  onRemove?: () => void;
 };
 
-export default function DishCard({ item }: Props) {
+export default function DishCard({ item, onRemove }: Props) {
   const name = item.menuItemName ?? item.customDishName ?? "Dish";
   const price = item.customPrice;
 
@@ -37,6 +39,16 @@ export default function DishCard({ item }: Props) {
 
         {price != null && (
           <Text className="font-bold text-black dark:text-white">₪{price}</Text>
+        )}
+
+        {onRemove && (
+          <TouchableOpacity
+            accessibilityLabel="Remove dish"
+            onPress={onRemove}
+            className="h-8 w-8 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800"
+          >
+            <XIcon size={14} color="#9CA3AF" weight="bold" />
+          </TouchableOpacity>
         )}
       </View>
     </View>

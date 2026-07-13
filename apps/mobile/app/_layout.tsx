@@ -91,10 +91,12 @@ function RootNavigator() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(users)" options={{ headerShown: false }} />
         <Stack.Screen name="(profile)" options={{ headerShown: false }} />
+        <Stack.Screen name="(posts)/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="business/index" />
         <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />
         <Stack.Screen name="restaurants/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="menu-items/[id]" options={{ headerShown: false }} />
       </Stack>
 
       <StatusBar style={isDark ? "light" : "dark"} />

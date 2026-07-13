@@ -82,10 +82,6 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           leftIcon={<EnvelopeSimpleIcon size={20} color={iconColor} />}
         />
 
-        <TouchableOpacity onPress={onForgotPassword} className="-mt-1 self-end">
-          <Text weight="bold" className="text-[#212121] dark:text-white">{t('forgotPassword')}</Text>
-        </TouchableOpacity>
-
         <TextInput
           useBottomSheetInput
           placeholder={t("password")}
@@ -99,6 +95,20 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           leftIcon={<LockIcon size={20} color={iconColor} />}
         />
 
+        <View className="-mt-1 flex-row items-center justify-between px-1">
+          <TouchableOpacity onPress={onForgotPassword}>
+            <Text weight="bold" className="text-[#212121] dark:text-white">
+              {t("forgotPassword")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onSignup}>
+            <Text weight="bold" className="text-[#212121] dark:text-white">
+              {t("signUp")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <TouchableOpacity
           className="rounded-2xl bg-[#212121] py-4 dark:bg-white"
           onPress={handleLogin}
@@ -109,14 +119,6 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onSignup}>
-          <Text className="text-center text-gray-500">
-            {t("dontHaveAccount")}
-            <Text weight="bold" className="text-[#212121] dark:text-white">
-              {t("signUp")}
-            </Text>
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

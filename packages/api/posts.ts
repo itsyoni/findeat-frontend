@@ -1,4 +1,4 @@
-import type { Comment, FeedPage, Post, PostType } from "@findeat/types";
+import type { Comment, FeedPage, Post, PostType, PostVisibility } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
 export function createPostsApi(api: AxiosInstance) {
@@ -13,6 +13,7 @@ export function createPostsApi(api: AxiosInstance) {
       description: string;
       imageUrl?: string;
       restaurantId?: string;
+      visibility?: PostVisibility;
     }) {
       const { data } = await api.post<Post>("/posts/content", payload);
 
@@ -21,6 +22,7 @@ export function createPostsApi(api: AxiosInstance) {
 
     async createReview(payload: {
       restaurantId: string;
+      visibility?: PostVisibility;
       coverImageUrl?: string;
       summary: string;
       overallRating?: number;

@@ -4,7 +4,11 @@ import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet"
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";
-import { router, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Dimensions, TouchableOpacity, View } from "react-native";
@@ -48,6 +52,12 @@ export default function UserContentFeedScreen() {
     setPosts(nextPosts);
     setLoadedUserId(userId);
   }, [fetchPosts, userId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadPosts();
+    }, [loadPosts]),
+  );
 
   async function onRefresh() {
     try {

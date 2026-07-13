@@ -6,6 +6,7 @@ import type {
   RestaurantPostsPage,
   RestaurantMapFilter,
   RestaurantMapSort,
+  GoogleRestaurantSuggestion,
   UserRestaurant,
 } from "@findeat/types";
 import type { AxiosInstance } from "axios";
@@ -83,6 +84,18 @@ export function createRestaurantsApi(api: AxiosInstance) {
       const { data } = await api.get<Restaurant[]>("/restaurants/map/discover", {
         params: options,
       });
+      return data;
+    },
+
+    async nearbyGoogle(options: {
+      latitude: number;
+      longitude: number;
+      limit?: number;
+    }) {
+      const { data } = await api.get<GoogleRestaurantSuggestion[]>(
+        "/restaurants/nearby/google",
+        { params: options },
+      );
       return data;
     },
 

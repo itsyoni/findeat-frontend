@@ -7,9 +7,14 @@ type Dish = {
   name: string
   description?: string | null
   price?: number | null
+  imageUrl?: string | null
   category?: string | null
   isAvailable: boolean
   isFeatured: boolean
+  createdAt?: string
+  reviewsCount?: number
+  averageRating?: number | null
+  isNew?: boolean
 }
 
 type Menu = {
@@ -34,7 +39,27 @@ type Restaurant = {
   reviewsCount?: number
 }
 
-type Section = 'overview' | 'menu' | 'profile'
+type Claim = {
+  id: string
+  evidenceText?: string | null
+  evidenceUrl?: string | null
+  createdAt: string
+  restaurant: { id: string; name: string; address?: string | null; city?: string | null }
+  user: { id: string; email: string; username: string; displayName: string }
+}
+
+type Review = {
+  id: string
+  imageUrl?: string | null
+  description?: string | null
+  rating?: number | null
+  createdAt: string
+  author: { id: string; username: string; displayName?: string | null; avatarUrl?: string | null }
+  items: { id: string; name: string; rating?: number | null; text?: string | null }[]
+  _count: { likes: number; comments: number }
+}
+
+type Section = 'overview' | 'dashboard' | 'menu' | 'reviews' | 'profile'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '')
 
@@ -53,6 +78,42 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error(body?.message || 'Something went wrong')
   }
   return body as T
+}
+
+async function uploadImage(file: File): Promise<string> {
+  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
+  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
+  if (!cloudName || !uploadPreset) throw new Error('Cloudinary is not configured for the web dashboard')
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', uploadPreset)
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+    method: 'POST',
+    body: formData,
+  })
+  const body = await response.json()
+  if (!response.ok || !body.secure_url) throw new Error(body.error?.message || 'Could not upload image')
+  return body.secure_url as string
+}
+
+async function loadRestaurantReviews(restaurantId: string): Promise<Review[]> {
+  try {
+    const reviews = await request<Review[]>(`/restaurants/${restaurantId}/business/reviews`)
+    return reviews.map((review) => ({ ...review, items: review.items ?? [] }))
+  } catch (error) {
+    const message = error instanceof Error ? error.message.toLowerCase() : ''
+    if (!message.includes('cannot get') && !message.includes('not found')) throw error
+
+    const fallback = await request<{ items: Review[] }>(
+      `/restaurants/${restaurantId}/posts?section=REVIEWS&limit=30`,
+    )
+    return fallback.items.map((review) => ({
+      ...review,
+      items: review.items ?? [],
+      createdAt: review.createdAt ?? '',
+    }))
+  }
 }
 
 function Login({ onLogin }: { onLogin: () => void }) {
@@ -102,9 +163,20 @@ function MenuManager({ menus, reload }: { menus: Menu[]; reload: () => Promise<v
   const [openMenu, setOpenMenu] = useState<string | null>(menus[0]?.id ?? null)
   const [dishMenu, setDishMenu] = useState<string | null>(null)
   const [dishName, setDishName] = useState('')
+  const [dishDescription, setDishDescription] = useState('')
   const [dishPrice, setDishPrice] = useState('')
   const [dishCategory, setDishCategory] = useState('')
+  const [dishImage, setDishImage] = useState<File | null>(null)
+  const [uploadingId, setUploadingId] = useState<string | null>(null)
   const [error, setError] = useState('')
+  const popularDishIds = useMemo(() => new Set(
+    menus
+      .flatMap((menu) => menu.items)
+      .filter((dish) => (dish.reviewsCount ?? 0) > 0)
+      .sort((a, b) => (b.reviewsCount ?? 0) - (a.reviewsCount ?? 0) || (b.averageRating ?? 0) - (a.averageRating ?? 0))
+      .slice(0, 3)
+      .map((dish) => dish.id),
+  ), [menus])
 
   async function createMenu(event: FormEvent) {
     event.preventDefault()
@@ -122,17 +194,22 @@ function MenuManager({ menus, reload }: { menus: Menu[]; reload: () => Promise<v
     event.preventDefault()
     if (!dishMenu || !dishName.trim()) return
     try {
+      const imageUrl = dishImage ? await uploadImage(dishImage) : undefined
       await request(`/business/menus/${dishMenu}/dishes`, {
         method: 'POST',
         body: JSON.stringify({
           name: dishName,
+          description: dishDescription || undefined,
           price: dishPrice ? Number(dishPrice) : undefined,
           category: dishCategory || undefined,
+          imageUrl,
         }),
       })
       setDishName('')
+      setDishDescription('')
       setDishPrice('')
       setDishCategory('')
+      setDishImage(null)
       setDishMenu(null)
       await reload()
     } catch (nextError) {
@@ -161,11 +238,27 @@ function MenuManager({ menus, reload }: { menus: Menu[]; reload: () => Promise<v
     if (category === null) return
     const price = window.prompt('Price', dish.price?.toString() || '')
     if (price === null) return
+    const description = window.prompt('Description', dish.description || '')
+    if (description === null) return
     await updateDish(dish, {
       name: name.trim(),
       category: category.trim() || null,
       price: price.trim() ? Number(price) : null,
+      description: description.trim() || null,
     })
+  }
+
+  async function replaceDishImage(dish: Dish, file?: File) {
+    if (!file) return
+    setUploadingId(dish.id)
+    setError('')
+    try {
+      await updateDish(dish, { imageUrl: await uploadImage(file) })
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : 'Could not upload dish image')
+    } finally {
+      setUploadingId(null)
+    }
   }
 
   async function editMenu(menu: Menu) {
@@ -203,8 +296,14 @@ function MenuManager({ menus, reload }: { menus: Menu[]; reload: () => Promise<v
           </button>
           {openMenu === menu.id && <div className="section-body">
             {menu.items.map((dish) => <article className="dish-row" key={dish.id}>
-              <div className="dish-copy"><div className="dish-title"><h4>{dish.name}</h4>{dish.category && <span>{dish.category}</span>}</div><p>{dish.description || 'No description'}</p></div>
+              <label className="dish-image" title="Replace dish image">
+                {dish.imageUrl ? <img src={dish.imageUrl} alt="" /> : <span>＋</span>}
+                <input type="file" accept="image/*" onChange={(event) => void replaceDishImage(dish, event.target.files?.[0])} />
+                {uploadingId === dish.id && <em>…</em>}
+              </label>
+              <div className="dish-copy"><div className="dish-title"><h4>{dish.name}</h4>{dish.category && <span>{dish.category}</span>}{dish.isFeatured && <span className="featured-tag">Restaurant pick</span>}{popularDishIds.has(dish.id) && <span className="popular-tag">Popular</span>}{dish.isNew && <span className="new-tag">New</span>}</div><p>{dish.description || 'No description'}</p>{(dish.reviewsCount ?? 0) > 0 && <small className="dish-rating">★ {dish.averageRating?.toFixed(1) || '—'} · {dish.reviewsCount} {dish.reviewsCount === 1 ? 'review' : 'reviews'}</small>}</div>
               <strong>{dish.price == null ? '—' : `₪${dish.price.toFixed(2)}`}</strong>
+              <button className={`feature-button ${dish.isFeatured ? 'selected' : ''}`} title={dish.isFeatured ? 'Remove from restaurant picks' : 'Feature as a restaurant pick'} onClick={() => void updateDish(dish, { isFeatured: !dish.isFeatured })}>★</button>
               <label className="switch"><input type="checkbox" checked={dish.isAvailable} onChange={(event) => void updateDish(dish, { isAvailable: event.target.checked })} /><span /></label>
               <button className="icon-button edit" onClick={() => void editDish(dish)} aria-label="Edit dish">✎</button>
               <button className="icon-button danger" onClick={() => void deleteDish(dish.id)} aria-label="Delete dish">×</button>
@@ -213,6 +312,8 @@ function MenuManager({ menus, reload }: { menus: Menu[]; reload: () => Promise<v
               <input placeholder="Dish name" value={dishName} onChange={(event) => setDishName(event.target.value)} required />
               <input placeholder="Category" value={dishCategory} onChange={(event) => setDishCategory(event.target.value)} />
               <input placeholder="Price" type="number" min="0" step="0.01" value={dishPrice} onChange={(event) => setDishPrice(event.target.value)} />
+              <textarea placeholder="Description (optional)" value={dishDescription} onChange={(event) => setDishDescription(event.target.value)} rows={3} />
+              <label className="image-picker"><input type="file" accept="image/*" onChange={(event) => setDishImage(event.target.files?.[0] || null)} /><span>{dishImage ? `✓ ${dishImage.name}` : '＋ Add dish photo'}</span></label>
               <div className="form-actions"><button type="button" className="secondary" onClick={() => setDishMenu(null)}>Cancel</button><button className="primary">Save dish</button></div>
             </form> : <div className="section-actions"><div><button className="secondary" onClick={() => setDishMenu(menu.id)}>+ Add dish</button><button className="text-button" onClick={() => void editMenu(menu)}>Rename section</button></div><button className="text-danger" onClick={() => void deleteMenu(menu)}>Delete section</button></div>}
           </div>}
@@ -252,9 +353,117 @@ function ProfileEditor({ restaurant, onSaved }: { restaurant: Restaurant; onSave
   </div>
 }
 
+function PerformanceDashboard({ menus, reviews }: { menus: Menu[]; reviews: Review[] }) {
+  const ratedReviews = reviews.filter((review) => review.rating != null)
+  const averageRating = ratedReviews.length
+    ? ratedReviews.reduce((total, review) => total + (review.rating || 0), 0) / ratedReviews.length
+    : null
+  const menuItems = menus.flatMap((menu) => menu.items)
+  const availableItems = menuItems.filter((item) => item.isAvailable).length
+  const featuredItems = menuItems.filter((item) => item.isFeatured).length
+  const ratingBands = [
+    { label: '9–10', count: ratedReviews.filter((review) => (review.rating || 0) >= 9).length },
+    { label: '7–8', count: ratedReviews.filter((review) => (review.rating || 0) >= 7 && (review.rating || 0) < 9).length },
+    { label: '5–6', count: ratedReviews.filter((review) => (review.rating || 0) >= 5 && (review.rating || 0) < 7).length },
+    { label: 'Below 5', count: ratedReviews.filter((review) => (review.rating || 0) < 5).length },
+  ]
+  const largestBand = Math.max(...ratingBands.map((band) => band.count), 1)
+
+  return <div className="page-stack performance-page">
+    <div className="page-heading"><div><div className="premium-title"><p className="eyebrow">PERFORMANCE DASHBOARD</p><span>Future premium</span></div><h2>Understand your restaurant</h2><p className="muted">Track customer sentiment and menu health now. Deeper business insights can be added here later.</p></div><select aria-label="Date range" defaultValue="all"><option value="all">All time</option><option value="30" disabled>Last 30 days · coming soon</option></select></div>
+
+    <div className="performance-stats">
+      <article><span>Average rating</span><strong>{averageRating?.toFixed(1) || '—'}</strong><small>From {ratedReviews.length} rated reviews</small></article>
+      <article><span>Total reviews</span><strong>{reviews.length}</strong><small>Customer reviews received</small></article>
+      <article><span>Menu availability</span><strong>{menuItems.length ? `${Math.round((availableItems / menuItems.length) * 100)}%` : '—'}</strong><small>{availableItems} of {menuItems.length} dishes available</small></article>
+      <article><span>Featured dishes</span><strong>{featuredItems}</strong><small>Highlighted on your menu</small></article>
+    </div>
+
+    <div className="performance-grid">
+      <section className="card rating-chart"><div className="panel-heading"><div><h3>Rating distribution</h3><p>How customers score their experience</p></div><span>★ {averageRating?.toFixed(1) || '—'}</span></div><div className="rating-bars">{ratingBands.map((band) => <div key={band.label}><label>{band.label}</label><div><i style={{ width: `${(band.count / largestBand) * 100}%` }} /></div><strong>{band.count}</strong></div>)}</div></section>
+      <section className="card menu-health"><div className="panel-heading"><div><h3>Menu health</h3><p>Current menu setup</p></div></div><div className="health-row"><span>Menu sections</span><strong>{menus.length}</strong></div><div className="health-row"><span>Total dishes</span><strong>{menuItems.length}</strong></div><div className="health-row"><span>Available dishes</span><strong>{availableItems}</strong></div><div className="health-row"><span>Unavailable dishes</span><strong>{menuItems.length - availableItems}</strong></div></section>
+    </div>
+
+    <section className="premium-insights"><div><p className="eyebrow">COMING LATER</p><h3>Premium business insights</h3><p>These metrics require event tracking that isn’t collected yet. This area is ready for a future paid plan.</p></div><div className="locked-metrics"><article><span>Profile views</span><strong>—</strong><small>Trend and discovery sources</small></article><article><span>Map opens</span><strong>—</strong><small>Local discovery performance</small></article><article><span>Saves</span><strong>—</strong><small>Want-to-try and favorites</small></article><article><span>Post reach</span><strong>—</strong><small>Views and engagement</small></article></div></section>
+  </div>
+}
+
+function ReviewsTable({ reviews }: { reviews: Review[] }) {
+  const [query, setQuery] = useState('')
+  const filteredReviews = useMemo(() => {
+    const clean = query.trim().toLowerCase()
+    if (!clean) return reviews
+    return reviews.filter((review) =>
+      [review.author.displayName, review.author.username, review.description, ...review.items.map((item) => item.name)]
+        .filter(Boolean)
+        .some((value) => value!.toLowerCase().includes(clean)),
+    )
+  }, [query, reviews])
+
+  const average = reviews.length
+    ? reviews.reduce((total, review) => total + (review.rating || 0), 0) / reviews.filter((review) => review.rating != null).length
+    : 0
+
+  return <div className="page-stack reviews-page">
+    <div className="page-heading"><div><p className="eyebrow">CUSTOMER FEEDBACK</p><h2>Public reviews</h2><p className="muted">Only public reviews are visible here and included in your public rating. Friends-only and private reviews remain private.</p></div><div className="review-summary"><strong>{Number.isFinite(average) ? average.toFixed(1) : '—'}</strong><span>public average</span></div></div>
+    <div className="review-toolbar"><input type="search" placeholder="Search reviewer, review, or dish…" value={query} onChange={(event) => setQuery(event.target.value)} /><span>{filteredReviews.length} of {reviews.length} reviews</span></div>
+    {reviews.length === 0 ? <div className="empty"><span>☆</span><h3>No public reviews yet</h3><p>New public customer reviews will appear here automatically.</p></div> : filteredReviews.length === 0 ? <div className="empty"><h3>No matching reviews</h3><p>Try a different search.</p></div> : <div className="review-table-wrap"><table className="review-table">
+      <thead><tr><th>Reviewer</th><th>Rating</th><th>Review</th><th>Dishes</th><th>Engagement</th><th>Date</th></tr></thead>
+      <tbody>{filteredReviews.map((review) => <tr key={review.id}>
+        <td><div className="reviewer">{review.author.avatarUrl ? <img src={review.author.avatarUrl} alt="" /> : <span>{review.author.username.charAt(0).toUpperCase()}</span>}<div><strong>{review.author.displayName || review.author.username}</strong><small>@{review.author.username}</small></div></div></td>
+        <td><span className="rating-pill">★ {review.rating?.toFixed(1) || '—'}</span></td>
+        <td><p className="review-copy">{review.description || 'No written comment'}</p></td>
+        <td><div className="dish-tags">{review.items.length ? review.items.slice(0, 3).map((item) => <span key={item.id}>{item.name}{item.rating != null ? ` · ${item.rating}/10` : ''}</span>) : <small>—</small>}{review.items.length > 3 && <small>+{review.items.length - 3} more</small>}</div></td>
+        <td><small>{review._count.likes} likes · {review._count.comments} comments</small></td>
+        <td><small>{review.createdAt ? new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' }).format(new Date(review.createdAt)) : '—'}</small></td>
+      </tr>)}</tbody>
+    </table></div>}
+  </div>
+}
+
+function AdminClaims({ claims, reload, onLogout }: { claims: Claim[]; reload: () => Promise<void>; onLogout: () => void }) {
+  const [workingId, setWorkingId] = useState<string | null>(null)
+  const [error, setError] = useState('')
+
+  async function decide(claimId: string, decision: 'approve' | 'reject') {
+    if (decision === 'reject' && !window.confirm('Reject this restaurant claim?')) return
+    setWorkingId(claimId)
+    setError('')
+    try {
+      await request(`/restaurants/claims/${claimId}/${decision}`, {
+        method: 'POST',
+        body: decision === 'reject' ? JSON.stringify({ reason: 'Rejected by admin' }) : undefined,
+      })
+      await reload()
+    } catch (nextError) {
+      setError(nextError instanceof Error ? nextError.message : `Could not ${decision} claim`)
+    } finally {
+      setWorkingId(null)
+    }
+  }
+
+  return <div className="admin-layout">
+    <header><div className="brand"><div className="brand-mark">F</div><div><strong>FindEat</strong><small>Admin</small></div></div><button className="secondary" onClick={onLogout}>Sign out</button></header>
+    <main className="admin-content">
+      <div className="page-heading"><div><p className="eyebrow">ADMINISTRATION</p><h2>Restaurant claims</h2><p className="muted">Review requests before granting access to restaurant management.</p></div><span className="claim-count">{claims.length} pending</span></div>
+      {error && <p className="error banner">{error}</p>}
+      {claims.length === 0 ? <div className="empty"><span>✓</span><h3>You’re all caught up</h3><p>There are no pending restaurant claims.</p></div> : <div className="claims-grid">{claims.map((claim) => <article className="claim-card" key={claim.id}>
+        <div className="claim-top"><div className="restaurant-letter">{claim.restaurant.name.charAt(0)}</div><div><h3>{claim.restaurant.name}</h3><p>{[claim.restaurant.address, claim.restaurant.city].filter(Boolean).join(', ') || 'No address provided'}</p></div></div>
+        <div className="claim-person"><span>Requested by</span><strong>{claim.user.displayName}</strong><p>@{claim.user.username} · {claim.user.email}</p></div>
+        {claim.evidenceText && <div className="claim-evidence"><span>Evidence</span><p>{claim.evidenceText}</p></div>}
+        {claim.evidenceUrl && <a className="evidence-link" href={claim.evidenceUrl} target="_blank" rel="noreferrer">Open attached evidence ↗</a>}
+        <div className="claim-actions"><button className="secondary reject" disabled={workingId === claim.id} onClick={() => void decide(claim.id, 'reject')}>Reject</button><button className="primary approve" disabled={workingId === claim.id} onClick={() => void decide(claim.id, 'approve')}>{workingId === claim.id ? 'Working…' : 'Approve claim'}</button></div>
+      </article>)}</div>}
+    </main>
+  </div>
+}
+
 function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [menus, setMenus] = useState<Menu[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
+  const [claims, setClaims] = useState<Claim[]>([])
+  const [isAdmin, setIsAdmin] = useState(false)
   const [section, setSection] = useState<Section>('overview')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -262,13 +471,30 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   const load = useCallback(async () => {
     try {
+      const me = await request<{ email: string }>('/auth/me')
+      if (me.email.toLowerCase() === 'admin@gmail.com') {
+        setIsAdmin(true)
+        setClaims(await request<Claim[]>('/restaurants/claims/pending'))
+        setRestaurants([])
+        setMenus([])
+        setReviews([])
+        setError('')
+        return
+      }
+      setIsAdmin(false)
       const nextRestaurants = await request<Restaurant[]>('/restaurants/me')
       setRestaurants(nextRestaurants)
-      setMenus(
-        nextRestaurants.length
-          ? await request<Menu[]>('/business/menus')
-          : [],
-      )
+      if (nextRestaurants.length) {
+        const [nextMenus, nextReviews] = await Promise.all([
+          request<Menu[]>('/business/menus'),
+          loadRestaurantReviews(nextRestaurants[0].id),
+        ])
+        setMenus(nextMenus)
+        setReviews(nextReviews)
+      } else {
+        setMenus([])
+        setReviews([])
+      }
       setError('')
     } catch (nextError) {
       const message = nextError instanceof Error ? nextError.message : 'Could not load dashboard'
@@ -288,6 +514,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const itemCount = useMemo(() => menus.reduce((total, menu) => total + menu.items.length, 0), [menus])
   if (loading) return <div className="loading">Loading your restaurant…</div>
   if (error) return <div className="loading"><div><h2>We couldn’t open your dashboard</h2><p>{error}</p><div className="loading-actions"><button className="primary" onClick={() => void load()}>Try again</button><button className="secondary" onClick={onLogout}>Sign out</button></div></div></div>
+  if (isAdmin) return <AdminClaims claims={claims} reload={load} onLogout={onLogout} />
   if (!restaurant) return <div className="loading"><div><h2>No managed restaurant</h2><p>Once your restaurant claim is approved, it will appear here.</p><button className="secondary" onClick={onLogout}>Sign out</button></div></div>
 
   return <div className="dashboard">
@@ -296,7 +523,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       <div className="restaurant-chip">{restaurant.logoUrl ? <img src={restaurant.logoUrl} alt="" /> : <span>{restaurant.name.charAt(0)}</span>}<div><strong>{restaurant.name}</strong><small>{restaurant.city || 'Restaurant'}</small></div></div>
       <nav>
         <button className={section === 'overview' ? 'active' : ''} onClick={() => setSection('overview')}><span>⌂</span> Overview</button>
+        <button className={section === 'dashboard' ? 'active' : ''} onClick={() => setSection('dashboard')}><span>⌁</span> Dashboard <small className="nav-premium">PRO</small></button>
         <button className={section === 'menu' ? 'active' : ''} onClick={() => setSection('menu')}><span>☰</span> Menu</button>
+        <button className={section === 'reviews' ? 'active' : ''} onClick={() => setSection('reviews')}><span>☆</span> Reviews</button>
         <button className={section === 'profile' ? 'active' : ''} onClick={() => setSection('profile')}><span>◎</span> Restaurant profile</button>
       </nav>
       <div className="aside-footer"><p>Official posts stay mobile</p><small>Use the FindEat app to create and publish official content.</small><button onClick={onLogout}>Sign out</button></div>
@@ -305,11 +534,13 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       <header><div><strong>{restaurant.name}</strong><span className="claimed">Claimed</span></div><div className="avatar">{restaurant.name.charAt(0)}</div></header>
       {section === 'overview' && <div className="page-stack">
         <div className="page-heading"><div><p className="eyebrow">DASHBOARD</p><h2>Good to see you.</h2><p className="muted">Here’s how your restaurant profile is set up.</p></div><button className="primary" onClick={() => setSection('menu')}>Manage menu</button></div>
-        <div className="stats"><article><span>Followers</span><strong>{restaurant.followersCount || 0}</strong><small>People following your place</small></article><article><span>Menu sections</span><strong>{menus.length}</strong><small>{itemCount} menu items</small></article><article><span>Rating</span><strong>{restaurant.averageRating?.toFixed(1) || '—'}</strong><small>{restaurant.reviewsCount || 0} customer reviews</small></article></div>
+        <div className="stats"><article><span>Followers</span><strong>{restaurant.followersCount || 0}</strong><small>People following your place</small></article><article><span>Menu sections</span><strong>{menus.length}</strong><small>{itemCount} menu items</small></article><article><span>Reviews</span><strong>{reviews.length}</strong><small>Customer reviews</small></article></div>
         <section className="card official-card"><div><p className="eyebrow">OFFICIAL CONTENT</p><h3>Post from your phone</h3><p className="muted">Official content creation remains in the mobile app so you can quickly take a photo, tag your restaurant, and publish.</p></div><div className="phone-art"><span>＋</span></div></section>
         <section className="card checklist"><h3>Restaurant setup</h3><div><span className={menus.length ? 'done' : ''}>{menus.length ? '✓' : '1'}</span><p><strong>Add your menu</strong><small>Help customers decide what to order.</small></p><button onClick={() => setSection('menu')}>{menus.length ? 'Manage' : 'Start'}</button></div><div><span className={restaurant.phone || restaurant.website ? 'done' : ''}>{restaurant.phone || restaurant.website ? '✓' : '2'}</span><p><strong>Complete contact details</strong><small>Add a phone number and website.</small></p><button onClick={() => setSection('profile')}>Edit</button></div></section>
       </div>}
+      {section === 'dashboard' && <PerformanceDashboard menus={menus} reviews={reviews} />}
       {section === 'menu' && <MenuManager menus={menus} reload={load} />}
+      {section === 'reviews' && <ReviewsTable reviews={reviews} />}
       {section === 'profile' && <ProfileEditor restaurant={restaurant} onSaved={load} />}
     </main>
   </div>

@@ -9,6 +9,7 @@ type Props = {
   onRefresh: () => void;
   onEndReached?: () => void;
   loadingMore?: boolean;
+  contentTopInset?: number;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
   onOpenSharePost: (postId: string) => void;
@@ -26,6 +27,7 @@ export default function ReviewFeed({
   onRefresh,
   onEndReached,
   loadingMore = false,
+  contentTopInset = 0,
   onToggleLike,
   onOpenComments,
   onToggleWantToTry,
@@ -47,6 +49,7 @@ export default function ReviewFeed({
       removeClippedSubviews
       contentContainerStyle={{
         flexGrow: 1,
+        paddingTop: contentTopInset + 12,
       }}
       ListEmptyComponent={
         <View style={{ flex: 1, minHeight: 520 }}>

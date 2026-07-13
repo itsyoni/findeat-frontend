@@ -1,10 +1,10 @@
 import { SelectedRestaurant } from "./restaurant";
+import { PostVisibility } from "./post";
 
 export type CreateReviewStep =
   | "RESTAURANT"
   | "COVER"
   | "DISHES"
-  | "DISH_SOURCE"
   | "SELECT_MENU_DISH"
   | "ADD_DISH_DETAILS"
   | "PREVIEW";
@@ -24,6 +24,7 @@ export type ReviewDishDraft = {
 };
 
 export type CreateReviewDraft = {
+  visibility: PostVisibility;
   restaurant: SelectedRestaurant | null;
   coverImageUri?: string;
   summary: string;

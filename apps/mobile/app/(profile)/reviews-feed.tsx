@@ -4,11 +4,15 @@ import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, View } from "react-native";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
+import { useAppTheme } from "@/contexts/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "expo-router";
 
 export default function ProfileReviewsFeedScreen() {
+  const { isDark } = useAppTheme();
   const { profile, loading, refresh } = useMyProfile();
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
@@ -17,6 +21,12 @@ export default function ProfileReviewsFeedScreen() {
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, "REVIEW"),
     [profile?.posts],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
   );
 
   async function toggleLike(postId: string, isLiked: boolean) {
@@ -58,7 +68,10 @@ export default function ProfileReviewsFeedScreen() {
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
       <ReviewFeed
         posts={posts}
         refreshing={false}
@@ -86,6 +99,6 @@ export default function ProfileReviewsFeedScreen() {
         postId={selectedPostId}
         onClose={() => setSelectedPostId(null)}
       />
-    </View>
+    </SafeAreaView>
   );
 }

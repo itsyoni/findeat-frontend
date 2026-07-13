@@ -7,6 +7,10 @@ export type Dish = {
   category?: string | null;
   isAvailable: boolean;
   isFeatured: boolean;
+  createdAt?: string;
+  reviewsCount?: number;
+  averageRating?: number | null;
+  isNew?: boolean;
 };
 
 export type Menu = {

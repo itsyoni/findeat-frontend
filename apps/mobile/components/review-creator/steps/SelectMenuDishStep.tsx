@@ -15,12 +15,14 @@ type Props = {
   restaurant: Restaurant | null;
   onBack: () => void;
   onSelect: (dish: Dish) => void;
+  onAddCustom: () => void;
 };
 
 export default function SelectMenuDishStep({
   restaurant,
   onBack,
   onSelect,
+  onAddCustom,
 }: Props) {
   const [fullRestaurant, setFullRestaurant] = useState<Restaurant | null>(null);
   const [query, setQuery] = useState("");
@@ -98,13 +100,23 @@ export default function SelectMenuDishStep({
         )}
 
         {!loading && filteredMenus.length === 0 && (
-          <View className="mt-10 rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-8">
+          <View className="mt-10 rounded-3xl border border-dashed border-gray-300 bg-gray-50 p-8 dark:border-gray-700 dark:bg-gray-900">
             <Text className="text-center font-bold text-black dark:text-white">
-              No dishes found
+              {query.trim() ? "No matching dishes" : "No restaurant menu yet"}
             </Text>
             <Text className="mt-2 text-center text-gray-500">
-              Try searching again or add the dish manually.
+              {query.trim()
+                ? "Try another search or add this dish yourself."
+                : "You can still add and review the dish manually."}
             </Text>
+            <TouchableOpacity
+              onPress={onAddCustom}
+              className="mt-5 rounded-2xl bg-black py-3.5 dark:bg-white"
+            >
+              <Text className="text-center font-bold text-white dark:text-black">
+                Add a custom dish
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 

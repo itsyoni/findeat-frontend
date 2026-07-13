@@ -5,9 +5,9 @@ import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -30,6 +30,12 @@ export default function ProfileContentFeedScreen() {
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, "CONTENT"),
     [profile?.posts],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
   );
 
   const initialIndex = useMemo(() => {

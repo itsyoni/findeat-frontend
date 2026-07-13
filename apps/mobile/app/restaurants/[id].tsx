@@ -17,7 +17,7 @@ import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import {
   BookmarkSimpleIcon,
   CheckCircleIcon,
-  StarIcon,
+  HeartIcon,
 } from "phosphor-react-native";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -38,10 +38,16 @@ export default function RestaurantScreen() {
     postSection,
     activeTab !== "MENU",
   );
-  const visiblePosts = useMemo(
-    () => sectionPosts.data?.pages.flatMap((page) => page.items) ?? [],
-    [sectionPosts.data],
-  );
+  const visiblePosts = useMemo(() => {
+    const paginatedPosts =
+      sectionPosts.data?.pages.flatMap((page) => page.items) ?? [];
+
+    if (paginatedPosts.length > 0 || activeTab !== "REVIEWS") {
+      return paginatedPosts;
+    }
+
+    return restaurant?.posts.filter((post) => post.type === "REVIEW") ?? [];
+  }, [activeTab, restaurant?.posts, sectionPosts.data]);
 
   async function toggleFollow() {
     if (!restaurant) return;
@@ -283,7 +289,7 @@ export default function RestaurantScreen() {
                   : "bg-gray-100 opacity-40 dark:bg-gray-800"
             }`}
           >
-            <StarIcon
+            <HeartIcon
               size={19}
               color={restaurant.userRestaurant?.favorite ? "white" : "#6B7280"}
               weight={restaurant.userRestaurant?.favorite ? "fill" : "regular"}
@@ -321,7 +327,7 @@ export default function RestaurantScreen() {
         {activeTab !== "MENU" && (
           <RestaurantPostsSection
             posts={visiblePosts}
-            loading={sectionPosts.isPending}
+            loading={sectionPosts.isPending && visiblePosts.length === 0}
             loadingMore={sectionPosts.isFetchingNextPage}
             hasMore={sectionPosts.hasNextPage}
             onLoadMore={() => void sectionPosts.fetchNextPage()}

@@ -24,11 +24,7 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
     }
   }
 
-  const canContinue =
-    !!draft.summary.trim() &&
-    !!draft.atmosphereRating &&
-    !!draft.serviceRating &&
-    !!draft.valueRating;
+  const canContinue = !!draft.summary.trim() && !!draft.overallRating;
 
   return (
     <ThemedSafeAreaView>
@@ -40,30 +36,63 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
           paddingBottom: 40,
         }}
       >
-        <TouchableOpacity onPress={onBack}>
-          <Text className="font-bold text-black dark:text-white">← Back</Text>
-        </TouchableOpacity>
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity onPress={onBack}>
+            <Text className="font-bold text-black dark:text-white">← Back</Text>
+          </TouchableOpacity>
+          <Text className="text-sm font-semibold text-gray-400">2 of 4</Text>
+        </View>
 
         <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
-          Tell us about the meal
+          How was your experience?
         </Text>
 
+        <Text className="mt-2 text-gray-500">
+          Give the restaurant an overall score, then add as much detail as you want.
+        </Text>
+
+        <View className="mt-8">
+          <RatingPicker
+            label="Overall experience"
+            value={draft.overallRating}
+            onChange={(overallRating) => onChange({ overallRating })}
+          />
+        </View>
+
+        <TextInput
+          className="mt-7 min-h-28 rounded-2xl bg-gray-100 px-4 py-4 text-base text-black dark:bg-gray-900 dark:text-white"
+          placeholder="What stood out? What should people know?"
+          value={draft.summary}
+          onChangeText={(summary) => onChange({ summary })}
+          multiline
+          textAlignVertical="top"
+        />
+
         <TouchableOpacity
-          className="mt-6 items-center justify-center rounded-3xl border border-gray-200 bg-gray-50 py-12"
+          className="mt-5 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
           onPress={pickCoverImage}
         >
           {draft.coverImageUri ? (
             <Image
               source={{ uri: draft.coverImageUri }}
-              className="h-80 w-full rounded-3xl"
+              className="h-52 w-full"
               resizeMode="cover"
             />
           ) : (
-            <Text className="text-gray-500">+ Add cover photo</Text>
+            <Text className="py-7 font-semibold text-gray-500">
+              + Add a meal photo (optional)
+            </Text>
           )}
         </TouchableOpacity>
 
-        <View className="mt-8 gap-6">
+        <View className="mt-8 rounded-3xl bg-gray-50 p-4 dark:bg-gray-900">
+          <Text className="mb-1 text-lg font-bold text-black dark:text-white">
+            More detail
+          </Text>
+          <Text className="mb-6 text-sm text-gray-500">
+            These ratings are optional.
+          </Text>
+          <View className="gap-7">
           <RatingPicker
             label="Atmosphere"
             value={draft.atmosphereRating}
@@ -82,26 +111,19 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
             onChange={(valueRating) => onChange({ valueRating })}
           />
 
-          <TextInput
-            className="min-h-36 rounded-2xl border border-gray-200 px-4 py-4 text-base text-black dark:border-gray-700 dark:text-white"
-            placeholder="Tell people about your experience..."
-            value={draft.summary}
-            onChangeText={(summary) => onChange({ summary })}
-            multiline
-            textAlignVertical="top"
-          />
+          </View>
         </View>
 
         <TouchableOpacity
           className={`mt-8 rounded-2xl py-4 ${
-            canContinue ? "bg-black" : "bg-gray-200"
+            canContinue ? "bg-black dark:bg-white" : "bg-gray-200 dark:bg-gray-800"
           }`}
           disabled={!canContinue}
           onPress={onNext}
         >
           <Text
             className={`text-center font-bold ${
-              canContinue ? "text-white" : "text-gray-400"
+              canContinue ? "text-white dark:text-black" : "text-gray-400"
             }`}
           >
             Continue

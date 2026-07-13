@@ -40,5 +40,20 @@
   "noRestaurantsFound": "No restaurants found. Try another search.",
   "next": "Next",
   "addRestaurant": "Add a restaurant",
-  "restaurantRequired": "Required before posting"
+  "restaurantRequired": "Required before posting",
+  "visibility": "Who can see this?",
+  "visibilityPUBLIC": "Public",
+  "visibilityPUBLICHint": "Everyone can see it. Public reviews affect restaurant and dish ratings.",
+  "visibilityFRIENDS": "Friends",
+  "visibilityFRIENDSHint": "Only people you follow who also follow you can see it. It will not affect public ratings.",
+  "visibilityPRIVATE": "Only me",
+  "visibilityPRIVATEHint": "This stays in your private food diary and will not affect public ratings.",
+  "nearbyPlaces": "Places near you",
+  "nearestCount_one": "1 nearest place",
+  "nearestCount_other": "{{count}} nearest places",
+  "searchResults": "Search results",
+  "findingNearby": "Finding nearby places...",
+  "searchingPlaces": "Searching places...",
+  "nearbyUnavailable": "Allow location access to see the nearest places, or search by name.",
+  "noNearbyPlaces": "No nearby places were found. Try searching by name."
 }

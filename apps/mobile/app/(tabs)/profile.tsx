@@ -1,4 +1,3 @@
-import { AppButton } from "@/components/common";
 import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
@@ -34,20 +33,9 @@ export default function ProfileScreen() {
     );
   }
 
-  const isAdmin = profile.email === "admin@gmail.com";
-
   return (
     <View className="flex-1 bg-white dark:bg-black">
       <PersonalProfileHeader profile={profile} />
-
-      {isAdmin && (
-        <View className="px-5 pb-4">
-          <AppButton
-            title={t("profile:restaurantClaims")}
-            onPress={() => router.push("/admin/claims")}
-          />
-        </View>
-      )}
 
       <Tabs
         activeTab={activeFeed}
