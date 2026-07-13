@@ -16,7 +16,7 @@ export default function Screen({
   return (
     <SafeAreaView
       edges={edges}
-      className={`flex-1 bg-white dark:bg-black ${className}`}
+      className={`flex-1 bg-canvas dark:bg-black ${className}`}
     >
       {children}
     </SafeAreaView>

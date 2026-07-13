@@ -17,7 +17,7 @@ export default function ThemeSettingsScreen() {
     { key: 'dark', label: t('darkTheme'), icon: <MoonIcon size={23} color={color} /> },
   ];
 
-  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
     <SettingsHeader title={t('chooseTheme')} />
     <View className="pt-3">
       {options.map((option) => (

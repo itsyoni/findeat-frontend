@@ -85,7 +85,7 @@ export default function FullPageRestaurantPicker({
   return (
     <SafeAreaView
       edges={["top", "bottom"]}
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       <View className="flex-row items-center px-4 py-2">
         <TouchableOpacity
@@ -94,7 +94,7 @@ export default function FullPageRestaurantPicker({
         >
           <CaretLeftIcon
             size={25}
-            color={isDark ? "#FFF" : "#111"}
+            color={isDark ? "#FFF" : "#171717"}
             weight="bold"
           />
         </TouchableOpacity>

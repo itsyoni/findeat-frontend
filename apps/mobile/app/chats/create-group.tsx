@@ -4,7 +4,7 @@ import { TextInput, ThemedSafeAreaView } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
-import { searchFriends } from "@/services/search";
+import { getSuggestedFriends, searchFriends } from "@/services/search";
 import type { SearchResultItem } from "@findeat/types/search";
 import { router, Stack } from "expo-router";
 import {
@@ -33,11 +33,33 @@ export default function CreateGroupScreen() {
   const [step, setStep] = useState<Step>("MEMBERS");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResultItem[]>([]);
+  const [suggestedFriends, setSuggestedFriends] = useState<SearchResultItem[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<SearchResultItem[]>([]);
   const [searching, setSearching] = useState(false);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(true);
   const [title, setTitle] = useState("");
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void getSuggestedFriends()
+      .then((friends) => {
+        if (!cancelled) setSuggestedFriends(friends);
+      })
+      .catch((suggestionError) => {
+        console.error("suggested friends failed", suggestionError);
+        if (!cancelled) setSuggestedFriends([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingSuggestions(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     const trimmedQuery = query.trim();
@@ -115,6 +137,8 @@ export default function CreateGroupScreen() {
   }
 
   const iconColor = isDark ? "#FFFFFF" : "#111827";
+  const showingSearch = query.trim().length > 0;
+  const visibleFriends = showingSearch ? results : suggestedFriends;
 
   return (
     <>
@@ -191,14 +215,24 @@ export default function CreateGroupScreen() {
                 value={query}
                 onChangeText={handleQueryChange}
                 placeholder={t("searchFriends")}
-                autoFocus
               />
 
-              {searching ? (
+              {!showingSearch && !loadingSuggestions && suggestedFriends.length > 0 && (
+                <View className="px-5 pb-1 pt-4">
+                  <Text className="text-lg font-bold text-black dark:text-white">
+                    {t("suggestedFriends")}
+                  </Text>
+                  <Text className="mt-1 text-sm text-gray-500">
+                    {t("suggestedFriendsHint")}
+                  </Text>
+                </View>
+              )}
+
+              {searching || (!showingSearch && loadingSuggestions) ? (
                 <ActivityIndicator className="mt-8" />
               ) : (
                 <FlatList
-                  data={results}
+                  data={visibleFriends}
                   keyExtractor={(item) => item.id}
                   keyboardShouldPersistTaps="handled"
                   contentContainerStyle={{ flexGrow: 1 }}
@@ -211,7 +245,7 @@ export default function CreateGroupScreen() {
                       <View className="flex-1 items-center justify-center px-10 pb-20">
                         <UsersThreeIcon size={54} color="#9CA3AF" />
                         <Text className="mt-4 text-center text-gray-500">
-                          {t("searchFriendsToAdd")}
+                          {t("noSuggestedFriends")}
                         </Text>
                       </View>
                     )

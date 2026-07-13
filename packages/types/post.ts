@@ -2,6 +2,7 @@ import { Restaurant } from "./restaurant";
 import { UserSummary } from "./user";
 
 export type PostType = "CONTENT" | "REVIEW";
+export type PostVisibility = "PUBLIC" | "FRIENDS" | "PRIVATE";
 
 export type ReviewRecommendedFor =
   | "DATE"
@@ -76,6 +77,7 @@ export type PostAuthorRestaurant = {
 export type Post = {
   id: string;
   type: PostType;
+  visibility: PostVisibility;
 
   authorId?: string | null;
   author?: UserSummary | null;

@@ -4,7 +4,7 @@ import SettingsSection from '@/components/settings/SettingsSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
-import { BellIcon, LockKeyIcon, MoonIcon, SignOutIcon, UserCircleIcon } from 'phosphor-react-native';
+import { BellIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon, UserCircleIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,7 +23,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
       <SettingsHeader title={t('settings:title')} />
       <ScrollView>
         <SettingsSection title={t('settings:yourAccount')}>
@@ -32,6 +32,7 @@ export default function SettingsScreen() {
         </SettingsSection>
         <SettingsSection title={t('settings:howYouUseFindEat')}>
           <SettingsRow icon={<BellIcon size={23} color={color} />} title={t('settings:notifications')} subtitle={t('settings:notificationsSubtitle')} onPress={() => router.push('/settings/notifications')} />
+          <SettingsRow icon={<ShieldCheckIcon size={23} color={color} />} title={t('settings:privacy')} subtitle={t('settings:privacySubtitle')} onPress={() => router.push('/settings/privacy')} />
           <SettingsRow icon={<MoonIcon size={23} color={color} />} title={t('settings:appearanceLanguage')} subtitle={t('settings:appearanceLanguageSubtitle')} onPress={() => router.push('/settings/appearance')} />
         </SettingsSection>
         <SettingsSection title={t('settings:login')}>

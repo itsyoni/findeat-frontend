@@ -5,6 +5,10 @@
   "onlineNow": "מחובר עכשיו",
   "lastSeen": "נראה לאחרונה {{time}}",
   "lastSeenRecently": "נראה לאחרונה לא מזמן",
+  "typing": "מקליד/ה...",
+  "userTyping": "{{name}} מקליד/ה...",
+  "peopleTyping": "{{count}} אנשים מקלידים...",
+  "someone": "מישהו/י",
   "noMessages": "אין הודעות עדיין",
   "messagePlaceholder": "הודעה...",
   "deletedPost": "הפוסט הזה נמחק",
@@ -28,6 +32,7 @@
   "firstComment": "היה הראשון להגיב!",
   "you": "אתה",
   "chat": "שיחה",
+  "messages": "הודעות",
   "newGroup": "קבוצה חדשה",
   "groupDetails": "פרטי הקבוצה",
   "selectedMembers": "{{count}} נבחרו",
@@ -42,5 +47,8 @@
   "groupNamePlaceholder": "בחר שם לקבוצה",
   "participants": "משתתפים",
   "createGroup": "יצירת קבוצה",
-  "createGroupError": "לא ניתן ליצור את הקבוצה. נסה שוב."
+  "createGroupError": "לא ניתן ליצור את הקבוצה. נסה שוב.",
+  "suggestedFriends": "חברים מוצעים",
+  "suggestedFriendsHint": "החברים שאיתם התכתבת הכי הרבה מופיעים ראשונים.",
+  "noSuggestedFriends": "החברים שלך יופיעו כאן. אפשר גם לחפש לפי שם."
 }

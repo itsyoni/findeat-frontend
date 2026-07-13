@@ -3,10 +3,11 @@ import Avatar from "@/components/common/Avatar";
 import { TextInput } from "@/components/common";
 import FullPageRestaurantPicker from "@/components/restaurants/FullPageRestaurantPicker";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
+import PostVisibilitySelector from "@/components/posts/PostVisibilitySelector";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { prependPostToFeedCache } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
-import type { SelectedRestaurant } from "@findeat/types";
+import type { PostVisibility, SelectedRestaurant } from "@findeat/types";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
@@ -45,6 +46,7 @@ export default function CreateContentScreen() {
   const [step, setStep] = useState<Step>("CAMERA");
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<PostVisibility>("PUBLIC");
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<SelectedRestaurant | null>(null);
   const [capturing, setCapturing] = useState(false);
@@ -116,6 +118,7 @@ export default function CreateContentScreen() {
         imageUrl,
         restaurantId,
         description: description.trim(),
+        visibility,
       });
 
       prependPostToFeedCache(queryClient, createdPost);
@@ -246,7 +249,7 @@ export default function CreateContentScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Stack.Screen options={{ headerShown: false }} />
@@ -256,7 +259,7 @@ export default function CreateContentScreen() {
             onPress={() => setStep("CAMERA")}
             className="h-11 w-11 items-center justify-center rounded-full"
           >
-            <CaretLeftIcon size={25} color={isDark ? "#FFF" : "#111"} weight="bold" />
+            <CaretLeftIcon size={25} color={isDark ? "#FFF" : "#171717"} weight="bold" />
           </TouchableOpacity>
           <Text className="ml-2 flex-1 text-xl font-bold text-black dark:text-white">
             {t("quickPost")}
@@ -364,6 +367,11 @@ export default function CreateContentScreen() {
                 className="min-h-28 bg-gray-50 dark:bg-gray-900"
               />
             </View>
+
+            <PostVisibilitySelector
+              value={visibility}
+              onChange={setVisibility}
+            />
           </View>
         </ScrollView>
       </SafeAreaView>

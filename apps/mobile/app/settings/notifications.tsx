@@ -21,7 +21,7 @@ export default function NotificationSettingsScreen() {
   }, []));
 
   const permissionLabel = permission === 'granted' ? t('enabled') : permission === 'denied' ? t('disabled') : t('notSet');
-  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
     <SettingsHeader title={t('notifications')} />
     <SettingsSection title={t('notificationControls')}>
       <SettingsRow icon={<BellIcon size={22} color={color} />} title={t('pushNotifications')} subtitle={t('pushNotificationsSubtitle')} value={permissionLabel} onPress={() => void Linking.openSettings()} />

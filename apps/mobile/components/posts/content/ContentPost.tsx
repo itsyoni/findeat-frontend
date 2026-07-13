@@ -6,10 +6,9 @@ import { router } from "expo-router";
 import {
   BookmarkSimpleIcon,
   ChatCircleIcon,
-  CheckCircleIcon,
+  CheckIcon,
   HeartIcon,
   ShareFatIcon,
-  StarIcon,
   DotsThreeOutlineIcon,
 } from "phosphor-react-native";
 import { Image, TouchableOpacity, View } from "react-native";
@@ -21,6 +20,8 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
+import { useTranslation } from "react-i18next";
+import PostVisibilityIcon from "@/components/posts/PostVisibilityIcon";
 
 type Props = {
   post: Post;
@@ -45,6 +46,7 @@ export default function ContentPost({
   onOpenSharePost,
   onOpenPostOptions,
 }: Props) {
+  const { t } = useTranslation("restaurants");
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
   const isVisited = !!userRestaurant?.visited;
@@ -163,18 +165,8 @@ export default function ContentPost({
     onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
   }
 
-  const PlaceStatusIcon = isFavorite
-    ? StarIcon
-    : isVisited
-      ? CheckCircleIcon
-      : BookmarkSimpleIcon;
-  const placeStatusColor = isFavorite
-    ? "#FF3040"
-    : isVisited
-      ? "#22C55E"
-      : isWantToTry
-        ? "#F7D786"
-        : "#FFFFFFCC";
+  const isPlaceSaved = isWantToTry || isVisited || isFavorite;
+  const bookmarkColor = isPlaceSaved ? "#F7D786" : "#FFFFFFCC";
 
   return (
     <GestureDetector gesture={doubleTap}>
@@ -281,6 +273,14 @@ export default function ContentPost({
                   {isOfficialPost ? displayName : `@${displayName}`}
                 </Text>
                 {isOfficialPost ? <RestaurantBadge /> : null}
+                {!isOfficialPost && post.visibility !== "PUBLIC" ? (
+                  <View className="ml-1.5">
+                    <PostVisibilityIcon
+                      visibility={post.visibility}
+                      color="#FFFFFFCC"
+                    />
+                  </View>
+                ) : null}
               </View>
 
               {isOfficialPost && (
@@ -351,27 +351,47 @@ export default function ContentPost({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={() => onOpenSharePost(post.id)}>
-            <ShareFatIcon
-              weight="fill"
-              color="#FFFFFFCC"
-              size={35}
-              style={iconShadow}
-            />
-            <Text style={textShadow} className="text-center text-lg text-white">
-              {post.sharesCount ?? 0}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={handleWantToTry}>
-            <PlaceStatusIcon
-              weight="fill"
-              color={placeStatusColor}
-              size={35}
-              style={iconShadow}
-            />
+          {post.visibility === "PUBLIC" && (
+            <TouchableOpacity onPress={() => onOpenSharePost(post.id)}>
+              <ShareFatIcon
+                weight="fill"
+                color="#FFFFFFCC"
+                size={35}
+                style={iconShadow}
+              />
+              <Text style={textShadow} className="text-center text-lg text-white">
+                {post.sharesCount ?? 0}
+              </Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity className="items-center" onPress={handleWantToTry}>
+            <View className="relative h-[35px] w-[35px]">
+              <BookmarkSimpleIcon
+                weight="fill"
+                color={bookmarkColor}
+                size={35}
+                style={iconShadow}
+              />
+              {isVisited && !isFavorite && (
+                <View
+                  className="absolute h-4 w-4 items-center justify-center rounded-full bg-green-500"
+                  style={{ right: -2, top: -3 }}
+                >
+                  <CheckIcon size={11} color="white" weight="bold" />
+                </View>
+              )}
+              {isFavorite && (
+                <HeartIcon
+                  size={16}
+                  color="#FF3040"
+                  weight="fill"
+                  style={{ position: "absolute", right: -2, top: -3 }}
+                />
+              )}
+            </View>
 
-            <Text style={textShadow} className="text-center text-lg text-white">
-              {post.restaurantSavesCount ?? 0}
+            <Text style={textShadow} className="mt-1 text-center text-xs font-bold text-white">
+              {t(isPlaceSaved ? "savedPlace" : "savePlace")}
             </Text>
           </TouchableOpacity>
         </View>

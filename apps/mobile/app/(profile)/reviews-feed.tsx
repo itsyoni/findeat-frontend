@@ -4,11 +4,18 @@ import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, View } from "react-native";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
+import { useAppTheme } from "@/contexts/ThemeContext";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useFocusEffect } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { removePostFromAppCache } from "@/hooks/useFeed";
 
 export default function ProfileReviewsFeedScreen() {
+  const queryClient = useQueryClient();
+  const { isDark } = useAppTheme();
   const { profile, loading, refresh } = useMyProfile();
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const [sharePostId, setSharePostId] = useState<string | null>(null);
@@ -17,6 +24,12 @@ export default function ProfileReviewsFeedScreen() {
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, "REVIEW"),
     [profile?.posts],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
   );
 
   async function toggleLike(postId: string, isLiked: boolean) {
@@ -41,8 +54,11 @@ export default function ProfileReviewsFeedScreen() {
   async function deletePost(postId: string) {
     try {
       await api.posts.delete(postId);
-      await refresh();
+      removePostFromAppCache(queryClient, postId);
+      void refresh();
       setOptionsPostId(null);
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)/profile");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not delete post");
@@ -51,14 +67,17 @@ export default function ProfileReviewsFeedScreen() {
 
   if (loading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
+    >
       <ReviewFeed
         posts={posts}
         refreshing={false}
@@ -86,6 +105,6 @@ export default function ProfileReviewsFeedScreen() {
         postId={selectedPostId}
         onClose={() => setSelectedPostId(null)}
       />
-    </View>
+    </SafeAreaView>
   );
 }

@@ -12,6 +12,37 @@ type Props = {
   chat: Chat;
 };
 
+function formatChatTime(value?: string | null) {
+  if (!value) return null;
+
+  const date = new Date(value);
+  const today = new Date();
+  const isToday =
+    date.getFullYear() === today.getFullYear() &&
+    date.getMonth() === today.getMonth() &&
+    date.getDate() === today.getDate();
+
+  if (isToday) {
+    return date.toLocaleTimeString(undefined, {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  const daysAgo = Math.floor(
+    (today.getTime() - date.getTime()) / (24 * 60 * 60 * 1_000),
+  );
+
+  if (daysAgo < 7) {
+    return date.toLocaleDateString(undefined, { weekday: "short" });
+  }
+
+  return date.toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export default function ChatRow({ chat }: Props) {
   const { user } = useAuth();
   const { t } = useTranslation("chat");
@@ -50,14 +81,12 @@ export default function ChatRow({ chat }: Props) {
   const lastMessageText = chat.lastMessage
     ? `${isMine ? `${t("you")}: ` : ""}${chat.lastMessage}`
     : subtitle;
+  const lastMessageTime = formatChatTime(chat.lastMessageAt);
 
   return (
     <TouchableOpacity
-      className={`flex-row items-center gap-4 p-5 ${
-        hasUnread
-          ? "bg-gray-100 dark:bg-gray-800"
-          : "bg-white dark:bg-black"
-      }`}
+      activeOpacity={0.65}
+      className="mx-4 flex-row items-center border-b border-line py-4 dark:border-gray-900"
       onPress={() =>
         router.push({
           pathname: "/chats/[id]",
@@ -67,46 +96,61 @@ export default function ChatRow({ chat }: Props) {
         })
       }
     >
-      {isGroupChat && !imageUrl ? (
-        <View className="h-14 w-14 items-center justify-center rounded-full bg-[#F5F4F5]">
-          <UsersThreeIcon size={26} color="#6B7280" weight="fill" />
-        </View>
-      ) : (
-        <Avatar
-          uri={imageUrl}
-          username={title ?? t("chat")}
-          size={48}
-          fallbackType={isRestaurantChat ? "restaurant" : "user"}
-        />
-      )}
-
-      <View className="flex-1">
-        <View className="flex-row items-center">
-          <Text numberOfLines={1} className={`shrink text-lg text-black dark:text-white ${hasUnread ? "font-bold" : "font-semibold"}`}>
-            {title ?? t("chat")}
-          </Text>
-          {isRestaurantChat ? <RestaurantBadge /> : null}
-        </View>
-
-        <Text
-          numberOfLines={1}
-          className={
-            hasUnread
-              ? "font-semibold text-black dark:text-white"
-              : "text-gray-500 dark:text-gray-400"
-          }
-        >
-          {lastMessageText}
-        </Text>
+      <View className="relative">
+        {isGroupChat && !imageUrl ? (
+          <View className="h-14 w-14 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
+            <UsersThreeIcon size={26} color="#6B7280" weight="fill" />
+          </View>
+        ) : (
+          <Avatar
+            uri={imageUrl}
+            username={title ?? t("chat")}
+            size={56}
+            fallbackType={isRestaurantChat ? "restaurant" : "user"}
+          />
+        )}
+        {!isGroupChat && !isRestaurantChat && otherUser?.isOnline ? (
+          <View className="absolute bottom-0 right-0 h-4 w-4 rounded-full border-[3px] border-white bg-success dark:border-[#0F0F10]" />
+        ) : null}
       </View>
 
-      {hasUnread && (
-        <View className="h-6 min-w-6 items-center justify-center rounded-full bg-blue-500 px-2">
-          <Text className="text-xs font-bold text-white">
-            {unreadCount > 9 ? "9+" : unreadCount}
-          </Text>
+      <View className="ml-4 min-w-0 flex-1">
+        <View className="flex-row items-center">
+          <View className="min-w-0 flex-1 flex-row items-center">
+            <Text
+              numberOfLines={1}
+              className={`shrink text-base text-black dark:text-white ${hasUnread ? "font-bold" : "font-semibold"}`}
+            >
+            {title ?? t("chat")}
+            </Text>
+            {isRestaurantChat ? <RestaurantBadge /> : null}
+          </View>
+          {lastMessageTime ? (
+            <Text
+              className={`ml-3 text-xs ${hasUnread ? "font-bold text-amber-600" : "text-gray-400"}`}
+            >
+              {lastMessageTime}
+            </Text>
+          ) : null}
         </View>
-      )}
+
+        <View className="mt-1 flex-row items-center">
+          <Text
+            numberOfLines={1}
+            className={`min-w-0 flex-1 text-sm ${hasUnread ? "font-semibold text-black dark:text-white" : "text-gray-500 dark:text-gray-400"}`}
+          >
+            {lastMessageText}
+          </Text>
+
+          {hasUnread ? (
+            <View className="ml-3 h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5">
+              <Text className="text-[11px] font-bold text-white">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      </View>
     </TouchableOpacity>
   );
 }

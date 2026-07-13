@@ -40,5 +40,22 @@
   "noRestaurantsFound": "לא נמצאו מסעדות. נסה חיפוש אחר.",
   "next": "הבא",
   "addRestaurant": "הוספת מסעדה",
-  "restaurantRequired": "חובה לפני הפרסום"
+  "restaurantRequired": "חובה לפני הפרסום",
+  "visibility": "מי יכול לראות את זה?",
+  "visibilityPUBLIC": "ציבורי",
+  "visibilityPUBLICHint": "כולם יכולים לראות. ביקורות ציבוריות משפיעות על דירוג המסעדה והמנות.",
+  "visibilityFRIENDS": "חברים",
+  "visibilityFRIENDSHint": "רק אנשים שאתם עוקבים זה אחר זה יכולים לראות. התוכן לא ישפיע על הדירוג הציבורי.",
+  "visibilityPRIVATE": "רק אני",
+  "visibilityPRIVATEHint": "התוכן נשאר ביומן האוכל הפרטי שלך ולא ישפיע על הדירוג הציבורי.",
+  "nearbyPlaces": "מקומות קרובים אליך",
+  "nearestCount_one": "המקום הקרוב ביותר",
+  "nearestCount_other": "{{count}} המקומות הקרובים ביותר",
+  "searchResults": "תוצאות חיפוש",
+  "findingNearby": "מחפש מקומות קרובים...",
+  "searchingPlaces": "מחפש מקומות...",
+  "nearbyUnavailable": "אפשר גישה למיקום כדי לראות מקומות קרובים, או חפש לפי שם.",
+  "noNearbyPlaces": "לא נמצאו מקומות קרובים. נסה לחפש לפי שם.",
+  "reviewExperienceTitle": "איך הייתה החוויה שלך ב־{{restaurantName}}?",
+  "reviewExperienceTitleFallback": "איך הייתה החוויה שלך?"
 }

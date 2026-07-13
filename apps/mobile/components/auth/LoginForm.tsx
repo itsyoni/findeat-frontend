@@ -78,13 +78,9 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
           onSubmitEditing={Keyboard.dismiss}
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<EnvelopeSimpleIcon size={20} color={iconColor} />}
         />
-
-        <TouchableOpacity onPress={onForgotPassword} className="-mt-1 self-end">
-          <Text weight="bold" className="text-[#212121] dark:text-white">{t('forgotPassword')}</Text>
-        </TouchableOpacity>
 
         <TextInput
           useBottomSheetInput
@@ -95,9 +91,23 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
           onSubmitEditing={Keyboard.dismiss}
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<LockIcon size={20} color={iconColor} />}
         />
+
+        <View className="-mt-1 flex-row items-center justify-between px-1">
+          <TouchableOpacity onPress={onForgotPassword}>
+            <Text weight="bold" className="text-[#212121] dark:text-white">
+              {t("forgotPassword")}
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onSignup}>
+            <Text weight="bold" className="text-[#212121] dark:text-white">
+              {t("signUp")}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           className="rounded-2xl bg-[#212121] py-4 dark:bg-white"
@@ -109,14 +119,6 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={onSignup}>
-          <Text className="text-center text-gray-500">
-            {t("dontHaveAccount")}
-            <Text weight="bold" className="text-[#212121] dark:text-white">
-              {t("signUp")}
-            </Text>
-          </Text>
-        </TouchableOpacity>
       </View>
     </View>
   );

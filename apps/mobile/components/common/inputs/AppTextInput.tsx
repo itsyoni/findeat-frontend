@@ -52,7 +52,7 @@ export default function TextInput({
 
   return (
     <View
-      className={`flex-row rounded-2xl border border-gray-300 px-4 dark:border-gray-700 ${
+      className={`flex-row rounded-2xl border border-line bg-surface px-4 dark:border-gray-700 dark:bg-black ${
         isMultiline ? "items-start" : "items-center"
       } ${className ?? ""}`}
     >
@@ -65,7 +65,7 @@ export default function TextInput({
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={isPassword && hidden}
-        placeholderTextColor={placeholderTextColor ?? "#9CA3AF"}
+        placeholderTextColor={placeholderTextColor ?? (isDark ? "#9CA3AF" : "#747474")}
         textAlign={isRtl ? "right" : "left"}
         textAlignVertical={isMultiline ? "top" : "center"}
         style={[
@@ -73,7 +73,7 @@ export default function TextInput({
             flex: 1,
             paddingVertical: 16,
             fontSize: 16,
-            color: isDark ? "#FFF" : "#000",
+            color: isDark ? "#FFF" : "#171717",
             fontFamily: "CabinetRegular",
             writingDirection: isRtl ? "rtl" : "ltr",
             minHeight: isMultiline ? 120 : undefined,
@@ -85,9 +85,9 @@ export default function TextInput({
       {isPassword ? (
         <TouchableOpacity onPress={() => setHidden((prev) => !prev)}>
           {hidden ? (
-            <EyeIcon size={20} color={isDark ? "#E5E7EB" : "#000"} />
+            <EyeIcon size={20} color={isDark ? "#E5E7EB" : "#171717"} />
           ) : (
-            <EyeClosedIcon size={20} color={isDark ? "#E5E7EB" : "#000"} />
+            <EyeClosedIcon size={20} color={isDark ? "#E5E7EB" : "#171717"} />
           )}
         </TouchableOpacity>
       ) : (

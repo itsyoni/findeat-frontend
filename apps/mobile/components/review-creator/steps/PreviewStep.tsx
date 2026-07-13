@@ -4,12 +4,15 @@ import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { ThemedSafeAreaView } from "@/components/common";
 import DishCard from "../components/DishCard";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
+import PostVisibilitySelector from "@/components/posts/PostVisibilitySelector";
+import type { PostVisibility } from "@findeat/types";
 
 type Props = {
   draft: CreateReviewDraft;
   loading: boolean;
   onBack: () => void;
   onPublish: () => void;
+  onVisibilityChange: (visibility: PostVisibility) => void;
 };
 
 export default function PreviewStep({
@@ -17,6 +20,7 @@ export default function PreviewStep({
   loading,
   onBack,
   onPublish,
+  onVisibilityChange,
 }: Props) {
   const restaurantName =
     draft.restaurant?.source === "FINDEAT"
@@ -32,12 +36,19 @@ export default function PreviewStep({
           paddingBottom: 40,
         }}
       >
-        <TouchableOpacity onPress={onBack}>
-          <Text className="font-bold text-black dark:text-white">← Back</Text>
-        </TouchableOpacity>
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity onPress={onBack}>
+            <Text className="font-bold text-black dark:text-white">← Back</Text>
+          </TouchableOpacity>
+          <Text className="text-sm font-semibold text-gray-400">4 of 4</Text>
+        </View>
 
         <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
-          Preview
+          Ready to share?
+        </Text>
+
+        <Text className="mt-2 text-gray-500">
+          Check your review before publishing it.
         </Text>
 
         {!!restaurantName && (
@@ -55,7 +66,7 @@ export default function PreviewStep({
           />
         )}
 
-        <View className="mt-6 rounded-3xl border border-gray-200 p-4">
+        <View className="mt-6 rounded-3xl bg-gray-50 p-5 dark:bg-gray-900">
           {!!draft.overallRating && (
             <Text className="text-xl font-bold text-black dark:text-white">
               ⭐ {draft.overallRating}/10
@@ -64,25 +75,25 @@ export default function PreviewStep({
 
           <View className="mt-4 gap-2">
             {!!draft.atmosphereRating && (
-              <Text className="text-gray-700">
+              <Text className="text-gray-700 dark:text-gray-300">
                 Atmosphere: {draft.atmosphereRating}/10
               </Text>
             )}
 
             {!!draft.serviceRating && (
-              <Text className="text-gray-700">
+              <Text className="text-gray-700 dark:text-gray-300">
                 Service: {draft.serviceRating}/10
               </Text>
             )}
 
             {!!draft.valueRating && (
-              <Text className="text-gray-700">
+              <Text className="text-gray-700 dark:text-gray-300">
                 Value: {draft.valueRating}/10
               </Text>
             )}
 
             {draft.totalPrice != null && (
-              <Text className="text-gray-700">Bill: ₪{draft.totalPrice}</Text>
+              <Text className="text-gray-700 dark:text-gray-300">Bill: ₪{draft.totalPrice}</Text>
             )}
           </View>
 
@@ -93,24 +104,33 @@ export default function PreviewStep({
           )}
         </View>
 
-        <Text className="mt-8 text-xl font-bold text-black dark:text-white">
-          What I ordered
-        </Text>
+        {draft.items.length > 0 && (
+          <>
+            <Text className="mt-8 text-xl font-bold text-black dark:text-white">
+              What I ordered
+            </Text>
 
-        <View className="mt-4 gap-4">
-          {draft.items.map((item) => (
-            <DishCard key={item.id} item={item} />
-          ))}
-        </View>
+            <View className="mt-4 gap-4">
+              {draft.items.map((item) => (
+                <DishCard key={item.id} item={item} />
+              ))}
+            </View>
+          </>
+        )}
+
+        <PostVisibilitySelector
+          value={draft.visibility}
+          onChange={onVisibilityChange}
+        />
 
         <TouchableOpacity
           className={`mt-8 rounded-2xl py-4 ${
-            loading ? "bg-gray-400" : "bg-black"
+            loading ? "bg-gray-400" : "bg-black dark:bg-white"
           }`}
           onPress={onPublish}
           disabled={loading}
         >
-          <Text className="text-center font-bold text-white">
+          <Text className="text-center font-bold text-white dark:text-black">
             {loading ? "Publishing..." : "Publish review"}
           </Text>
         </TouchableOpacity>

@@ -230,10 +230,10 @@ export default function EditProfileScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       <ScrollView
-        className="flex-1 bg-white dark:bg-black"
+        className="flex-1 bg-canvas dark:bg-black"
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="interactive"
       >
@@ -251,7 +251,7 @@ export default function EditProfileScreen() {
         <View className="px-5 pb-10">
           <TouchableOpacity
             onPress={() => pickImage([3, 1], setNewCoverUri)}
-            className="mt-6 h-40 overflow-hidden rounded-3xl bg-gray-100 dark:bg-gray-800"
+            className="mt-6 h-48 overflow-hidden rounded-3xl bg-gray-100 dark:bg-gray-800"
           >
             {newCoverUri || coverUrl ? (
               <Image

@@ -8,14 +8,18 @@ import { Alert, View } from "react-native";
 import AddDishDetailsStep from "./steps/AddDishDetailsStep";
 import CoverStep from "./steps/CoverStep";
 import DishesStep from "./steps/DishesStep";
-import DishSourceStep from "./steps/DishSourceStep";
 import PreviewStep from "./steps/PreviewStep";
 import RestaurantStep from "./steps/RestaurantStep";
 import SelectMenuDishStep from "./steps/SelectMenuDishStep";
-import { prependPostToFeedCache } from "@/hooks/useFeed";
+import {
+  prependPostToFeedCache,
+  updateRestaurantStatusInFeedCache,
+} from "@/hooks/useFeed";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 const initialDraft: CreateReviewDraft = {
+  visibility: "PUBLIC",
   restaurant: null,
   summary: "",
   items: [],
@@ -23,6 +27,7 @@ const initialDraft: CreateReviewDraft = {
 
 export default function ReviewCreator() {
   const queryClient = useQueryClient();
+  const { refreshUser } = useAuth();
   const [step, setStep] = useState<CreateReviewStep>("RESTAURANT");
   const [draft, setDraft] = useState<CreateReviewDraft>(initialDraft);
   const [loading, setLoading] = useState(false);
@@ -36,6 +41,10 @@ export default function ReviewCreator() {
   }
 
   function calculateOverallRating() {
+    if (typeof draft.overallRating === "number") {
+      return draft.overallRating;
+    }
+
     const ratings = [
       draft.atmosphereRating,
       draft.serviceRating,
@@ -110,6 +119,7 @@ export default function ReviewCreator() {
 
       const createdPost = await api.posts.createReview({
         restaurantId,
+        visibility: draft.visibility,
         coverImageUrl,
         overallRating,
         summary: draft.summary.trim(),
@@ -119,7 +129,13 @@ export default function ReviewCreator() {
         items: uploadedItems,
       });
 
+      updateRestaurantStatusInFeedCache(queryClient, restaurantId, {
+        visited: true,
+        wantToTry: false,
+      });
       prependPostToFeedCache(queryClient, createdPost);
+      void queryClient.invalidateQueries({ queryKey: ["restaurant-posts"] });
+      void refreshUser();
 
       setDraft(initialDraft);
       setSelectedMenuDish(null);
@@ -142,12 +158,16 @@ export default function ReviewCreator() {
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <View className="flex-1 bg-canvas dark:bg-black">
       {step === "RESTAURANT" && (
         <RestaurantStep
           selectedRestaurant={draft.restaurant}
-          onSelect={(restaurant) => updateDraft({ restaurant })}
-          onNext={() => setStep("COVER")}
+          onSelect={(restaurant) => {
+            if (!restaurant) return;
+            updateDraft({ restaurant });
+            setStep("COVER");
+          }}
+          onBack={() => router.back()}
         />
       )}
 
@@ -155,7 +175,11 @@ export default function ReviewCreator() {
         <CoverStep
           draft={draft}
           onChange={updateDraft}
-          onBack={() => setStep("RESTAURANT")}
+          onBack={() => {
+            updateDraft({ restaurant: null, items: [] });
+            setSelectedMenuDish(null);
+            setStep("RESTAURANT");
+          }}
           onNext={() => setStep("DISHES")}
         />
       )}
@@ -164,19 +188,20 @@ export default function ReviewCreator() {
         <DishesStep
           items={draft.items}
           onBack={() => setStep("COVER")}
-          onAddDish={() => setStep("DISH_SOURCE")}
-          onNext={() => setStep("PREVIEW")}
-        />
-      )}
-
-      {step === "DISH_SOURCE" && (
-        <DishSourceStep
-          onBack={() => setStep("DISHES")}
-          onCustom={() => {
+          onAddCustomDish={() => {
             setSelectedMenuDish(null);
             setStep("ADD_DISH_DETAILS");
           }}
-          onFromMenu={() => setStep("SELECT_MENU_DISH")}
+          onAddMenuDish={() => setStep("SELECT_MENU_DISH")}
+          onRemoveDish={(id) =>
+            setDraft((current) => ({
+              ...current,
+              items: current.items
+                .filter((item) => item.id !== id)
+                .map((item, index) => ({ ...item, order: index })),
+            }))
+          }
+          onNext={() => setStep("PREVIEW")}
         />
       )}
 
@@ -187,9 +212,13 @@ export default function ReviewCreator() {
               ? draft.restaurant.restaurant
               : null
           }
-          onBack={() => setStep("DISH_SOURCE")}
+          onBack={() => setStep("DISHES")}
           onSelect={(dish) => {
             setSelectedMenuDish(dish);
+            setStep("ADD_DISH_DETAILS");
+          }}
+          onAddCustom={() => {
+            setSelectedMenuDish(null);
             setStep("ADD_DISH_DETAILS");
           }}
         />
@@ -201,7 +230,7 @@ export default function ReviewCreator() {
           onBack={() =>
             selectedMenuDish
               ? setStep("SELECT_MENU_DISH")
-              : setStep("DISH_SOURCE")
+              : setStep("DISHES")
           }
           onSave={(item) => {
             setDraft((current) => ({
@@ -228,6 +257,7 @@ export default function ReviewCreator() {
           loading={loading}
           onBack={() => setStep("DISHES")}
           onPublish={publishReview}
+          onVisibilityChange={(visibility) => updateDraft({ visibility })}
         />
       )}
     </View>

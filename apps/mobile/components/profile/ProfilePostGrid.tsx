@@ -54,7 +54,7 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
               : t("noContentBody")}
         </Text>
         {onCreatePost ? (
-          <TouchableOpacity onPress={onCreatePost} className="mt-5 rounded-xl bg-black px-6 py-3 dark:bg-white">
+          <TouchableOpacity onPress={onCreatePost} className="mt-5 rounded-xl bg-ink px-6 py-3 dark:bg-white">
             <Text weight="bold" className="text-white dark:text-black">
               {isReview ? t("createReview") : t("createPost")}
             </Text>
@@ -74,7 +74,7 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
           <Pressable
             key={post.id}
             onPress={() => onPressPost(post.id)}
-            className="aspect-square w-1/3 border-[0.5px] border-gray-100 bg-gray-200 dark:border-gray-900"
+            className="aspect-square w-1/3 border-[0.5px] border-line bg-gray-200 dark:border-gray-900"
           >
             {imageUrl ? (
               <>

@@ -10,8 +10,20 @@ export async function searchFriends(
   return users.map((user) => ({
     id: user.id,
     type: "USER",
-    title: `@${user.username}`,
-    subtitle: user.displayName ?? undefined,
+    title: user.displayName?.trim() || user.username,
+    subtitle: `@${user.username}`,
+    imageUrl: user.avatarUrl ?? null,
+    relationship: "FRIENDS",
+  }));
+}
+
+export async function getSuggestedFriends(): Promise<SearchResultItem[]> {
+  const users = await api.users.suggestedFriends();
+  return users.map((user) => ({
+    id: user.id,
+    type: "USER",
+    title: user.displayName?.trim() || user.username,
+    subtitle: `@${user.username}`,
     imageUrl: user.avatarUrl ?? null,
     relationship: "FRIENDS",
   }));
@@ -26,8 +38,8 @@ export async function searchGlobal(query: string): Promise<SearchResultItem[]> {
   const mappedUsers: SearchResultItem[] = users.map((user) => ({
     id: user.id,
     type: "USER",
-    title: `@${user.username}`,
-    subtitle: user.displayName ?? undefined,
+    title: user.displayName?.trim() || user.username,
+    subtitle: `@${user.username}`,
     imageUrl: user.avatarUrl ?? null,
     relationship: user.relationship,
   }));
@@ -56,8 +68,8 @@ export async function searchChatTargets(
   const mappedUsers: SearchResultItem[] = users.map((user) => ({
     id: user.id,
     type: "USER",
-    title: `@${user.username}`,
-    subtitle: user.displayName ?? undefined,
+    title: user.displayName?.trim() || user.username,
+    subtitle: `@${user.username}`,
     imageUrl: user.avatarUrl ?? null,
     relationship: user.relationship,
   }));

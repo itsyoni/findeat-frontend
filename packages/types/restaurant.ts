@@ -101,6 +101,7 @@ export type GoogleRestaurantSuggestion = {
   city?: string | null;
   latitude?: number | null;
   longitude?: number | null;
+  distanceKm?: number;
 };
 
 export type SelectedRestaurant =

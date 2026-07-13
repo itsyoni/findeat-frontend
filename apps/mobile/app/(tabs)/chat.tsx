@@ -11,7 +11,7 @@ import { router, useFocusEffect } from "expo-router";
 import { PlusIcon } from "phosphor-react-native";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/contexts/ThemeContext";
@@ -87,7 +87,8 @@ export default function ChatsScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#080808" : "#FBFAF8" }}
+      edges={["top"]}
     >
       {isSearching ? (
         <Animated.View
@@ -117,19 +118,21 @@ export default function ChatsScreen() {
             onPress={() => setIsSearching(true)}
             rightAccessory={
               <TouchableOpacity
-                className="h-full aspect-square items-center justify-center rounded-2xl bg-black"
+                className="h-full aspect-square items-center justify-center rounded-2xl bg-brand"
                 onPress={() => router.push("/chats/create-group")}
               >
-                <PlusIcon size={22} color="white" weight="bold" />
+                <PlusIcon size={23} color="#FFF" weight="bold" />
               </TouchableOpacity>
             }
           />
 
-          <ChatList
-            chats={chats}
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-          />
+          <View className="flex-1 overflow-hidden rounded-t-[30px] bg-white pt-2 dark:bg-[#0F0F10]">
+            <ChatList
+              chats={chats}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          </View>
         </Animated.View>
       )}
     </SafeAreaView>

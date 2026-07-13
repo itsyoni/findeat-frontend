@@ -18,9 +18,9 @@ type Props = {
 };
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-black dark:bg-white",
-  secondary: "bg-gray-100 dark:bg-gray-800",
-  outline: "border border-gray-200 bg-white dark:border-gray-700 dark:bg-black",
+  primary: "bg-ink dark:bg-white",
+  secondary: "bg-soft dark:bg-gray-800",
+  outline: "border border-line bg-surface dark:border-gray-700 dark:bg-black",
   danger: "bg-red-500",
 };
 
@@ -52,7 +52,7 @@ export default function AppButton({
           : "white"
         : isDark
           ? "white"
-          : "black";
+          : "#171717";
 
   return (
     <TouchableOpacity

@@ -5,14 +5,22 @@ import ContentFeed from "@/components/posts/content/ContentFeed";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post, PostType } from "@findeat/types/post";
-import { router, Stack, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  Stack,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CaretLeftIcon } from "phosphor-react-native";
+import { useQueryClient } from "@tanstack/react-query";
+import { removePostFromAppCache } from "@/hooks/useFeed";
 
 export default function PostScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const queryClient = useQueryClient();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
@@ -49,6 +57,12 @@ export default function PostScreen() {
     setPosts(result.posts);
     setLoadedPostId(result.id);
   }, [fetchPostsData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadPosts();
+    }, [loadPosts]),
+  );
 
   async function onRefresh() {
     try {
@@ -154,12 +168,10 @@ export default function PostScreen() {
   async function deletePost(postId: string) {
     try {
       await api.posts.delete(postId);
-
-      setPosts((currentPosts) =>
-        currentPosts.filter((post) => post.id !== postId),
-      );
-
+      removePostFromAppCache(queryClient, postId);
       setOptionsPostId(null);
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)");
     } catch (error) {
       console.error("Failed to delete post", error);
       Alert.alert("Error", "Could not delete post");
@@ -268,16 +280,19 @@ export default function PostScreen() {
               initialIndex={0}
             />
           ) : (
-            <ReviewFeed
-              posts={posts}
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              onToggleLike={toggleLike}
-              onOpenComments={openComments}
-              onToggleWantToTry={toggleWantToTry}
-              onOpenSharePost={setSharePostId}
-              onOpenPostOptions={setOptionsPostId}
-            />
+            <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
+              <ReviewFeed
+                posts={posts}
+                contentTopInset={56}
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                onToggleLike={toggleLike}
+                onOpenComments={openComments}
+                onToggleWantToTry={toggleWantToTry}
+                onOpenSharePost={setSharePostId}
+                onOpenPostOptions={setOptionsPostId}
+              />
+            </SafeAreaView>
           ))}
 
         <PostOptionsBottomSheet

@@ -5,21 +5,23 @@ import { router } from "expo-router";
 import {
   BookmarkSimpleIcon,
   ChatCircleIcon,
-  CheckCircleIcon,
+  CheckIcon,
   DotsThreeOutlineIcon,
   HeartIcon,
   ShareFatIcon,
-  StarIcon,
 } from "phosphor-react-native";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
   Image,
+  I18nManager,
   TouchableOpacity,
   useWindowDimensions,
   View,
+  ViewToken,
 } from "react-native";
 import Animated, {
+  interpolateColor,
   useAnimatedStyle,
   useSharedValue,
   withSequence,
@@ -27,6 +29,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
+import { useTranslation } from "react-i18next";
+import PostVisibilityIcon from "@/components/posts/PostVisibilityIcon";
 
 type Props = {
   post: Post;
@@ -60,6 +64,40 @@ type ReviewSlide =
       isLinkedToMenu: boolean;
     };
 
+const reviewViewabilityConfig = { itemVisiblePercentThreshold: 60 };
+
+function ReviewPaginationDot({
+  active,
+  isDark,
+}: {
+  active: boolean;
+  isDark: boolean;
+}) {
+  const progress = useSharedValue(active ? 1 : 0);
+
+  useEffect(() => {
+    progress.set(withSpring(active ? 1 : 0, { damping: 15, stiffness: 180 }));
+  }, [active, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    width: 6 + progress.value * 16,
+    opacity: 0.55 + progress.value * 0.45,
+    transform: [{ scaleY: 1 + progress.value * 0.18 }],
+    backgroundColor: interpolateColor(
+      progress.value,
+      [0, 1],
+      isDark ? ["#4B5563", "#FFFFFF"] : ["#D1D5DB", "#111111"],
+    ),
+  }));
+
+  return (
+    <Animated.View
+      className="h-1.5 rounded-full"
+      style={animatedStyle}
+    />
+  );
+}
+
 export default function ReviewPost({
   post,
   onToggleLike,
@@ -69,6 +107,7 @@ export default function ReviewPost({
   onOpenPostOptions,
 }: Props) {
   const { isDark } = useAppTheme();
+  const { t } = useTranslation("restaurants");
   const actionColor = isDark ? "#E5E7EB" : "#212121";
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -101,6 +140,16 @@ export default function ReviewPost({
   ];
 
   const activeSlide = slides[activeIndex];
+  const indicatorSlides = I18nManager.isRTL ? [...slides].reverse() : slides;
+  const onViewableItemsChanged = useCallback(
+    ({ viewableItems }: { viewableItems: ViewToken<ReviewSlide>[] }) => {
+      const nextIndex = viewableItems.find(
+        (item) => item.isViewable && typeof item.index === "number",
+      )?.index;
+      if (typeof nextIndex === "number") setActiveIndex(nextIndex);
+    },
+    [],
+  );
 
   const isRestaurantPost = !!post.authorRestaurantId && !!post.authorRestaurant;
 
@@ -148,67 +197,81 @@ export default function ReviewPost({
     onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
   }
 
-  const PlaceStatusIcon = isFavorite
-    ? StarIcon
-    : isVisited
-      ? CheckCircleIcon
-      : BookmarkSimpleIcon;
-  const placeStatusColor = isFavorite
-    ? "#FF3040"
-    : isVisited
-      ? "#22C55E"
-      : isWantToTry
-        ? "#D6A92D"
-        : actionColor;
+  const isPlaceSaved = isWantToTry || isVisited || isFavorite;
+  const bookmarkColor = isPlaceSaved ? "#F7D786" : actionColor;
+
+  function openAuthorProfile() {
+    if (isRestaurantPost && post.authorRestaurant?.id) {
+      router.push({
+        pathname: "/restaurants/[id]",
+        params: { id: post.authorRestaurant.id },
+      });
+      return;
+    }
+
+    if (!post.author?.id) return;
+    router.push({
+      pathname: "/(users)/[id]",
+      params: { id: post.author.id },
+    });
+  }
+
+  function openRestaurantProfile() {
+    if (!post.restaurant?.id) return;
+    router.push({
+      pathname: "/restaurants/[id]",
+      params: { id: post.restaurant.id },
+    });
+  }
 
   return (
     <View className="mb-6 bg-white pb-6 dark:bg-black">
       <View className="mb-3 flex-row items-center justify-between px-4">
-        <TouchableOpacity
-          className="flex-1 flex-row items-center gap-3"
-          activeOpacity={0.8}
-          onPress={() => {
-            if (isRestaurantPost && post.authorRestaurant?.id) {
-              router.push({
-                pathname: "/restaurants/[id]",
-                params: { id: post.authorRestaurant.id },
-              });
-              return;
-            }
-
-            if (!post.author?.id) return;
-
-            router.push({
-              pathname: "/(users)/[id]",
-              params: { id: post.author.id },
-            });
-          }}
-        >
-          <Avatar
-            uri={displayAvatar}
-            username={displayName ?? "User"}
-            size={42}
-            fallbackType={isRestaurantPost ? "restaurant" : "user"}
-          />
+        <View className="flex-1 flex-row items-center gap-3">
+          <TouchableOpacity activeOpacity={0.8} onPress={openAuthorProfile}>
+            <Avatar
+              uri={displayAvatar}
+              username={displayName ?? "User"}
+              size={42}
+              fallbackType={isRestaurantPost ? "restaurant" : "user"}
+            />
+          </TouchableOpacity>
 
           <View className="flex-1">
-            <View className="flex-row items-center">
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={openAuthorProfile}
+              className="self-start flex-row items-center"
+            >
               <Text className="font-bold text-black dark:text-white">
                 {isRestaurantPost ? displayName : `@${displayName}`}
               </Text>
               {isRestaurantPost ? <RestaurantBadge /> : null}
-            </View>
+              {!isRestaurantPost && post.visibility !== "PUBLIC" ? (
+                <View className="ml-1.5">
+                  <PostVisibilityIcon
+                    visibility={post.visibility}
+                    color={actionColor}
+                  />
+                </View>
+              ) : null}
+            </TouchableOpacity>
 
             {!!post.restaurant && (
-              <View className="flex-row items-center">
+              <TouchableOpacity
+                activeOpacity={0.7}
+                hitSlop={6}
+                onPress={openRestaurantProfile}
+                className="mt-0.5 self-start flex-row items-center"
+              >
                 <Text className="text-xs text-gray-500">
                   {post.restaurant.name}{post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
                 </Text>
                 <RestaurantBadge size={12} status={post.restaurant.status} />
-              </View>
+              </TouchableOpacity>
             )}
           </View>
-        </TouchableOpacity>
+        </View>
 
         {post.canDelete && (
           <TouchableOpacity
@@ -227,13 +290,8 @@ export default function ReviewPost({
         data={slides}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={(event) => {
-          const index = Math.round(
-            event.nativeEvent.contentOffset.x /
-              event.nativeEvent.layoutMeasurement.width,
-          );
-          setActiveIndex(index);
-        }}
+        onViewableItemsChanged={onViewableItemsChanged}
+        viewabilityConfig={reviewViewabilityConfig}
         renderItem={({ item }) => (
           <View style={{ width }} className="h-96 bg-gray-100">
             {item.imageUrl ? (
@@ -341,12 +399,11 @@ export default function ReviewPost({
 
       {slides.length > 1 && (
         <View className="mt-3 flex-row justify-center gap-1">
-          {slides.map((slide, index) => (
-            <View
+          {indicatorSlides.map((slide) => (
+            <ReviewPaginationDot
               key={slide.id}
-              className={`h-1.5 rounded-full ${
-                index === activeIndex ? "w-5 bg-black" : "w-1.5 bg-gray-300"
-              }`}
+              active={slide.id === activeSlide?.id}
+              isDark={isDark}
             />
           ))}
         </View>
@@ -382,26 +439,43 @@ export default function ReviewPost({
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => onOpenSharePost(post.id)}
-              className="items-center justify-center"
-            >
-              <ShareFatIcon weight="regular" color={actionColor} size={28} />
-              <Text className="text-base text-black dark:text-white">
-                {post.sharesCount ?? 0}
-              </Text>
-            </TouchableOpacity>
+            {post.visibility === "PUBLIC" && (
+              <TouchableOpacity
+                onPress={() => onOpenSharePost(post.id)}
+                className="items-center justify-center"
+              >
+                <ShareFatIcon weight="regular" color={actionColor} size={28} />
+                <Text className="text-base text-black dark:text-white">
+                  {post.sharesCount ?? 0}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
-          <TouchableOpacity onPress={handleWantToTry}>
-            <PlaceStatusIcon
-              weight="fill"
-              color={placeStatusColor}
-              size={28}
-            />
+          <TouchableOpacity className="items-center" onPress={handleWantToTry}>
+            <View className="relative h-7 w-7">
+              <BookmarkSimpleIcon
+                weight="fill"
+                color={bookmarkColor}
+                size={28}
+              />
+              {isVisited && !isFavorite && (
+                <View className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-green-500">
+                  <CheckIcon size={11} color="white" weight="bold" />
+                </View>
+              )}
+              {isFavorite && (
+                <HeartIcon
+                  size={15}
+                  color="#FF3040"
+                  weight="fill"
+                  style={{ position: "absolute", right: -5, top: -5 }}
+                />
+              )}
+            </View>
 
-            <Text className="text-center text-lg text-black dark:text-white">
-              {post.restaurantSavesCount ?? 0}
+            <Text className="mt-1 text-center text-xs font-bold text-black dark:text-white">
+              {t(isPlaceSaved ? "savedPlace" : "savePlace")}
             </Text>
           </TouchableOpacity>
         </View>

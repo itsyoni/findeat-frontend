@@ -23,7 +23,17 @@ import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
 import { LoadingScreen } from "@/components/common";
 import Animated, {
+  cancelAnimation,
+  FadeIn,
+  FadeOut,
+  interpolate,
   LinearTransition,
+  useAnimatedStyle,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
   ZoomInEasyDown,
 } from "react-native-reanimated";
 import { useTranslation } from "react-i18next";
@@ -73,6 +83,48 @@ function formatMessageTime(value: string) {
   });
 }
 
+function TypingDot({ delay }: { delay: number }) {
+  const offset = useSharedValue(0);
+
+  useEffect(() => {
+    offset.value = withDelay(
+      delay,
+      withRepeat(
+        withSequence(
+          withTiming(-4, { duration: 180 }),
+          withTiming(0, { duration: 180 }),
+          withTiming(0, { duration: 360 }),
+        ),
+        -1,
+      ),
+    );
+
+    return () => cancelAnimation(offset);
+  }, [delay, offset]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: interpolate(offset.value, [-4, 0], [1, 0.45]),
+    transform: [{ translateY: offset.value }],
+  }));
+
+  return (
+    <Animated.View
+      style={animatedStyle}
+      className="h-2 w-2 rounded-full bg-gray-500 dark:bg-gray-300"
+    />
+  );
+}
+
+function TypingDots() {
+  return (
+    <View className="flex-row items-center gap-1">
+      <TypingDot delay={0} />
+      <TypingDot delay={120} />
+      <TypingDot delay={240} />
+    </View>
+  );
+}
+
 export default function ChatScreen() {
   const { user } = useAuth();
   const { t } = useTranslation("chat");
@@ -99,10 +151,18 @@ export default function ChatScreen() {
   const [sending, setSending] = useState(false);
   const [animateNewMessages, setAnimateNewMessages] = useState(false);
   const [conversationId, setConversationId] = useState(id);
+  const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesListRef = useRef<FlatList<ChatMessage>>(null);
   const composerBaseContentHeightRef = useRef<number | null>(null);
+  const typingStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const typingUserTimersRef = useRef(
+    new Map<string, ReturnType<typeof setTimeout>>(),
+  );
+  const sentTypingRef = useRef(false);
 
   const otherUser = chat?.participants.find((p) => p.userId !== user?.id)?.user;
 
@@ -125,6 +185,71 @@ export default function ChatScreen() {
       : isRestaurantChat
         ? chat?.restaurant?.logoUrl
         : otherUser?.avatarUrl;
+
+  const typingParticipant = chat?.participants.find(
+    (participant) => participant.userId === typingUserIds[0],
+  );
+  const typingName =
+    typingParticipant?.user.displayName ??
+    typingParticipant?.user.username ??
+    t("someone");
+  const typingLabel = isGroupChat
+    ? typingUserIds.length > 1
+      ? t("peopleTyping", { count: typingUserIds.length })
+      : t("userTyping", { name: typingName })
+    : t("typing");
+
+  const removeTypingUser = useCallback((typingUserId: string) => {
+    const timer = typingUserTimersRef.current.get(typingUserId);
+    if (timer) clearTimeout(timer);
+    typingUserTimersRef.current.delete(typingUserId);
+    setTypingUserIds((current) =>
+      current.filter((userId) => userId !== typingUserId),
+    );
+  }, []);
+
+  const stopTyping = useCallback(() => {
+    if (typingStopTimerRef.current) {
+      clearTimeout(typingStopTimerRef.current);
+      typingStopTimerRef.current = null;
+    }
+
+    if (sentTypingRef.current && !isNewChat) {
+      socketRef.current?.emit("typing_stop", { conversationId });
+    }
+
+    sentTypingRef.current = false;
+  }, [conversationId, isNewChat]);
+
+  const handleContentChange = useCallback(
+    (nextContent: string) => {
+      setContent(nextContent);
+
+      const socket = socketRef.current;
+      if (isNewChat || !socket?.connected) return;
+
+      if (!nextContent.trim()) {
+        stopTyping();
+        return;
+      }
+
+      if (!sentTypingRef.current) {
+        socket.emit("typing_start", { conversationId });
+        sentTypingRef.current = true;
+      }
+
+      if (typingStopTimerRef.current) {
+        clearTimeout(typingStopTimerRef.current);
+      }
+
+      typingStopTimerRef.current = setTimeout(() => {
+        socket.emit("typing_stop", { conversationId });
+        sentTypingRef.current = false;
+        typingStopTimerRef.current = null;
+      }, 1_500);
+    },
+    [conversationId, isNewChat, stopTyping],
+  );
 
   const loadChat = useCallback(async () => {
     if (isNewChat) return;
@@ -169,16 +294,19 @@ export default function ChatScreen() {
     const socket = io(API_URL, {
       auth: { userId: user.id },
     });
+    const typingUserTimers = typingUserTimersRef.current;
 
     socketRef.current = socket;
 
     socket.on("connect", () => {
+      setTypingUserIds([]);
       socket.emit("join_conversation", {
         conversationId,
       });
     });
 
     socket.on("receive_message", (message: Message) => {
+      removeTypingUser(message.senderId);
       setMessages((current) => {
         const exists = current.some((item) => item.id === message.id);
         if (exists) return current;
@@ -203,11 +331,55 @@ export default function ChatScreen() {
       });
     });
 
+    socket.on(
+      "typing_changed",
+      (event: {
+        conversationId: string;
+        userId: string;
+        isTyping: boolean;
+      }) => {
+        if (
+          event.conversationId !== conversationId ||
+          event.userId === user.id
+        ) {
+          return;
+        }
+
+        if (!event.isTyping) {
+          removeTypingUser(event.userId);
+          return;
+        }
+
+        setTypingUserIds((current) =>
+          current.includes(event.userId) ? current : [...current, event.userId],
+        );
+
+        const currentTimer = typingUserTimers.get(event.userId);
+        if (currentTimer) clearTimeout(currentTimer);
+        typingUserTimers.set(
+          event.userId,
+          setTimeout(() => removeTypingUser(event.userId), 3_500),
+        );
+      },
+    );
+
     return () => {
+      if (sentTypingRef.current) {
+        socket.emit("typing_stop", { conversationId });
+      }
+      if (typingStopTimerRef.current) {
+        clearTimeout(typingStopTimerRef.current);
+        typingStopTimerRef.current = null;
+      }
+      typingUserTimers.forEach(clearTimeout);
+      typingUserTimers.clear();
+      sentTypingRef.current = false;
       socket.off("receive_message");
+      socket.off("typing_changed");
       socket.disconnect();
+      if (socketRef.current === socket) socketRef.current = null;
     };
-  }, [conversationId, isNewChat, user?.id]);
+  }, [conversationId, isNewChat, removeTypingUser, user?.id]);
 
   async function onRefresh() {
     if (isNewChat) return;
@@ -237,6 +409,7 @@ export default function ChatScreen() {
       },
     };
 
+    stopTyping();
     setMessages((current) => [...current, optimisticMessage]);
     setContent("");
     setComposerHeight(42);
@@ -321,6 +494,8 @@ export default function ChatScreen() {
   function getStatusText() {
     if (isNewChat) return t("newConversation");
 
+    if (typingUserIds.length > 0) return typingLabel;
+
     if (isGroupChat) {
       const count = chat?.participants.length ?? 0;
       return t("members", { count });
@@ -330,11 +505,21 @@ export default function ChatScreen() {
       return t("restaurantChat");
     }
 
+    if (
+      user?.showActivityStatus === false ||
+      otherUser?.showActivityStatus === false
+    ) {
+      return "";
+    }
+
     if (otherUser?.isOnline) return t("onlineNow");
 
     if (otherUser?.lastSeenAt) {
       return t("lastSeen", {
-        time: new Date(otherUser.lastSeenAt).toLocaleTimeString(),
+        time: new Date(otherUser.lastSeenAt).toLocaleTimeString(undefined, {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       });
     }
 
@@ -372,6 +557,8 @@ export default function ChatScreen() {
     return <LoadingScreen />;
   }
 
+  const statusText = getStatusText();
+
   return (
     <>
       <Stack.Screen
@@ -379,9 +566,9 @@ export default function ChatScreen() {
           header: () => (
             <SafeAreaView
               edges={["top"]}
-              style={{ backgroundColor: isDark ? "#000" : "white" }}
+              style={{ backgroundColor: isDark ? "#0F0F10" : "white" }}
             >
-              <View className="h-15 flex-row items-center border-b border-gray-100 bg-white px-2 dark:border-gray-800 dark:bg-black">
+              <View className="h-16 flex-row items-center border-b border-gray-100 bg-white px-2 dark:border-gray-900 dark:bg-[#0F0F10]">
                 <Pressable
                   onPress={() => router.back()}
                   hitSlop={8}
@@ -402,7 +589,7 @@ export default function ChatScreen() {
                   <Avatar
                     uri={headerImage}
                     username={headerTitle ?? "Chat"}
-                    size={40}
+                    size={42}
                     fallbackType={isRestaurantChat ? "restaurant" : "user"}
                   />
 
@@ -414,9 +601,14 @@ export default function ChatScreen() {
                       {isRestaurantChat ? <RestaurantBadge /> : null}
                     </View>
 
-                    <Text numberOfLines={1} className="text-xs text-gray-500">
-                      {getStatusText()}
-                    </Text>
+                    {statusText ? (
+                      <Text
+                        numberOfLines={1}
+                        className={`text-xs ${typingUserIds.length > 0 || (!isGroupChat && !isRestaurantChat && otherUser?.isOnline) ? "font-semibold text-emerald-600 dark:text-emerald-400" : "text-gray-500"}`}
+                      >
+                        {statusText}
+                      </Text>
+                    ) : null}
                   </View>
                 </Pressable>
               </View>
@@ -427,7 +619,7 @@ export default function ChatScreen() {
       />
       <SafeAreaView
         edges={["left", "right", "bottom"]}
-        style={{ flex: 1, backgroundColor: isDark ? "#000" : "white" }}
+        style={{ flex: 1, backgroundColor: isDark ? "#080808" : "#FBFAF8" }}
       >
         <KeyboardAvoidingView
           className="flex-1"
@@ -440,15 +632,17 @@ export default function ChatScreen() {
             onRefresh={onRefresh}
             data={messages}
             keyExtractor={(item) => item.renderKey ?? item.id}
+            keyboardShouldPersistTaps="handled"
             contentContainerStyle={{
               flexGrow: 1,
-              paddingHorizontal: 10,
-              paddingTop: 10,
+              paddingHorizontal: 12,
+              paddingBottom: 8,
+              paddingTop: 12,
             }}
             ListEmptyComponent={
               isNewChat ? (
                 <View className="flex-1 items-center justify-center px-8">
-                  <Text className="text-center text-xl font-bold text-black">
+                  <Text className="text-center text-xl font-bold text-black dark:text-white">
                     {t("noMessages")}
                   </Text>
                 </View>
@@ -479,8 +673,8 @@ export default function ChatScreen() {
                 <View>
                   {shouldShowDateSeparator && (
                     <View className="my-4 items-center">
-                      <View className="rounded-full bg-gray-100 px-3 py-1.5">
-                        <Text className="text-xs font-semibold text-gray-500">
+                      <View className="rounded-full bg-white px-3 py-1.5 dark:bg-[#1B1B1D]">
+                        <Text className="text-xs font-semibold text-gray-500 dark:text-gray-400">
                           {formatMessageDate(item.createdAt, {
                             today: t("today"),
                             yesterday: t("yesterday"),
@@ -514,10 +708,10 @@ export default function ChatScreen() {
                     )}
 
                     <View
-                      className={`max-w-[75%] rounded-2xl px-4 py-3 ${
+                      className={`max-w-[78%] rounded-[22px] border px-4 py-2.5 ${
                         isMine
-                          ? "rounded-br-none bg-[#F7D786]"
-                          : "rounded-bl-none bg-[#EEEEEE] dark:bg-gray-800"
+                          ? `${nextMessage?.senderId !== item.senderId ? "rounded-br-md" : ""} border-[#FFD8CD] bg-brand-soft`
+                          : `${nextMessage?.senderId !== item.senderId ? "rounded-bl-md" : ""} border-gray-100 bg-white dark:border-gray-800 dark:bg-[#1B1B1D]`
                       }`}
                     >
                       {shouldShowSenderName && (
@@ -529,7 +723,7 @@ export default function ChatScreen() {
                       {item.type === "POST" ? (
                         item.post ? (
                           <Pressable
-                            className="overflow-hidden rounded-xl bg-white"
+                            className="overflow-hidden rounded-2xl bg-gray-50 dark:bg-gray-900"
                             onPress={() =>
                               router.push({
                                 pathname: "/(posts)/[id]",
@@ -558,7 +752,7 @@ export default function ChatScreen() {
 
                                   <View className="p-3">
                                     <View className="flex-row items-center">
-                                      <Text className="font-bold text-black">
+                                      <Text className="font-bold text-black dark:text-white">
                                         {item.post.restaurant?.name ?? t("findEatPost")}
                                       </Text>
                                       {item.post.restaurant?.name ? <RestaurantBadge /> : null}
@@ -567,7 +761,7 @@ export default function ChatScreen() {
                                     {!!description && (
                                       <Text
                                         numberOfLines={2}
-                                        className="mt-1 text-sm text-gray-600"
+                                        className="mt-1 text-sm text-gray-600 dark:text-gray-300"
                                       >
                                         {description}
                                       </Text>
@@ -585,14 +779,22 @@ export default function ChatScreen() {
                           </View>
                         )
                       ) : (
-                        <Text className="text-black dark:text-white">
+                        <Text
+                          className={
+                            isMine
+                              ? "text-black"
+                              : "text-black dark:text-white"
+                          }
+                        >
                           {item.content}
                         </Text>
                       )}
 
                       <Text
                         className={`mt-1 self-end text-[10px] ${
-                          isMine ? "text-gray-700" : "text-gray-500"
+                          isMine
+                            ? "text-black/50"
+                            : "text-gray-400 dark:text-gray-500"
                         }`}
                       >
                         {formatMessageTime(item.createdAt)}
@@ -604,13 +806,27 @@ export default function ChatScreen() {
             }}
           />
 
-          <View className="flex-row items-end px-3 py-2">
+          {typingUserIds.length > 0 ? (
+            <Animated.View
+              entering={FadeIn.duration(140)}
+              exiting={FadeOut.duration(140)}
+              className="mx-3 mb-2 self-start flex-row items-center rounded-[18px] rounded-bl-md border border-gray-100 bg-white px-3 py-2 dark:border-gray-800 dark:bg-[#1B1B1D]"
+            >
+              <TypingDots />
+              <Text className="ml-2 text-xs font-semibold text-gray-500 dark:text-gray-300">
+                {typingLabel}
+              </Text>
+            </Animated.View>
+          ) : null}
+
+          <View className="flex-row items-end border-t border-line bg-white px-3 py-2 dark:border-gray-900 dark:bg-[#0F0F10]">
             <RNTextInput
-              className="flex-1 rounded-3xl border-0 bg-[#F5F4F5] px-4 text-black dark:bg-gray-900 dark:text-white"
+              className="flex-1 rounded-3xl border border-line bg-soft px-4 text-ink dark:border-gray-800 dark:bg-[#1B1B1D] dark:text-white"
               placeholder={t("messagePlaceholder")}
               placeholderTextColor="#9CA3AF"
               value={content}
-              onChangeText={setContent}
+              onChangeText={handleContentChange}
+              onBlur={stopTyping}
               multiline
               scrollEnabled={composerHeight >= 136}
               onContentSizeChange={(event) => {
@@ -652,14 +868,18 @@ export default function ChatScreen() {
             />
 
             <TouchableOpacity
-              className="ml-2 h-10 w-10 items-center justify-center rounded-full bg-black"
+              className={`ml-2 h-10 w-10 items-center justify-center rounded-full ${content.trim() && !sending ? "bg-brand" : "bg-gray-200 dark:bg-gray-800"}`}
               onPress={sendMessage}
               disabled={!content.trim() || sending}
             >
               {sending ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color={isDark ? "white" : "#111"} />
               ) : (
-                <PaperPlaneTiltIcon size={22} color="white" weight="fill" />
+                <PaperPlaneTiltIcon
+                  size={21}
+                  color={content.trim() ? "#FFF" : "#9CA3AF"}
+                  weight="fill"
+                />
               )}
             </TouchableOpacity>
           </View>

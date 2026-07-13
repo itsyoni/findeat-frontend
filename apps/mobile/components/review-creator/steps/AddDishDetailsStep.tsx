@@ -79,7 +79,7 @@ export default function AddDishDetailsStep({
     });
   }
 
-  const displayedImage = imageUri;
+  const displayedImage = imageUri ?? selectedDish?.imageUrl ?? undefined;
 
   return (
     <ThemedSafeAreaView>

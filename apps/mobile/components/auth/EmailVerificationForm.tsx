@@ -46,7 +46,7 @@ export default function EmailVerificationForm({ email, onBack }: Props) {
         placeholder="000000"
         keyboardType="number-pad"
         maxLength={6}
-        className="border-0 bg-[#f8f8f8] text-center text-2xl tracking-[8px] dark:bg-gray-800"
+        className="border border-[#D8D3CA] bg-[#F1EEE8] text-center text-2xl tracking-[8px] dark:border-gray-600 dark:bg-gray-800"
       />
       <TouchableOpacity disabled={loading || code.length !== 6} onPress={() => void submit()} className="mt-4 rounded-2xl bg-[#212121] py-4 disabled:opacity-40 dark:bg-white">
         <Text weight="bold" className="text-center text-white dark:text-black">{loading ? t('verifying') : t('verify')}</Text>

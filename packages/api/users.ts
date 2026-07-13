@@ -28,6 +28,13 @@ export function createUsersApi(api: AxiosInstance) {
       return data;
     },
 
+    async suggestedFriends() {
+      const { data } = await api.get<UserSearchResult[]>(
+        "/users/friends/suggested",
+      );
+      return data;
+    },
+
     async me() {
       const { data } = await api.get<Profile>("/users/me");
       return data;
@@ -42,6 +49,7 @@ export function createUsersApi(api: AxiosInstance) {
       email?: string;
       password?: string;
       language?: Language;
+      showActivityStatus?: boolean;
     }) {
       const { data } = await api.patch<Profile>("/users/me", payload);
       return data;

@@ -25,7 +25,7 @@ export default function NotificationPopup({ item, onPress, onDismiss }: Props) {
           <Avatar uri={item.actor.avatarUrl} size={44} />
         ) : (
           <View className="h-11 w-11 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800">
-            <BellIcon size={22} color={isDark ? '#FFF' : '#111'} />
+            <BellIcon size={22} color={isDark ? '#FFF' : '#FF5B35'} />
           </View>
         )}
         <View className="ml-3 flex-1">

@@ -5,7 +5,7 @@ import { Tabs } from "expo-router";
 import {
   ChatCircleIcon,
   HouseIcon,
-  MapPinIcon,
+  MapTrifoldIcon,
 } from "phosphor-react-native";
 import React from "react";
 import { View } from "react-native";
@@ -14,7 +14,7 @@ import { useAppTheme } from "@/contexts/ThemeContext";
 export default function TabLayout() {
   const { user } = useAuth();
   const { isDark } = useAppTheme();
-  const iconColor = isDark ? "#FFF" : "#000";
+  const iconColor = isDark ? "#FFF" : "#171717";
 
   return (
     <Tabs
@@ -23,7 +23,7 @@ export default function TabLayout() {
         tabBarShowLabel: false,
         tabBarStyle: {
           backgroundColor: isDark ? "#000" : "#FFF",
-          borderTopColor: isDark ? "#1F2937" : "#E5E7EB",
+          borderTopColor: isDark ? "#1F2937" : "#E8E6E1",
         },
       }}
     >
@@ -59,7 +59,9 @@ export default function TabLayout() {
         name="create"
         options={{
           title: "Create",
-          tabBarButton: () => <CreateLauncherButton />,
+          tabBarButton: (props) => (
+            <CreateLauncherButton style={props.style} />
+          ),
         }}
       />
 
@@ -68,7 +70,7 @@ export default function TabLayout() {
         options={{
           title: "Map",
           tabBarIcon: ({ focused }) => (
-            <MapPinIcon
+            <MapTrifoldIcon
               size={28}
               color={iconColor}
               weight={focused ? "fill" : "regular"}

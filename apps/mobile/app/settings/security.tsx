@@ -10,7 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 export default function SecuritySettingsScreen() {
   const { t } = useTranslation('settings');
   const { isDark } = useAppTheme();
-  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
     <SettingsHeader title={t('passwordSecurity')} />
     <SettingsSection title={t('loginSecurity')}>
       <SettingsRow icon={<KeyIcon size={22} color={isDark ? '#FFF' : '#111'} />} title={t('resetPassword')} subtitle={t('resetPasswordSubtitle')} onPress={() => router.push('/settings/reset-password')} />

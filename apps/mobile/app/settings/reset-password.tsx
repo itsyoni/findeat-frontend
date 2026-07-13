@@ -11,7 +11,7 @@ export default function ResetPasswordSettingsScreen() {
   const { t } = useTranslation('settings');
   const { isDark } = useAppTheme();
   const { user } = useAuth();
-  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
     <SettingsHeader title={t('resetPassword')} />
     <ScrollView keyboardShouldPersistTaps="handled">
       <View className="p-6">

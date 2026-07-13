@@ -14,7 +14,7 @@ export default function AccountSettingsScreen() {
   const { user } = useAuth();
   const { isDark } = useAppTheme();
   const color = isDark ? '#FFF' : '#111';
-  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
     <SettingsHeader title={t('settings:account')} />
     <ScrollView>
       <SettingsSection title={t('settings:profileInformation')}>

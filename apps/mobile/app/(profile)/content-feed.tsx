@@ -5,9 +5,9 @@ import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -16,10 +16,13 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { removePostFromAppCache } from "@/hooks/useFeed";
 
 const { height } = Dimensions.get("window");
 
 export default function ProfileContentFeedScreen() {
+  const queryClient = useQueryClient();
   const { postId } = useLocalSearchParams<{ postId: string }>();
 
   const { profile, loading, refresh } = useMyProfile();
@@ -30,6 +33,12 @@ export default function ProfileContentFeedScreen() {
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, "CONTENT"),
     [profile?.posts],
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+    }, [refresh]),
   );
 
   const initialIndex = useMemo(() => {
@@ -61,7 +70,10 @@ export default function ProfileContentFeedScreen() {
   async function deletePost(postId: string) {
     try {
       await api.posts.delete(postId);
-      await refresh();
+      removePostFromAppCache(queryClient, postId);
+      void refresh();
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)/profile");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not delete post");

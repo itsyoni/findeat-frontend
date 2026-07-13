@@ -17,7 +17,7 @@ import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import {
   BookmarkSimpleIcon,
   CheckCircleIcon,
-  StarIcon,
+  HeartIcon,
 } from "phosphor-react-native";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
@@ -38,10 +38,16 @@ export default function RestaurantScreen() {
     postSection,
     activeTab !== "MENU",
   );
-  const visiblePosts = useMemo(
-    () => sectionPosts.data?.pages.flatMap((page) => page.items) ?? [],
-    [sectionPosts.data],
-  );
+  const visiblePosts = useMemo(() => {
+    const paginatedPosts =
+      sectionPosts.data?.pages.flatMap((page) => page.items) ?? [];
+
+    if (paginatedPosts.length > 0 || activeTab !== "REVIEWS") {
+      return paginatedPosts;
+    }
+
+    return restaurant?.posts.filter((post) => post.type === "REVIEW") ?? [];
+  }, [activeTab, restaurant?.posts, sectionPosts.data]);
 
   async function toggleFollow() {
     if (!restaurant) return;
@@ -100,54 +106,102 @@ export default function RestaurantScreen() {
     );
   }
 
+  function confirmStatusChange(
+    title: string,
+    message: string,
+    onConfirm: () => void | Promise<void>,
+    destructive = false,
+  ) {
+    Alert.alert(title, message, [
+      { text: t("common:cancel"), style: "cancel" },
+      {
+        text: t("restaurants:confirmStatusChange"),
+        style: destructive ? "destructive" : "default",
+        onPress: () => void onConfirm(),
+      },
+    ]);
+  }
+
   async function toggleVisited() {
     if (!restaurant) return;
     const isVisited = restaurant.userRestaurant?.visited === true;
 
-    try {
-      if (isVisited) {
-        await api.restaurants.removeVisited(restaurant.id);
-        updateRestaurantStatus({ visited: false, favorite: false });
-        return;
-      }
+    const applyChange = async () => {
+      try {
+        if (isVisited) {
+          await api.restaurants.removeVisited(restaurant.id);
+          updateRestaurantStatus({ visited: false, favorite: false });
+          return;
+        }
 
-      await api.restaurants.visited(restaurant.id);
-      updateRestaurantStatus({
-        visited: true,
-        wantToTry: false,
-      });
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        t("restaurants:visitedLockedTitle"),
-        t("restaurants:cannotRemoveVisitedWithReview"),
+        await api.restaurants.visited(restaurant.id);
+        updateRestaurantStatus({
+          visited: true,
+          wantToTry: false,
+        });
+      } catch (error) {
+        console.error(error);
+        Alert.alert(
+          t("restaurants:visitedLockedTitle"),
+          t("restaurants:cannotRemoveVisitedWithReview"),
+        );
+      }
+    };
+
+    if (isVisited) {
+      confirmStatusChange(
+        t("restaurants:confirmRemoveVisitedTitle"),
+        t(
+          restaurant.userRestaurant?.favorite
+            ? "restaurants:confirmRemoveVisitedFavoriteBody"
+            : "restaurants:confirmRemoveVisitedBody",
+        ),
+        applyChange,
+        true,
       );
+      return;
     }
+
+    await applyChange();
   }
 
   async function toggleWantToTry() {
     if (!restaurant) return;
     const isWantToTry = restaurant.userRestaurant?.wantToTry === true;
+    const isVisited = restaurant.userRestaurant?.visited === true;
 
-    try {
-      if (isWantToTry) {
-        await api.restaurants.removeWantToTry(restaurant.id);
-        updateRestaurantStatus({ wantToTry: false });
-      } else {
-        await api.restaurants.wantToTry(restaurant.id);
-        updateRestaurantStatus({
-          wantToTry: true,
-          visited: false,
-          favorite: false,
-        });
+    const applyChange = async () => {
+      try {
+        if (isWantToTry) {
+          await api.restaurants.removeWantToTry(restaurant.id);
+          updateRestaurantStatus({ wantToTry: false });
+        } else {
+          await api.restaurants.wantToTry(restaurant.id);
+          updateRestaurantStatus({
+            wantToTry: true,
+            visited: false,
+            favorite: false,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        Alert.alert(
+          t("restaurants:visitedLockedTitle"),
+          t("restaurants:cannotRemoveVisitedWithReview"),
+        );
       }
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        t("restaurants:visitedLockedTitle"),
-        t("restaurants:cannotRemoveVisitedWithReview"),
+    };
+
+    if (!isWantToTry && isVisited) {
+      confirmStatusChange(
+        t("restaurants:confirmWantToTryTitle"),
+        t("restaurants:confirmWantToTryBody"),
+        applyChange,
       );
+      return;
     }
+
+    await applyChange();
   }
 
   async function toggleFavorite() {
@@ -158,15 +212,28 @@ export default function RestaurantScreen() {
 
     if (!isFavorite && !isVisited) return;
 
+    const applyChange = async () => {
+      if (isFavorite) {
+        await api.restaurants.removeFavorite(restaurant.id);
+        updateRestaurantStatus({ favorite: false });
+      } else {
+        await api.restaurants.favorite(restaurant.id);
+        updateRestaurantStatus({
+          favorite: true,
+        });
+      }
+    };
+
     if (isFavorite) {
-      await api.restaurants.removeFavorite(restaurant.id);
-      updateRestaurantStatus({ favorite: false });
-    } else {
-      await api.restaurants.favorite(restaurant.id);
-      updateRestaurantStatus({
-        favorite: true,
-      });
+      confirmStatusChange(
+        t("restaurants:confirmRemoveFavoriteTitle"),
+        t("restaurants:confirmRemoveFavoriteBody"),
+        applyChange,
+      );
+      return;
     }
+
+    await applyChange();
   }
 
   async function claimRestaurant() {
@@ -212,7 +279,7 @@ export default function RestaurantScreen() {
 
   if (!restaurant) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
         <Text className="text-black dark:text-white">
           {t("restaurants:notFound")}
         </Text>
@@ -222,14 +289,14 @@ export default function RestaurantScreen() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-white dark:bg-black">
+      <ScrollView className="flex-1 bg-canvas dark:bg-black">
       <RestaurantHeader
         restaurant={restaurant}
         onToggleFollow={toggleFollow}
         onOpenOptions={() => setOptionsOpen(true)}
       />
 
-      <View className="px-5 py-4">
+      <View className="bg-surface px-5 pb-5 pt-2 dark:bg-black">
         <View className="flex-row gap-3">
           <TouchableOpacity
             onPress={toggleWantToTry}
@@ -283,7 +350,7 @@ export default function RestaurantScreen() {
                   : "bg-gray-100 opacity-40 dark:bg-gray-800"
             }`}
           >
-            <StarIcon
+            <HeartIcon
               size={19}
               color={restaurant.userRestaurant?.favorite ? "white" : "#6B7280"}
               weight={restaurant.userRestaurant?.favorite ? "fill" : "regular"}
@@ -321,7 +388,7 @@ export default function RestaurantScreen() {
         {activeTab !== "MENU" && (
           <RestaurantPostsSection
             posts={visiblePosts}
-            loading={sectionPosts.isPending}
+            loading={sectionPosts.isPending && visiblePosts.length === 0}
             loadingMore={sectionPosts.isFetchingNextPage}
             hasMore={sectionPosts.hasNextPage}
             onLoadMore={() => void sectionPosts.fetchNextPage()}
@@ -350,9 +417,7 @@ export default function RestaurantScreen() {
         open={optionsOpen}
         onClose={() => setOptionsOpen(false)}
         type="RESTAURANT"
-        canClaim={
-          restaurant.status !== "CLAIMED" && restaurant.status !== "PENDING"
-        }
+        canClaim={restaurant.status !== "CLAIMED"}
         onClaim={() => void claimRestaurant()}
       />
     </>

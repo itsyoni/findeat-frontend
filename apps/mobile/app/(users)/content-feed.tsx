@@ -4,15 +4,22 @@ import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet"
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";
-import { router, useLocalSearchParams } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+} from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Dimensions, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { removePostFromAppCache } from "@/hooks/useFeed";
 
 const { height } = Dimensions.get("window");
 
 export default function UserContentFeedScreen() {
+  const queryClient = useQueryClient();
   const { userId, postId } = useLocalSearchParams<{
     userId: string;
     postId: string;
@@ -48,6 +55,12 @@ export default function UserContentFeedScreen() {
     setPosts(nextPosts);
     setLoadedUserId(userId);
   }, [fetchPosts, userId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadPosts();
+    }, [loadPosts]),
+  );
 
   async function onRefresh() {
     try {
@@ -135,12 +148,10 @@ export default function UserContentFeedScreen() {
   async function deletePost(postId: string) {
     try {
       await api.posts.delete(postId);
-
-      setPosts((currentPosts) =>
-        currentPosts.filter((post) => post.id !== postId),
-      );
-
+      removePostFromAppCache(queryClient, postId);
       setOptionsPostId(null);
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)");
     } catch (error) {
       console.error("Failed to delete post", error);
       Alert.alert("Error", "Could not delete post");
