@@ -247,7 +247,7 @@ export default function ReviewPost({
                 {isRestaurantPost ? displayName : `@${displayName}`}
               </Text>
               {isRestaurantPost ? <RestaurantBadge /> : null}
-              {!isRestaurantPost ? (
+              {!isRestaurantPost && post.visibility !== "PUBLIC" ? (
                 <View className="ml-1.5">
                   <PostVisibilityIcon
                     visibility={post.visibility}

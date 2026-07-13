@@ -106,54 +106,102 @@ export default function RestaurantScreen() {
     );
   }
 
+  function confirmStatusChange(
+    title: string,
+    message: string,
+    onConfirm: () => void | Promise<void>,
+    destructive = false,
+  ) {
+    Alert.alert(title, message, [
+      { text: t("common:cancel"), style: "cancel" },
+      {
+        text: t("restaurants:confirmStatusChange"),
+        style: destructive ? "destructive" : "default",
+        onPress: () => void onConfirm(),
+      },
+    ]);
+  }
+
   async function toggleVisited() {
     if (!restaurant) return;
     const isVisited = restaurant.userRestaurant?.visited === true;
 
-    try {
-      if (isVisited) {
-        await api.restaurants.removeVisited(restaurant.id);
-        updateRestaurantStatus({ visited: false, favorite: false });
-        return;
-      }
+    const applyChange = async () => {
+      try {
+        if (isVisited) {
+          await api.restaurants.removeVisited(restaurant.id);
+          updateRestaurantStatus({ visited: false, favorite: false });
+          return;
+        }
 
-      await api.restaurants.visited(restaurant.id);
-      updateRestaurantStatus({
-        visited: true,
-        wantToTry: false,
-      });
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        t("restaurants:visitedLockedTitle"),
-        t("restaurants:cannotRemoveVisitedWithReview"),
+        await api.restaurants.visited(restaurant.id);
+        updateRestaurantStatus({
+          visited: true,
+          wantToTry: false,
+        });
+      } catch (error) {
+        console.error(error);
+        Alert.alert(
+          t("restaurants:visitedLockedTitle"),
+          t("restaurants:cannotRemoveVisitedWithReview"),
+        );
+      }
+    };
+
+    if (isVisited) {
+      confirmStatusChange(
+        t("restaurants:confirmRemoveVisitedTitle"),
+        t(
+          restaurant.userRestaurant?.favorite
+            ? "restaurants:confirmRemoveVisitedFavoriteBody"
+            : "restaurants:confirmRemoveVisitedBody",
+        ),
+        applyChange,
+        true,
       );
+      return;
     }
+
+    await applyChange();
   }
 
   async function toggleWantToTry() {
     if (!restaurant) return;
     const isWantToTry = restaurant.userRestaurant?.wantToTry === true;
+    const isVisited = restaurant.userRestaurant?.visited === true;
 
-    try {
-      if (isWantToTry) {
-        await api.restaurants.removeWantToTry(restaurant.id);
-        updateRestaurantStatus({ wantToTry: false });
-      } else {
-        await api.restaurants.wantToTry(restaurant.id);
-        updateRestaurantStatus({
-          wantToTry: true,
-          visited: false,
-          favorite: false,
-        });
+    const applyChange = async () => {
+      try {
+        if (isWantToTry) {
+          await api.restaurants.removeWantToTry(restaurant.id);
+          updateRestaurantStatus({ wantToTry: false });
+        } else {
+          await api.restaurants.wantToTry(restaurant.id);
+          updateRestaurantStatus({
+            wantToTry: true,
+            visited: false,
+            favorite: false,
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        Alert.alert(
+          t("restaurants:visitedLockedTitle"),
+          t("restaurants:cannotRemoveVisitedWithReview"),
+        );
       }
-    } catch (error) {
-      console.error(error);
-      Alert.alert(
-        t("restaurants:visitedLockedTitle"),
-        t("restaurants:cannotRemoveVisitedWithReview"),
+    };
+
+    if (!isWantToTry && isVisited) {
+      confirmStatusChange(
+        t("restaurants:confirmWantToTryTitle"),
+        t("restaurants:confirmWantToTryBody"),
+        applyChange,
       );
+      return;
     }
+
+    await applyChange();
   }
 
   async function toggleFavorite() {
@@ -164,15 +212,28 @@ export default function RestaurantScreen() {
 
     if (!isFavorite && !isVisited) return;
 
+    const applyChange = async () => {
+      if (isFavorite) {
+        await api.restaurants.removeFavorite(restaurant.id);
+        updateRestaurantStatus({ favorite: false });
+      } else {
+        await api.restaurants.favorite(restaurant.id);
+        updateRestaurantStatus({
+          favorite: true,
+        });
+      }
+    };
+
     if (isFavorite) {
-      await api.restaurants.removeFavorite(restaurant.id);
-      updateRestaurantStatus({ favorite: false });
-    } else {
-      await api.restaurants.favorite(restaurant.id);
-      updateRestaurantStatus({
-        favorite: true,
-      });
+      confirmStatusChange(
+        t("restaurants:confirmRemoveFavoriteTitle"),
+        t("restaurants:confirmRemoveFavoriteBody"),
+        applyChange,
+      );
+      return;
     }
+
+    await applyChange();
   }
 
   async function claimRestaurant() {

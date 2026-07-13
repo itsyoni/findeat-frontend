@@ -4,13 +4,16 @@ import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet"
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";
-import { useFocusEffect, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { useQueryClient } from "@tanstack/react-query";
+import { removePostFromAppCache } from "@/hooks/useFeed";
 
 export default function UserReviewsFeedScreen() {
+  const queryClient = useQueryClient();
   const { isDark } = useAppTheme();
   const { userId } = useLocalSearchParams<{
     userId: string;
@@ -133,12 +136,10 @@ export default function UserReviewsFeedScreen() {
   async function deletePost(postId: string) {
     try {
       await api.posts.delete(postId);
-
-      setPosts((currentPosts) =>
-        currentPosts.filter((post) => post.id !== postId),
-      );
-
+      removePostFromAppCache(queryClient, postId);
       setOptionsPostId(null);
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)");
     } catch (error) {
       console.error("Failed to delete post", error);
       Alert.alert("Error", "Could not delete post");

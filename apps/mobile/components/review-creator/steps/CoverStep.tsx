@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { ThemedSafeAreaView , TextInput } from "@/components/common";
 import RatingPicker from "../components/RatingPicker";
+import { useTranslation } from "react-i18next";
 
 type Props = {
   draft: CreateReviewDraft;
@@ -13,6 +14,12 @@ type Props = {
 };
 
 export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
+  const { t } = useTranslation("create");
+  const restaurantName =
+    draft.restaurant?.source === "FINDEAT"
+      ? draft.restaurant.restaurant.name
+      : draft.restaurant?.name;
+
   async function pickCoverImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ["images"],
@@ -44,7 +51,9 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
         </View>
 
         <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
-          How was your experience?
+          {restaurantName
+            ? t("reviewExperienceTitle", { restaurantName })
+            : t("reviewExperienceTitleFallback")}
         </Text>
 
         <Text className="mt-2 text-gray-500">

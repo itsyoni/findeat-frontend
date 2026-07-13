@@ -69,16 +69,8 @@ export function updateRestaurantStatusInFeedCache(
       ...currentStatus,
       ...status,
     };
-    const wasSaved = !!(
-      currentStatus?.wantToTry ||
-      currentStatus?.visited ||
-      currentStatus?.favorite
-    );
-    const isSaved = !!(
-      nextStatus.wantToTry ||
-      nextStatus.visited ||
-      nextStatus.favorite
-    );
+    const wasSaved = currentStatus?.wantToTry === true;
+    const isSaved = nextStatus.wantToTry === true;
 
     return {
       ...post,
@@ -123,4 +115,14 @@ export function prependPostToFeedCache(
       };
     },
   );
+}
+
+export function removePostFromAppCache(
+  queryClient: QueryClient,
+  postId: string,
+) {
+  updatePostInFeedCache(queryClient, (post) =>
+    post.id === postId ? null : post,
+  );
+  void queryClient.invalidateQueries({ queryKey: ["restaurant-posts"] });
 }

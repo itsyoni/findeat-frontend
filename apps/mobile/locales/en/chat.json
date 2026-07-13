@@ -5,6 +5,10 @@
   "onlineNow": "Online now",
   "lastSeen": "Last seen {{time}}",
   "lastSeenRecently": "Last seen recently",
+  "typing": "Typing...",
+  "userTyping": "{{name}} is typing...",
+  "peopleTyping": "{{count}} people are typing...",
+  "someone": "Someone",
   "noMessages": "No messages yet",
   "messagePlaceholder": "Message...",
   "deletedPost": "This post has been deleted",
@@ -28,6 +32,7 @@
   "firstComment": "Be the first to comment!",
   "you": "You",
   "chat": "Chat",
+  "messages": "Messages",
   "newGroup": "New group",
   "groupDetails": "Group details",
   "selectedMembers": "{{count}} selected",
@@ -42,5 +47,8 @@
   "groupNamePlaceholder": "Give your group a name",
   "participants": "Participants",
   "createGroup": "Create group",
-  "createGroupError": "Could not create the group. Please try again."
+  "createGroupError": "Could not create the group. Please try again.",
+  "suggestedFriends": "Suggested friends",
+  "suggestedFriendsHint": "Friends you message most appear first.",
+  "noSuggestedFriends": "Your friends will appear here. You can also search by name."
 }

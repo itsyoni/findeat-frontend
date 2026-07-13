@@ -11,8 +11,12 @@ import DishesStep from "./steps/DishesStep";
 import PreviewStep from "./steps/PreviewStep";
 import RestaurantStep from "./steps/RestaurantStep";
 import SelectMenuDishStep from "./steps/SelectMenuDishStep";
-import { prependPostToFeedCache } from "@/hooks/useFeed";
+import {
+  prependPostToFeedCache,
+  updateRestaurantStatusInFeedCache,
+} from "@/hooks/useFeed";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
 
 const initialDraft: CreateReviewDraft = {
   visibility: "PUBLIC",
@@ -23,6 +27,7 @@ const initialDraft: CreateReviewDraft = {
 
 export default function ReviewCreator() {
   const queryClient = useQueryClient();
+  const { refreshUser } = useAuth();
   const [step, setStep] = useState<CreateReviewStep>("RESTAURANT");
   const [draft, setDraft] = useState<CreateReviewDraft>(initialDraft);
   const [loading, setLoading] = useState(false);
@@ -124,7 +129,13 @@ export default function ReviewCreator() {
         items: uploadedItems,
       });
 
+      updateRestaurantStatusInFeedCache(queryClient, restaurantId, {
+        visited: true,
+        wantToTry: false,
+      });
       prependPostToFeedCache(queryClient, createdPost);
+      void queryClient.invalidateQueries({ queryKey: ["restaurant-posts"] });
+      void refreshUser();
 
       setDraft(initialDraft);
       setSelectedMenuDish(null);
@@ -151,9 +162,12 @@ export default function ReviewCreator() {
       {step === "RESTAURANT" && (
         <RestaurantStep
           selectedRestaurant={draft.restaurant}
-          onSelect={(restaurant) => updateDraft({ restaurant })}
+          onSelect={(restaurant) => {
+            if (!restaurant) return;
+            updateDraft({ restaurant });
+            setStep("COVER");
+          }}
           onBack={() => router.back()}
-          onNext={() => setStep("COVER")}
         />
       )}
 
@@ -161,7 +175,11 @@ export default function ReviewCreator() {
         <CoverStep
           draft={draft}
           onChange={updateDraft}
-          onBack={() => setStep("RESTAURANT")}
+          onBack={() => {
+            updateDraft({ restaurant: null, items: [] });
+            setSelectedMenuDish(null);
+            setStep("RESTAURANT");
+          }}
           onNext={() => setStep("DISHES")}
         />
       )}

@@ -17,6 +17,18 @@ export async function searchFriends(
   }));
 }
 
+export async function getSuggestedFriends(): Promise<SearchResultItem[]> {
+  const users = await api.users.suggestedFriends();
+  return users.map((user) => ({
+    id: user.id,
+    type: "USER",
+    title: `@${user.username}`,
+    subtitle: user.displayName ?? undefined,
+    imageUrl: user.avatarUrl ?? null,
+    relationship: "FRIENDS",
+  }));
+}
+
 export async function searchGlobal(query: string): Promise<SearchResultItem[]> {
   const [users, restaurants] = await Promise.all([
     api.users.search(query),

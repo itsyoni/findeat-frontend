@@ -15,8 +15,8 @@ type Props = {
 export default function PersonalProfileHeader({ profile }: Props) {
   const { t } = useTranslation(["common", "profile"]);
   return (
-    <View className="bg-white pb-5 dark:bg-black">
-      <View className="items-center">
+    <View className="bg-white dark:bg-black">
+      <View className="relative">
         {profile.coverUrl ? (
           <Image
             source={{ uri: profile.coverUrl }}
@@ -40,6 +40,9 @@ export default function PersonalProfileHeader({ profile }: Props) {
             </TouchableOpacity>
           </View>
         </SafeAreaView>
+      </View>
+
+      <View className="-mt-7 items-center rounded-t-[30px] bg-white pb-5 dark:bg-black">
         <View className="-mt-12 rounded-full bg-white p-1.5 dark:bg-black">
           <Avatar uri={profile.avatarUrl} username={profile.username} size={100} />
         </View>
@@ -60,7 +63,7 @@ export default function PersonalProfileHeader({ profile }: Props) {
           </Text>
         )}
 
-        <View className="mt-5 flex-row w-full">
+        <View className="mt-5 w-full flex-row">
           <View className="flex-1">
             <Text className="text-center text-xl font-bold text-black dark:text-white">
               {profile.postsCount ?? 0}

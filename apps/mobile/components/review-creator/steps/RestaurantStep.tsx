@@ -8,14 +8,12 @@ type Props = {
   selectedRestaurant: SelectedRestaurant | null;
   onSelect: (restaurant: SelectedRestaurant | null) => void;
   onBack: () => void;
-  onNext: () => void;
 };
 
 export default function RestaurantStep({
   selectedRestaurant,
   onSelect,
   onBack,
-  onNext,
 }: Props) {
   return (
     <ThemedSafeAreaView
@@ -39,22 +37,6 @@ export default function RestaurantStep({
         selectedRestaurant={selectedRestaurant}
         onSelect={onSelect}
       />
-
-      <TouchableOpacity
-        className={`rounded-2xl py-4 ${
-          selectedRestaurant ? "bg-black" : "bg-gray-200"
-        }`}
-        disabled={!selectedRestaurant}
-        onPress={onNext}
-      >
-        <Text
-          className={`text-center font-bold ${
-            selectedRestaurant ? "text-white" : "text-gray-400"
-          }`}
-        >
-          Continue
-        </Text>
-      </TouchableOpacity>
     </ThemedSafeAreaView>
   );
 }

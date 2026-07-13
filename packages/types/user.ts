@@ -10,6 +10,7 @@ export type User = {
   coverUrl?: string | null;
   bio?: string | null;
   language: Language;
+  showActivityStatus?: boolean;
 };
 
 export type UserSummary = {
@@ -19,6 +20,7 @@ export type UserSummary = {
   avatarUrl?: string | null;
   isOnline?: boolean;
   lastSeenAt?: string | null;
+  showActivityStatus?: boolean;
 };
 
 export type UserRestaurant = {

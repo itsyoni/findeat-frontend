@@ -55,5 +55,7 @@
   "findingNearby": "מחפש מקומות קרובים...",
   "searchingPlaces": "מחפש מקומות...",
   "nearbyUnavailable": "אפשר גישה למיקום כדי לראות מקומות קרובים, או חפש לפי שם.",
-  "noNearbyPlaces": "לא נמצאו מקומות קרובים. נסה לחפש לפי שם."
+  "noNearbyPlaces": "לא נמצאו מקומות קרובים. נסה לחפש לפי שם.",
+  "reviewExperienceTitle": "איך הייתה החוויה שלך ב־{{restaurantName}}?",
+  "reviewExperienceTitleFallback": "איך הייתה החוויה שלך?"
 }

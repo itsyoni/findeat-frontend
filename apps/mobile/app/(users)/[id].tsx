@@ -96,49 +96,49 @@ export default function UserProfileScreen() {
   return (
     <View className="flex-1 bg-white dark:bg-black">
       <View className="flex-1">
-        <View>
-          <View className="relative">
-            {user.coverUrl ? (
-              <Image
-                source={{ uri: user.coverUrl }}
-                className="h-52 w-full bg-gray-200"
-                resizeMode="cover"
-              />
-            ) : (
-              <View className="h-52 w-full bg-gray-200 dark:bg-gray-800" />
-            )}
+        <View className="relative">
+          {user.coverUrl ? (
+            <Image
+              source={{ uri: user.coverUrl }}
+              className="h-52 w-full bg-gray-200"
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="h-52 w-full bg-gray-200 dark:bg-gray-800" />
+          )}
 
-            <SafeAreaView
-              edges={["top"]}
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-              }}
-            >
-              <View className="mt-2 flex-row items-center justify-between px-4">
-                <TouchableOpacity
-                  className="h-11 w-11 items-center justify-center rounded-full bg-black/30"
-                  onPress={() => router.back()}
-                >
-                  <CaretLeftIcon size={24} color="white" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  className="h-11 w-11 items-center justify-center rounded-full bg-black/30"
-                  onPress={() => setOptionsOpen(true)}
-                >
-                  <DotsThreeIcon size={25} color="white" weight="bold" />
-                </TouchableOpacity>
-              </View>
-            </SafeAreaView>
-          </View>
+          <SafeAreaView
+            edges={["top"]}
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+            }}
+          >
+            <View className="mt-2 flex-row items-center justify-between px-4">
+              <TouchableOpacity
+                className="h-11 w-11 items-center justify-center rounded-full bg-black/30"
+                onPress={() => router.back()}
+              >
+                <CaretLeftIcon size={24} color="white" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="h-11 w-11 items-center justify-center rounded-full bg-black/30"
+                onPress={() => setOptionsOpen(true)}
+              >
+                <DotsThreeIcon size={25} color="white" weight="bold" />
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </View>
+
+        <View className="-mt-7 flex-1 rounded-t-[30px] bg-white dark:bg-black">
           <View className="-mt-12 items-center px-5">
             <View className="rounded-full bg-white p-1.5 dark:bg-black">
               <Avatar uri={user.avatarUrl} username={user.username} size={100} />
             </View>
           </View>
-        </View>
         <View className="items-center px-5">
           <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
             {user.username}
@@ -238,6 +238,7 @@ export default function UserProfileScreen() {
               });
             }}
           />
+        </View>
         </View>
       </View>
 

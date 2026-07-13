@@ -9,9 +9,12 @@ import { ActivityIndicator, Alert, View } from "react-native";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { removePostFromAppCache } from "@/hooks/useFeed";
 
 export default function ProfileReviewsFeedScreen() {
+  const queryClient = useQueryClient();
   const { isDark } = useAppTheme();
   const { profile, loading, refresh } = useMyProfile();
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
@@ -51,8 +54,11 @@ export default function ProfileReviewsFeedScreen() {
   async function deletePost(postId: string) {
     try {
       await api.posts.delete(postId);
-      await refresh();
+      removePostFromAppCache(queryClient, postId);
+      void refresh();
       setOptionsPostId(null);
+      if (router.canGoBack()) router.back();
+      else router.replace("/(tabs)/profile");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not delete post");

@@ -1,9 +1,5 @@
 import type { PostVisibility } from "@findeat/types";
-import {
-  GlobeHemisphereWestIcon,
-  LockIcon,
-  UsersThreeIcon,
-} from "phosphor-react-native";
+import { LockIcon, UsersThreeIcon } from "phosphor-react-native";
 
 type Props = {
   visibility: PostVisibility;
@@ -24,5 +20,5 @@ export default function PostVisibilityIcon({
     return <UsersThreeIcon size={size} color={color} weight="fill" />;
   }
 
-  return <GlobeHemisphereWestIcon size={size} color={color} weight="fill" />;
+  return null;
 }

@@ -55,5 +55,7 @@
   "findingNearby": "Finding nearby places...",
   "searchingPlaces": "Searching places...",
   "nearbyUnavailable": "Allow location access to see the nearest places, or search by name.",
-  "noNearbyPlaces": "No nearby places were found. Try searching by name."
+  "noNearbyPlaces": "No nearby places were found. Try searching by name.",
+  "reviewExperienceTitle": "How was your experience at {{restaurantName}}?",
+  "reviewExperienceTitleFallback": "How was your experience?"
 }

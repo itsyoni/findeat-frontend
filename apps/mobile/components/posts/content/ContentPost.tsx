@@ -273,7 +273,7 @@ export default function ContentPost({
                   {isOfficialPost ? displayName : `@${displayName}`}
                 </Text>
                 {isOfficialPost ? <RestaurantBadge /> : null}
-                {!isOfficialPost ? (
+                {!isOfficialPost && post.visibility !== "PUBLIC" ? (
                   <View className="ml-1.5">
                     <PostVisibilityIcon
                       visibility={post.visibility}
@@ -373,7 +373,10 @@ export default function ContentPost({
                 style={iconShadow}
               />
               {isVisited && !isFavorite && (
-                <View className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-green-500">
+                <View
+                  className="absolute h-4 w-4 items-center justify-center rounded-full bg-green-500"
+                  style={{ right: -2, top: -3 }}
+                >
                   <CheckIcon size={11} color="white" weight="bold" />
                 </View>
               )}
