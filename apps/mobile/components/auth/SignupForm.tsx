@@ -136,7 +136,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
             value={firstName}
             onChangeText={setFirstName}
             autoCapitalize="words"
-            className="flex-1 border-0 bg-[#f8f8f8] dark:bg-gray-800"
+            className="flex-1 border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           />
 
           <TextInput
@@ -145,7 +145,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
             value={lastName}
             onChangeText={setLastName}
             autoCapitalize="words"
-            className="flex-1 border-0 bg-[#f8f8f8] dark:bg-gray-800"
+            className="flex-1 border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           />
         </View>
 
@@ -157,7 +157,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
             setUsername(text.replace(/[^a-zA-Z0-9_]/g, ""));
           }}
           autoCapitalize="none"
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<AtIcon size={20} color={iconColor} />}
         />
 
@@ -174,7 +174,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
           onChangeText={setEmail}
           autoCapitalize="none"
           keyboardType="email-address"
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<EnvelopeSimpleIcon size={20} color={iconColor} />}
         />
 
@@ -191,7 +191,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
           onChangeText={setPassword}
           isPassword
           style={passwordInputStyle}
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<LockIcon size={20} color={iconColor} />}
         />
 
@@ -202,7 +202,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
           onChangeText={setConfirmPassword}
           isPassword
           style={passwordInputStyle}
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<LockIcon size={20} color={iconColor} />}
         />
 

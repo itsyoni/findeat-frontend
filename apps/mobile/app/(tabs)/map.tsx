@@ -323,7 +323,7 @@ export default function MapScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       {isSearching ? (
         <Animated.View
@@ -357,7 +357,7 @@ export default function MapScreen() {
             rightAccessory={
               <TouchableOpacity
                 onPress={() => setFiltersOpen(true)}
-                className="h-full aspect-square items-center justify-center rounded-2xl bg-black dark:bg-white"
+                className="h-full aspect-square items-center justify-center rounded-2xl bg-ink dark:bg-white"
               >
                 <FunnelIcon
                   size={21}

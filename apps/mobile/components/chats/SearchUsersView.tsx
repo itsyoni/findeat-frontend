@@ -10,7 +10,7 @@ import { RecentSearchItem, UserSummary } from "@findeat/types";
 import { router } from "expo-router";
 import { XIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
-import { FlatList, TouchableOpacity } from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
 import Animated, {
   FadeIn,
   FadeOut,
@@ -58,7 +58,8 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
         const updated = await addRecentSearch(user.id, {
           id: selectedUser.id,
           type: "USER",
-          title: selectedUser.username,
+          title: selectedUser.displayName?.trim() || selectedUser.username,
+          subtitle: `@${selectedUser.username}`,
           imageUrl: selectedUser.avatarUrl,
         });
 
@@ -124,7 +125,14 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
               className="border-b border-gray-100 p-4 flex-1 flex-row items-center gap-4"
             >
               <Avatar uri={item.avatarUrl} username={item.username} size={44} />
-              <Text className="font-bold">{item.username}</Text>
+              <View className="flex-1">
+                <Text className="font-bold text-black dark:text-white">
+                  {item.displayName?.trim() || item.username}
+                </Text>
+                <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  @{item.username}
+                </Text>
+              </View>
             </TouchableOpacity>
           )}
         />
@@ -139,7 +147,14 @@ export default function SearchUsersView({ onCancel, mode = "profile" }: Props) {
             >
               <Avatar uri={item.imageUrl} username={item.title} size={44} />
 
-              <Text className="flex-1 font-bold">@{item.title}</Text>
+              <View className="flex-1">
+                <Text className="font-bold text-black dark:text-white">
+                  {item.title}
+                </Text>
+                <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  {item.subtitle || `@${item.title.replace(/^@/, "")}`}
+                </Text>
+              </View>
 
               <TouchableOpacity
                 onPress={(event) => {

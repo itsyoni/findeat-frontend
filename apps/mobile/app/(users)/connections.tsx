@@ -173,14 +173,11 @@ export default function ConnectionsScreen() {
 
                 <View className="ml-4 flex-1">
                   <Text className="text-lg font-bold text-black dark:text-white">
+                    {user.displayName?.trim() || user.username}
+                  </Text>
+                  <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     @{user.username}
                   </Text>
-
-                  {!!user.displayName && (
-                    <Text className="mt-1 text-sm text-gray-500">
-                      {user.displayName}
-                    </Text>
-                  )}
                 </View>
               </View>
 

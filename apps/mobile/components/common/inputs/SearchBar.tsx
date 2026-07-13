@@ -35,17 +35,17 @@ export default function SearchBar({
   const input = (
     <TextInput
       editable={editable}
-      className="h-full border-0 bg-[#F5F4F5] dark:bg-gray-900"
+      className="h-full border-0 bg-soft dark:bg-gray-900"
       style={{
         textAlign: isRtl ? "right" : "left",
         writingDirection: isRtl ? "rtl" : "ltr",
       }}
       placeholder={placeholder}
-      placeholderTextColor="#9CA3AF"
+      placeholderTextColor="#747474"
       value={value}
       onChangeText={onChangeText}
       autoFocus={autoFocus}
-      leftIcon={<MagnifyingGlassIcon size={20} color="#9CA3AF" />}
+      leftIcon={<MagnifyingGlassIcon size={20} color="#747474" />}
     />
   );
 

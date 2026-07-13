@@ -4,7 +4,7 @@ import { View } from 'react-native';
 
 export default function SettingsSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <View className="mt-6">
+    <View className="mt-6 bg-surface py-2 dark:bg-black">
       <Text weight="bold" className="mb-1 px-5 text-sm text-gray-500">{title}</Text>
       <View>{children}</View>
     </View>

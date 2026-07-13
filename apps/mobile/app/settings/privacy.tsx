@@ -38,7 +38,7 @@ export default function PrivacySettingsScreen() {
 
   return (
     <SafeAreaView
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       <SettingsHeader title={t("privacy")} />
       <SettingsSection title={t("activityStatus")}>
@@ -62,7 +62,7 @@ export default function PrivacySettingsScreen() {
             <Switch
               value={enabled}
               onValueChange={(value) => void changeActivityStatus(value)}
-              trackColor={{ false: "#767577", true: "#F7D786" }}
+              trackColor={{ false: "#A09D97", true: "#FF5B35" }}
               thumbColor={enabled ? "#111111" : "#F4F3F4"}
             />
           )}

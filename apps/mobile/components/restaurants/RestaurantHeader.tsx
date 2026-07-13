@@ -30,9 +30,9 @@ export default function RestaurantHeader({ restaurant, onToggleFollow, onOpenOpt
     <View className="bg-white dark:bg-black">
       <View className="relative">
         {restaurant.coverUrl ? (
-          <Image source={{ uri: restaurant.coverUrl }} className="h-52 w-full bg-gray-100" resizeMode="cover" />
+          <Image source={{ uri: restaurant.coverUrl }} className="h-60 w-full bg-gray-100" resizeMode="cover" />
         ) : (
-          <View className="h-52 w-full bg-gray-100 dark:bg-gray-800" />
+          <View className="h-60 w-full bg-gray-100 dark:bg-gray-800" />
         )}
         <SafeAreaView edges={["top"]} pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
           <View className="flex-row items-center justify-between px-4 pt-2">

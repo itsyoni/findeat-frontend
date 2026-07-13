@@ -67,7 +67,7 @@ export default function ProfileReviewsFeedScreen() {
 
   if (loading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
         <ActivityIndicator />
       </View>
     );
@@ -76,7 +76,7 @@ export default function ProfileReviewsFeedScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       <ReviewFeed
         posts={posts}

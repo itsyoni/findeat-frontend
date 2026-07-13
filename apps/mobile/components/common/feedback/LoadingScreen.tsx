@@ -5,7 +5,7 @@ type Props = {
 };
 
 export default function LoadingScreen({
-  backgroundColor = "bg-white dark:bg-black",
+  backgroundColor = "bg-canvas dark:bg-black",
 }: Props) {
   return (
     <View className={`flex-1 items-center justify-center ${backgroundColor}`}>

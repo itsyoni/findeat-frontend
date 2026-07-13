@@ -52,6 +52,7 @@
   "aboutDish": "About this dish",
   "noDishDescription": "The restaurant hasn’t added a description for this dish yet.",
   "dishReviews": "Dish ratings",
+  "noDishRatings": "No ratings yet",
   "basedOnDishRatings_one": "Based on 1 rating",
   "basedOnDishRatings_other": "Based on {{count}} ratings",
   "featuredDishes": "Featured dishes",

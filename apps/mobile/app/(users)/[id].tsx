@@ -87,24 +87,24 @@ export default function UserProfileScreen() {
 
   if (loading || !user) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <View className="flex-1 bg-canvas dark:bg-black">
       <View className="flex-1">
         <View className="relative">
           {user.coverUrl ? (
             <Image
               source={{ uri: user.coverUrl }}
-              className="h-52 w-full bg-gray-200"
+              className="h-60 w-full bg-gray-200"
               resizeMode="cover"
             />
           ) : (
-            <View className="h-52 w-full bg-gray-200 dark:bg-gray-800" />
+            <View className="h-60 w-full bg-gray-200 dark:bg-gray-800" />
           )}
 
           <SafeAreaView
@@ -141,7 +141,10 @@ export default function UserProfileScreen() {
           </View>
         <View className="items-center px-5">
           <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
-            {user.username}
+            {user.displayName || user.username}
+          </Text>
+          <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+            @{user.username}
           </Text>
 
           <View className="w-full">

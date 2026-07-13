@@ -78,7 +78,7 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
           onSubmitEditing={Keyboard.dismiss}
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<EnvelopeSimpleIcon size={20} color={iconColor} />}
         />
 
@@ -91,7 +91,7 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
           returnKeyType="done"
           submitBehavior="blurAndSubmit"
           onSubmitEditing={Keyboard.dismiss}
-          className="border-0 bg-[#f8f8f8] dark:bg-gray-800"
+          className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
           leftIcon={<LockIcon size={20} color={iconColor} />}
         />
 

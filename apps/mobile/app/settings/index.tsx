@@ -23,7 +23,7 @@ export default function SettingsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
       <SettingsHeader title={t('settings:title')} />
       <ScrollView>
         <SettingsSection title={t('settings:yourAccount')}>

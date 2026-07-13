@@ -7,11 +7,11 @@ import { TouchableOpacity, View } from 'react-native';
 export default function SettingsHeader({ title }: { title: string }) {
   const { isDark } = useAppTheme();
   return (
-    <View className="h-14 flex-row items-center border-b border-gray-100 px-4 dark:border-gray-800">
+    <View className="h-14 flex-row items-center border-b border-line bg-surface px-4 dark:border-gray-800 dark:bg-black">
       <TouchableOpacity onPress={() => router.back()} hitSlop={12} className="p-2">
-        <ArrowLeftIcon size={24} color={isDark ? '#FFF' : '#111'} />
+        <ArrowLeftIcon size={24} color={isDark ? '#FFF' : '#171717'} />
       </TouchableOpacity>
-      <Text weight="bold" className="ml-2 text-xl text-black dark:text-white">{title}</Text>
+      <Text weight="bold" className="ml-2 text-xl text-ink dark:text-white">{title}</Text>
     </View>
   );
 }

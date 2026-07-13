@@ -29,7 +29,7 @@ export default function LanguageSettingsScreen() {
     await refreshUser();
   }
 
-  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
     <SettingsHeader title={t('chooseLanguage')} />
     <View className="pt-3">
       {languages.map((language) => (

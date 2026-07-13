@@ -146,10 +146,10 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
-      <View className="h-14 flex-row items-center border-b border-gray-100 px-4 dark:border-gray-800">
+    <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
+      <View className="h-14 flex-row items-center border-b border-line bg-surface px-4 dark:border-gray-800 dark:bg-black">
         <TouchableOpacity onPress={() => router.back()} hitSlop={12} className="p-2">
-          <ArrowLeftIcon size={24} color={isDark ? '#FFF' : '#111'} />
+          <ArrowLeftIcon size={24} color={isDark ? '#FFF' : '#171717'} />
         </TouchableOpacity>
         <Text className="ml-2 flex-1 text-xl font-bold text-black dark:text-white">{t('title')}</Text>
       </View>

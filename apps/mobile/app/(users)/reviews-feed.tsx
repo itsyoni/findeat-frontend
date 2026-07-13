@@ -203,7 +203,7 @@ export default function UserReviewsFeedScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       <ReviewFeed
         posts={posts}

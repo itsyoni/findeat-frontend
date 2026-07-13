@@ -20,11 +20,11 @@ export default function PersonalProfileHeader({ profile }: Props) {
         {profile.coverUrl ? (
           <Image
             source={{ uri: profile.coverUrl }}
-            className="h-52 w-full bg-gray-200"
+            className="h-60 w-full bg-gray-200"
             resizeMode="cover"
           />
         ) : (
-          <View className="h-52 w-full bg-gray-200 dark:bg-gray-800" />
+          <View className="h-60 w-full bg-gray-200 dark:bg-gray-800" />
         )}
         <SafeAreaView
           edges={["top"]}
@@ -48,7 +48,10 @@ export default function PersonalProfileHeader({ profile }: Props) {
         </View>
 
         <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
-          {profile.username}
+          {profile.displayName || profile.username}
+        </Text>
+        <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+          @{profile.username}
         </Text>
 
         <View className="w-full">

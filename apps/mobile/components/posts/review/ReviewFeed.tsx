@@ -36,6 +36,7 @@ export default function ReviewFeed({
 }: Props) {
   return (
     <FlatList
+      className="bg-canvas dark:bg-black"
       style={{ flex: 1 }}
       data={posts}
       keyExtractor={(item) => item.id}

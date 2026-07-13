@@ -1,4 +1,5 @@
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { lightPalette } from "@/constants/palette";
 import type { ComponentProps } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,7 +12,7 @@ export default function ThemedSafeAreaView({ style, ...props }: Props) {
     <SafeAreaView
       {...props}
       style={[
-        { flex: 1, backgroundColor: isDark ? "#000" : "#FFF" },
+        { flex: 1, backgroundColor: isDark ? "#000" : lightPalette.canvas },
         style,
       ]}
     />

@@ -188,7 +188,7 @@ export default function HomeScreen() {
 
   if (authLoading || feed.isPending) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
         <ActivityIndicator />
       </View>
     );
@@ -197,7 +197,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView
       edges={["top"]}
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       {isSearching ? (
         <Animated.View
@@ -227,7 +227,7 @@ export default function HomeScreen() {
             onPress={() => setIsSearching(true)}
             rightAccessory={
               <TouchableOpacity
-                className="relative h-full aspect-square items-center justify-center rounded-2xl bg-black dark:bg-white"
+                className="relative h-full aspect-square items-center justify-center rounded-2xl bg-ink dark:bg-white"
                 onPress={() => router.push('/notifications')}
               >
                 <BellIcon size={22} color={isDark ? '#000' : '#FFF'} weight="fill" />

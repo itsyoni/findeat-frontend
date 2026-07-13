@@ -86,7 +86,7 @@ export default function ChatRow({ chat }: Props) {
   return (
     <TouchableOpacity
       activeOpacity={0.65}
-      className="mx-4 flex-row items-center border-b border-gray-100 py-4 dark:border-gray-900"
+      className="mx-4 flex-row items-center border-b border-line py-4 dark:border-gray-900"
       onPress={() =>
         router.push({
           pathname: "/chats/[id]",
@@ -110,7 +110,7 @@ export default function ChatRow({ chat }: Props) {
           />
         )}
         {!isGroupChat && !isRestaurantChat && otherUser?.isOnline ? (
-          <View className="absolute bottom-0 right-0 h-4 w-4 rounded-full border-[3px] border-white bg-emerald-500 dark:border-[#0F0F10]" />
+          <View className="absolute bottom-0 right-0 h-4 w-4 rounded-full border-[3px] border-white bg-success dark:border-[#0F0F10]" />
         ) : null}
       </View>
 
@@ -143,8 +143,8 @@ export default function ChatRow({ chat }: Props) {
           </Text>
 
           {hasUnread ? (
-            <View className="ml-3 h-5 min-w-5 items-center justify-center rounded-full bg-[#F7D786] px-1.5">
-              <Text className="text-[11px] font-bold text-black">
+            <View className="ml-3 h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5">
+              <Text className="text-[11px] font-bold text-white">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </Text>
             </View>

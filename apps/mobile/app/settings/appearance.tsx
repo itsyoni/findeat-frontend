@@ -13,7 +13,7 @@ export default function AppearanceSettingsScreen() {
   const color = isDark ? '#FFF' : '#111';
   const themeLabel = preference === 'dark' ? t('darkTheme') : preference === 'light' ? t('lightTheme') : t('systemTheme');
 
-  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FFF' }}>
+  return <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
     <SettingsHeader title={t('appearanceLanguage')} />
     <SettingsSection title={t('preferences')}>
       <SettingsRow icon={<TranslateIcon size={22} color={color} />} title={t('language')} value={i18n.language.startsWith('he') ? t('hebrew') : t('english')} onPress={() => router.push('/settings/language')} />

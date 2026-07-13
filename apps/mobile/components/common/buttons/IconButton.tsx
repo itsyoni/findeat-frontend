@@ -15,17 +15,17 @@ type Props = {
 };
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-black dark:bg-white",
-  secondary: "bg-gray-100 dark:bg-gray-800",
-  outline: "border border-gray-200 bg-white dark:border-gray-700 dark:bg-black",
+  primary: "bg-ink dark:bg-white",
+  secondary: "bg-soft dark:bg-gray-800",
+  outline: "border border-line bg-surface dark:border-gray-700 dark:bg-black",
   ghost: "bg-transparent",
 };
 
 const iconColors: Record<Variant, string> = {
   primary: "white",
-  secondary: "black",
-  outline: "black",
-  ghost: "black",
+  secondary: "#171717",
+  outline: "#171717",
+  ghost: "#171717",
 };
 
 export default function IconButton({

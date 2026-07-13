@@ -7,12 +7,7 @@ import {
 } from "phosphor-react-native";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ScrollView, TextInput, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import DishCard from "./DishCard";
 
@@ -34,7 +29,8 @@ export default function RestaurantMenuSection({
     () =>
       restaurant.menus.reduce(
         (total, menu) =>
-          total + menu.items.filter((item) => item.isAvailable !== false).length,
+          total +
+          menu.items.filter((item) => item.isAvailable !== false).length,
         0,
       ),
     [restaurant.menus],
@@ -69,9 +65,7 @@ export default function RestaurantMenuSection({
           if (!cleanQuery) return true;
           return [item.name, item.description, item.category]
             .filter(Boolean)
-            .some((value) =>
-              value!.toLocaleLowerCase().includes(cleanQuery),
-            );
+            .some((value) => value!.toLocaleLowerCase().includes(cleanQuery));
         }),
       }))
       .filter((menu) => menu.items.length > 0 || !cleanQuery);
@@ -118,11 +112,8 @@ export default function RestaurantMenuSection({
         )}
       </View>
 
-      <View className="mt-5 flex-row items-center rounded-2xl bg-gray-100 px-4 dark:bg-gray-900">
-        <MagnifyingGlassIcon
-          size={20}
-          color={isDark ? "#9CA3AF" : "#6B7280"}
-        />
+      <View className="mt-5 flex-row items-center rounded-2xl border border-line bg-white px-4 dark:border-gray-700 dark:bg-gray-900">
+        <MagnifyingGlassIcon size={20} color={isDark ? "#9CA3AF" : "#6B7280"} />
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -154,7 +145,7 @@ export default function RestaurantMenuSection({
           className={`rounded-full px-4 py-2.5 ${
             selectedMenuId === "ALL"
               ? "bg-black dark:bg-white"
-              : "bg-gray-100 dark:bg-gray-900"
+              : "border border-line bg-white dark:border-gray-700 dark:bg-gray-900"
           }`}
         >
           <Text
@@ -174,7 +165,7 @@ export default function RestaurantMenuSection({
             className={`rounded-full px-4 py-2.5 ${
               selectedMenuId === menu.id
                 ? "bg-black dark:bg-white"
-                : "bg-gray-100 dark:bg-gray-900"
+                : "border border-line bg-white dark:border-gray-700 dark:bg-gray-900"
             }`}
           >
             <Text
@@ -190,23 +181,25 @@ export default function RestaurantMenuSection({
         ))}
       </ScrollView>
 
-      {!query.trim() && selectedMenuId === "ALL" && featuredItems.length > 0 && (
-        <View className="mt-7">
-          <Text className="text-xl font-bold text-black dark:text-white">
-            {t("restaurantPicks")}
-          </Text>
-          <Text className="mt-1 text-sm text-gray-500">
-            {t("restaurantPicksHint")}
-          </Text>
-          {featuredItems.slice(0, 3).map((item) => (
-            <DishCard
-              key={`featured-${item.id}`}
-              item={item}
-              popular={popularIds.has(item.id)}
-            />
-          ))}
-        </View>
-      )}
+      {!query.trim() &&
+        selectedMenuId === "ALL" &&
+        featuredItems.length > 0 && (
+          <View className="mt-7">
+            <Text className="text-xl font-bold text-black dark:text-white">
+              {t("restaurantPicks")}
+            </Text>
+            <Text className="mt-1 text-sm text-gray-500">
+              {t("restaurantPicksHint")}
+            </Text>
+            {featuredItems.slice(0, 3).map((item) => (
+              <DishCard
+                key={`featured-${item.id}`}
+                item={item}
+                popular={popularIds.has(item.id)}
+              />
+            ))}
+          </View>
+        )}
 
       {!query.trim() && selectedMenuId === "ALL" && popularItems.length > 0 && (
         <View className="mt-7">

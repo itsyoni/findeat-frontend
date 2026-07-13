@@ -24,12 +24,12 @@ export default function EmptyPostsState({ type }: Props) {
   }
 
   return (
-    <View className="flex-1 items-center justify-center bg-white px-8 pb-20 dark:bg-black">
+    <View className="flex-1 items-center justify-center bg-canvas px-8 pb-20 dark:bg-black">
       <View className="h-24 w-24 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
         <View className="h-16 w-16 items-center justify-center rounded-full bg-white dark:bg-gray-800">
           <Icon
             size={32}
-            color={isReview ? "#D6A92D" : isDark ? "#FFF" : "#111"}
+            color={isReview ? "#FF5B35" : isDark ? "#FFF" : "#171717"}
             weight="fill"
           />
         </View>
@@ -44,19 +44,19 @@ export default function EmptyPostsState({ type }: Props) {
 
       <TouchableOpacity
         className={`mt-7 flex-row items-center rounded-2xl px-6 py-4 ${
-          isReview ? "bg-[#F7D786]" : "bg-black dark:bg-white"
+          isReview ? "bg-brand" : "bg-ink dark:bg-white"
         }`}
         activeOpacity={0.8}
         onPress={openCreatePage}
       >
         <PlusIcon
           size={19}
-          color={isReview || isDark ? "#111" : "#FFF"}
+          color={isReview ? "#FFF" : isDark ? "#171717" : "#FFF"}
           weight="bold"
         />
         <Text
           className={`ml-2 font-bold ${
-            isReview ? "text-black" : "text-white dark:text-black"
+            isReview ? "text-white" : "text-white dark:text-black"
           }`}
         >
           {t(isReview ? "writeFirstReview" : "createFirstPost")}

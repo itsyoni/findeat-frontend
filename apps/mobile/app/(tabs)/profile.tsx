@@ -27,14 +27,14 @@ export default function ProfileScreen() {
 
   if (loading || !profile) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
         <ActivityIndicator />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-white dark:bg-black">
+    <View className="flex-1 bg-canvas dark:bg-black">
       <PersonalProfileHeader profile={profile} />
 
       <Tabs

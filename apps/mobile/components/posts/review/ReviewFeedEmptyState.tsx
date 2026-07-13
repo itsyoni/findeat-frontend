@@ -10,11 +10,11 @@ export default function ReviewFeedEmptyState() {
   const { isDark } = useAppTheme();
 
   return (
-    <View className="flex-1 items-center justify-center bg-white px-9 pb-16 dark:bg-black">
-      <View className="h-24 w-24 items-center justify-center rounded-full border-2 border-black dark:border-white">
+    <View className="flex-1 items-center justify-center bg-canvas px-9 pb-16 dark:bg-black">
+      <View className="h-24 w-24 items-center justify-center rounded-full border-2 border-ink dark:border-white">
         <StarIcon
           size={43}
-          color={isDark ? "#FFF" : "#111"}
+          color={isDark ? "#FFF" : "#171717"}
           weight="regular"
         />
       </View>
@@ -28,7 +28,7 @@ export default function ReviewFeedEmptyState() {
 
       <TouchableOpacity
         onPress={() => router.push("/create/review")}
-        className="mt-6 rounded-xl bg-black px-7 py-3.5 dark:bg-white"
+        className="mt-6 rounded-xl bg-ink px-7 py-3.5 dark:bg-white"
       >
         <Text className="font-bold text-white dark:text-black">
           {t("writeFirstReview")}

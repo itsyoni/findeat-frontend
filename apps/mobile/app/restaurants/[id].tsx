@@ -279,7 +279,7 @@ export default function RestaurantScreen() {
 
   if (!restaurant) {
     return (
-      <View className="flex-1 items-center justify-center bg-white dark:bg-black">
+      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
         <Text className="text-black dark:text-white">
           {t("restaurants:notFound")}
         </Text>
@@ -289,14 +289,14 @@ export default function RestaurantScreen() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-white dark:bg-black">
+      <ScrollView className="flex-1 bg-canvas dark:bg-black">
       <RestaurantHeader
         restaurant={restaurant}
         onToggleFollow={toggleFollow}
         onOpenOptions={() => setOptionsOpen(true)}
       />
 
-      <View className="px-5 py-4">
+      <View className="bg-surface px-5 pb-5 pt-2 dark:bg-black">
         <View className="flex-row gap-3">
           <TouchableOpacity
             onPress={toggleWantToTry}

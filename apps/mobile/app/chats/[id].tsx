@@ -619,7 +619,7 @@ export default function ChatScreen() {
       />
       <SafeAreaView
         edges={["left", "right", "bottom"]}
-        style={{ flex: 1, backgroundColor: isDark ? "#080808" : "#F7F7F8" }}
+        style={{ flex: 1, backgroundColor: isDark ? "#080808" : "#FBFAF8" }}
       >
         <KeyboardAvoidingView
           className="flex-1"
@@ -710,7 +710,7 @@ export default function ChatScreen() {
                     <View
                       className={`max-w-[78%] rounded-[22px] border px-4 py-2.5 ${
                         isMine
-                          ? `${nextMessage?.senderId !== item.senderId ? "rounded-br-md" : ""} border-[#F7D786] bg-[#F7D786]`
+                          ? `${nextMessage?.senderId !== item.senderId ? "rounded-br-md" : ""} border-[#FFD8CD] bg-brand-soft`
                           : `${nextMessage?.senderId !== item.senderId ? "rounded-bl-md" : ""} border-gray-100 bg-white dark:border-gray-800 dark:bg-[#1B1B1D]`
                       }`}
                     >
@@ -819,9 +819,9 @@ export default function ChatScreen() {
             </Animated.View>
           ) : null}
 
-          <View className="flex-row items-end border-t border-gray-100 bg-white px-3 py-2 dark:border-gray-900 dark:bg-[#0F0F10]">
+          <View className="flex-row items-end border-t border-line bg-white px-3 py-2 dark:border-gray-900 dark:bg-[#0F0F10]">
             <RNTextInput
-              className="flex-1 rounded-3xl border border-gray-100 bg-gray-100 px-4 text-black dark:border-gray-800 dark:bg-[#1B1B1D] dark:text-white"
+              className="flex-1 rounded-3xl border border-line bg-soft px-4 text-ink dark:border-gray-800 dark:bg-[#1B1B1D] dark:text-white"
               placeholder={t("messagePlaceholder")}
               placeholderTextColor="#9CA3AF"
               value={content}
@@ -868,7 +868,7 @@ export default function ChatScreen() {
             />
 
             <TouchableOpacity
-              className={`ml-2 h-10 w-10 items-center justify-center rounded-full ${content.trim() && !sending ? "bg-[#F7D786]" : "bg-gray-200 dark:bg-gray-800"}`}
+              className={`ml-2 h-10 w-10 items-center justify-center rounded-full ${content.trim() && !sending ? "bg-brand" : "bg-gray-200 dark:bg-gray-800"}`}
               onPress={sendMessage}
               disabled={!content.trim() || sending}
             >
@@ -877,7 +877,7 @@ export default function ChatScreen() {
               ) : (
                 <PaperPlaneTiltIcon
                   size={21}
-                  color={content.trim() ? "#111" : "#9CA3AF"}
+                  color={content.trim() ? "#FFF" : "#9CA3AF"}
                   weight="fill"
                 />
               )}

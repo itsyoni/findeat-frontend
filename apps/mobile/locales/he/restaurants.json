@@ -52,6 +52,7 @@
   "aboutDish": "על המנה",
   "noDishDescription": "המסעדה עדיין לא הוסיפה תיאור למנה הזו.",
   "dishReviews": "דירוגי המנה",
+  "noDishRatings": "אין דירוגים עדיין",
   "basedOnDishRatings_one": "מבוסס על דירוג אחד",
   "basedOnDishRatings_other": "מבוסס על {{count}} דירוגים",
   "featuredDishes": "מנות מומלצות",

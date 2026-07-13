@@ -249,7 +249,7 @@ export default function CreateContentScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Stack.Screen options={{ headerShown: false }} />
@@ -259,7 +259,7 @@ export default function CreateContentScreen() {
             onPress={() => setStep("CAMERA")}
             className="h-11 w-11 items-center justify-center rounded-full"
           >
-            <CaretLeftIcon size={25} color={isDark ? "#FFF" : "#111"} weight="bold" />
+            <CaretLeftIcon size={25} color={isDark ? "#FFF" : "#171717"} weight="bold" />
           </TouchableOpacity>
           <Text className="ml-2 flex-1 text-xl font-bold text-black dark:text-white">
             {t("quickPost")}
