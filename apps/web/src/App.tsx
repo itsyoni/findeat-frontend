@@ -59,6 +59,15 @@ type AdminUser = {
   isCurrentUser: boolean
 }
 
+type Account = {
+  id: string
+  email: string
+  username: string
+  displayName: string
+  avatarUrl?: string | null
+  isAdmin: boolean
+}
+
 type Review = {
   id: string
   imageUrl?: string | null
@@ -70,7 +79,7 @@ type Review = {
   _count: { likes: number; comments: number }
 }
 
-type Section = 'overview' | 'dashboard' | 'menu' | 'reviews' | 'profile'
+type Section = 'overview' | 'dashboard' | 'menu' | 'reviews' | 'profile' | 'admin'
 
 const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '')
 
@@ -169,7 +178,7 @@ function Login({ onLogin }: { onLogin: () => void }) {
   )
 }
 
-function MenuManager({ menus, reload }: { menus: Menu[]; reload: () => Promise<void> }) {
+function MenuManager({ menus, restaurantId, reload }: { menus: Menu[]; restaurantId: string; reload: () => Promise<void> }) {
   const [newTitle, setNewTitle] = useState('')
   const [openMenu, setOpenMenu] = useState<string | null>(menus[0]?.id ?? null)
   const [dishMenu, setDishMenu] = useState<string | null>(null)
@@ -193,7 +202,7 @@ function MenuManager({ menus, reload }: { menus: Menu[]; reload: () => Promise<v
     event.preventDefault()
     if (!newTitle.trim()) return
     try {
-      await request('/business/menus', { method: 'POST', body: JSON.stringify({ title: newTitle }) })
+      await request('/business/menus', { method: 'POST', body: JSON.stringify({ title: newTitle, restaurantId }) })
       setNewTitle('')
       await reload()
     } catch (nextError) {
@@ -342,7 +351,7 @@ function ProfileEditor({ restaurant, onSaved }: { restaurant: Restaurant; onSave
     event.preventDefault()
     setStatus('Saving…')
     try {
-      await request('/restaurants/me', { method: 'PATCH', body: JSON.stringify(form) })
+      await request(`/restaurants/me/${restaurant.id}`, { method: 'PATCH', body: JSON.stringify(form) })
       await onSaved()
       setStatus('Saved')
     } catch (error) {
@@ -439,7 +448,13 @@ function UserIdentity({ user }: { user: AdminUser }) {
   </div>
 }
 
-function AdminPortal({ claims, admins, reload, onLogout }: { claims: Claim[]; admins: AdminUser[]; reload: () => Promise<void>; onLogout: () => void }) {
+function AccountAvatar({ account }: { account: Account }) {
+  return account.avatarUrl
+    ? <img className="account-avatar" src={account.avatarUrl} alt="" />
+    : <div className="avatar">{(account.displayName || account.username).charAt(0).toUpperCase()}</div>
+}
+
+function AdminPortal({ claims, admins, account, reload, onLogout, onBackToBusiness }: { claims: Claim[]; admins: AdminUser[]; account: Account; reload: () => Promise<void>; onLogout: () => void; onBackToBusiness?: () => void }) {
   const [section, setSection] = useState<'claims' | 'admins'>('claims')
   const [workingId, setWorkingId] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -522,13 +537,14 @@ function AdminPortal({ claims, admins, reload, onLogout }: { claims: Claim[]; ad
       <div className="brand"><div className="brand-mark">F</div><div><strong>FindEat</strong><small>Admin workspace</small></div></div>
       <div className="admin-chip"><span>◆</span><div><strong>Platform administration</strong><small>Restricted access</small></div></div>
       <nav>
+        {onBackToBusiness && <button onClick={onBackToBusiness}><span>←</span> Restaurant dashboard</button>}
         <button className={section === 'claims' ? 'active' : ''} onClick={() => { setSection('claims'); setError('') }}><span>✓</span> Restaurant claims <small className="nav-count">{claims.length}</small></button>
         <button className={section === 'admins' ? 'active' : ''} onClick={() => { setSection('admins'); setError('') }}><span>♙</span> Admins <small className="nav-count neutral">{admins.length}</small></button>
       </nav>
       <div className="aside-footer"><p>Admin access</p><small>Only trusted users should be able to approve claims or manage other admins.</small><button onClick={onLogout}>Sign out</button></div>
     </aside>
     <main className="content">
-      <header><div><strong>Admin workspace</strong><span className="admin-badge">Admin</span></div><div className="avatar">A</div></header>
+      <header><div><strong>Admin workspace</strong><span className="admin-badge">Admin</span></div><AccountAvatar account={account} /></header>
       <div className="admin-content">
         {section === 'claims' ? <>
           <div className="page-heading"><div><p className="eyebrow">ADMINISTRATION</p><h2>Restaurant claims</h2><p className="muted">Review ownership requests before granting access to restaurant management.</p></div><span className="claim-count">{claims.length} pending</span></div>
@@ -572,6 +588,7 @@ function AdminPortal({ claims, admins, reload, onLogout }: { claims: Claim[]; ad
 }
 
 function Dashboard({ onLogout }: { onLogout: () => void }) {
+  const [account, setAccount] = useState<Account | null>(null)
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [menus, setMenus] = useState<Menu[]>([])
   const [reviews, setReviews] = useState<Review[]>([])
@@ -579,43 +596,53 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [admins, setAdmins] = useState<AdminUser[]>([])
   const [isAdmin, setIsAdmin] = useState(false)
   const [section, setSection] = useState<Section>('overview')
+  const [selectedRestaurantId, setSelectedRestaurantId] = useState<string | null>(() => localStorage.getItem('findeat-selected-restaurant'))
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const restaurant = restaurants[0]
+  const restaurant = restaurants.find((item) => item.id === selectedRestaurantId) ?? restaurants[0]
 
   const load = useCallback(async () => {
     try {
-      const me = await request<{ email: string; isAdmin?: boolean } | null>('/auth/me')
+      const me = await request<Account | null>('/auth/me')
       if (!me?.email) {
         onLogout()
         return
       }
+      setAccount(me)
       const isAdminAccount = me.isAdmin === true || me.email.trim().toLowerCase() === 'yonagona@gmail.com'
+      setIsAdmin(isAdminAccount)
+
       if (isAdminAccount) {
-        setIsAdmin(true)
         const [nextClaims, nextAdmins] = await Promise.all([
           request<Claim[]>('/restaurants/claims/pending'),
           request<AdminUser[]>('/admin/admins'),
         ])
         setClaims(nextClaims)
         setAdmins(nextAdmins)
-        setRestaurants([])
-        setMenus([])
-        setReviews([])
-        setError('')
-        return
+      } else {
+        setClaims([])
+        setAdmins([])
       }
-      setIsAdmin(false)
+
       const nextRestaurants = await request<Restaurant[]>('/restaurants/me')
       setRestaurants(nextRestaurants)
       if (nextRestaurants.length) {
+        const nextRestaurantId = nextRestaurants.some((item) => item.id === selectedRestaurantId)
+          ? selectedRestaurantId!
+          : nextRestaurants[0].id
+        if (nextRestaurantId !== selectedRestaurantId) {
+          setSelectedRestaurantId(nextRestaurantId)
+          localStorage.setItem('findeat-selected-restaurant', nextRestaurantId)
+        }
         const [nextMenus, nextReviews] = await Promise.all([
-          request<Menu[]>('/business/menus'),
-          loadRestaurantReviews(nextRestaurants[0].id),
+          request<Menu[]>(`/business/menus?restaurantId=${encodeURIComponent(nextRestaurantId)}`),
+          loadRestaurantReviews(nextRestaurantId),
         ])
         setMenus(nextMenus)
         setReviews(nextReviews)
       } else {
+        setSelectedRestaurantId(null)
+        localStorage.removeItem('findeat-selected-restaurant')
         setMenus([])
         setReviews([])
       }
@@ -627,7 +654,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
     } finally {
       setLoading(false)
     }
-  }, [onLogout])
+  }, [onLogout, selectedRestaurantId])
 
   useEffect(() => {
     // Loading is intentionally tied to mounting the authenticated dashboard.
@@ -636,26 +663,39 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   }, [load])
 
   const itemCount = useMemo(() => menus.reduce((total, menu) => total + menu.items.length, 0), [menus])
+  const selectRestaurant = (restaurantId: string) => {
+    setMenus([])
+    setReviews([])
+    setSelectedRestaurantId(restaurantId)
+    localStorage.setItem('findeat-selected-restaurant', restaurantId)
+  }
+
   if (loading) return <div className="loading">Loading your restaurant…</div>
   if (error) return <div className="loading"><div><h2>We couldn’t open your dashboard</h2><p>{error}</p><div className="loading-actions"><button className="primary" onClick={() => void load()}>Try again</button><button className="secondary" onClick={onLogout}>Sign out</button></div></div></div>
-  if (isAdmin) return <AdminPortal claims={claims} admins={admins} reload={load} onLogout={onLogout} />
+  if (!account) return <div className="loading">Loading your account…</div>
+  if (isAdmin && (!restaurant || section === 'admin')) return <AdminPortal claims={claims} admins={admins} account={account} reload={load} onLogout={onLogout} onBackToBusiness={restaurant ? () => setSection('overview') : undefined} />
   if (!restaurant) return <div className="loading"><div><h2>No managed restaurant</h2><p>Once your restaurant claim is approved, it will appear here.</p><button className="secondary" onClick={onLogout}>Sign out</button></div></div>
 
   return <div className="dashboard">
     <aside>
       <div className="brand"><div className="brand-mark">F</div><div><strong>FindEat</strong><small>Business</small></div></div>
-      <div className="restaurant-chip">{restaurant.logoUrl ? <img src={restaurant.logoUrl} alt="" /> : <span>{restaurant.name.charAt(0)}</span>}<div><strong>{restaurant.name}</strong><small>{restaurant.city || 'Restaurant'}</small></div></div>
+      <label className={`restaurant-chip ${restaurants.length > 1 ? 'switchable' : ''}`}>
+        {restaurant.logoUrl ? <img src={restaurant.logoUrl} alt="" /> : <span>{restaurant.name.charAt(0)}</span>}
+        <div><strong>{restaurant.name}</strong><small>{restaurants.length > 1 ? `${restaurants.length} restaurants · switch` : restaurant.city || 'Restaurant'}</small></div>
+        {restaurants.length > 1 && <><b>⌄</b><select aria-label="Select restaurant" value={restaurant.id} onChange={(event) => selectRestaurant(event.target.value)}>{restaurants.map((item) => <option value={item.id} key={item.id}>{item.name}</option>)}</select></>}
+      </label>
       <nav>
         <button className={section === 'overview' ? 'active' : ''} onClick={() => setSection('overview')}><span>⌂</span> Overview</button>
         <button className={section === 'dashboard' ? 'active' : ''} onClick={() => setSection('dashboard')}><span>⌁</span> Dashboard <small className="nav-premium">PRO</small></button>
         <button className={section === 'menu' ? 'active' : ''} onClick={() => setSection('menu')}><span>☰</span> Menu</button>
         <button className={section === 'reviews' ? 'active' : ''} onClick={() => setSection('reviews')}><span>☆</span> Reviews</button>
         <button className={section === 'profile' ? 'active' : ''} onClick={() => setSection('profile')}><span>◎</span> Restaurant profile</button>
+        {isAdmin && <button className={section === 'admin' ? 'active' : ''} onClick={() => setSection('admin')}><span>◆</span> Admin <small className="nav-count">{claims.length}</small></button>}
       </nav>
       <div className="aside-footer"><p>Official posts stay mobile</p><small>Use the FindEat app to create and publish official content.</small><button onClick={onLogout}>Sign out</button></div>
     </aside>
     <main className="content">
-      <header><div><strong>{restaurant.name}</strong><span className="claimed">Claimed</span></div><div className="avatar">{restaurant.name.charAt(0)}</div></header>
+      <header><div><strong>{restaurant.name}</strong><span className="claimed">Claimed</span></div><div className="account-summary"><div><strong>{account.displayName || account.username}</strong><small>@{account.username}</small></div><AccountAvatar account={account} /></div></header>
       {section === 'overview' && <div className="page-stack">
         <div className="page-heading"><div><p className="eyebrow">DASHBOARD</p><h2>Good to see you.</h2><p className="muted">Here’s how your restaurant profile is set up.</p></div><button className="primary" onClick={() => setSection('menu')}>Manage menu</button></div>
         <div className="stats"><article><span>Followers</span><strong>{restaurant.followersCount || 0}</strong><small>People following your place</small></article><article><span>Menu sections</span><strong>{menus.length}</strong><small>{itemCount} menu items</small></article><article><span>Reviews</span><strong>{reviews.length}</strong><small>Customer reviews</small></article></div>
@@ -663,9 +703,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         <section className="card checklist"><h3>Restaurant setup</h3><div><span className={menus.length ? 'done' : ''}>{menus.length ? '✓' : '1'}</span><p><strong>Add your menu</strong><small>Help customers decide what to order.</small></p><button onClick={() => setSection('menu')}>{menus.length ? 'Manage' : 'Start'}</button></div><div><span className={restaurant.phone || restaurant.website ? 'done' : ''}>{restaurant.phone || restaurant.website ? '✓' : '2'}</span><p><strong>Complete contact details</strong><small>Add a phone number and website.</small></p><button onClick={() => setSection('profile')}>Edit</button></div></section>
       </div>}
       {section === 'dashboard' && <PerformanceDashboard menus={menus} reviews={reviews} />}
-      {section === 'menu' && <MenuManager menus={menus} reload={load} />}
+      {section === 'menu' && <MenuManager key={restaurant.id} menus={menus} restaurantId={restaurant.id} reload={load} />}
       {section === 'reviews' && <ReviewsTable reviews={reviews} />}
-      {section === 'profile' && <ProfileEditor restaurant={restaurant} onSaved={load} />}
+      {section === 'profile' && <ProfileEditor key={restaurant.id} restaurant={restaurant} onSaved={load} />}
     </main>
   </div>
 }
