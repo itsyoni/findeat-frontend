@@ -4,7 +4,7 @@ import SettingsSection from '@/components/settings/SettingsSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
-import { BellIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon, UserCircleIcon } from 'phosphor-react-native';
+import { BellIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,7 +27,6 @@ export default function SettingsScreen() {
       <SettingsHeader title={t('settings:title')} />
       <ScrollView>
         <SettingsSection title={t('settings:yourAccount')}>
-          <SettingsRow icon={<UserCircleIcon size={23} color={color} />} title={t('settings:account')} subtitle={t('settings:accountSubtitle')} onPress={() => router.push('/settings/account')} />
           <SettingsRow icon={<LockKeyIcon size={23} color={color} />} title={t('settings:passwordSecurity')} subtitle={t('settings:passwordSecuritySubtitle')} onPress={() => router.push('/settings/security')} />
         </SettingsSection>
         <SettingsSection title={t('settings:howYouUseFindEat')}>

@@ -1,4 +1,5 @@
 import NotificationRow from '@/components/notifications/NotificationRow';
+import { LoadingScreen } from '@/components/common';
 import { notificationHref } from '@/components/notifications/notificationHelpers';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import {
@@ -155,7 +156,7 @@ export default function NotificationsScreen() {
       </View>
 
       {notifications.isPending ? (
-        <View className="flex-1 items-center justify-center"><ActivityIndicator /></View>
+        <LoadingScreen variant="list" contained />
       ) : (
         <FlatList
           data={items}

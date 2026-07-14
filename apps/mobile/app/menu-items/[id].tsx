@@ -94,7 +94,7 @@ export default function MenuItemScreen() {
 
   const isNewDish = dish?.isNew === true;
 
-  if (loading) return <LoadingScreen />;
+  if (loading) return <LoadingScreen variant="detail" />;
 
   if (!dish) {
     return (

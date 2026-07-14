@@ -5,6 +5,7 @@ import { ActivityIndicator, Image, Pressable, TouchableOpacity, View } from 'rea
 import { useAppTheme } from '@/contexts/ThemeContext';
 import Text from '../common/AppText';
 import { useTranslation } from 'react-i18next';
+import { SkeletonList } from '@/components/common';
 
 type Props = {
   posts: Restaurant['posts'];
@@ -20,7 +21,7 @@ export default function RestaurantPostsSection({ posts, emptyText, loading, load
   const { t } = useTranslation('restaurants');
 
   if (loading) {
-    return <ActivityIndicator className="my-16" />;
+    return <SkeletonList variant="grid" count={6} />;
   }
 
   if (posts.length === 0) {

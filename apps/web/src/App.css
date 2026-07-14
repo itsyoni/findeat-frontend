@@ -290,6 +290,63 @@ header>div { display:flex; align-items:center; gap:10px; }
 .remove-admin:hover { background:#fff0ed; }
 .confirm-remove { background:#b33b2c; color:#fff; }
 .cancel-remove { color:var(--muted); }
+.ownership-search { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px 10px 10px 16px; margin-bottom:20px; border:1px solid var(--line); border-radius:16px; background:#fff; color:var(--muted); }
+.ownership-search input { padding-left:4px; border:0; box-shadow:none; }
+.ownership-search input:focus { box-shadow:none; }
+.ownership-list { display:grid; gap:16px; }
+.ownership-card { overflow:hidden; border:1px solid var(--line); border-radius:20px; background:#fff; }
+.ownership-restaurant { display:grid; grid-template-columns:52px minmax(0,1fr) auto; align-items:center; gap:14px; padding:20px 22px; border-bottom:1px solid var(--line); }
+.ownership-restaurant>img,.ownership-restaurant>span { display:grid; place-items:center; width:52px; height:52px; border-radius:50%; object-fit:cover; background:#eee7df; font-size:20px; font-weight:900; }
+.ownership-restaurant h3,.ownership-restaurant p { margin:0; }
+.ownership-restaurant p { margin-top:5px; color:var(--muted); font-size:12px; }
+.ownership-title { display:flex; align-items:center; gap:9px; }
+.ownership-title h3 { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ownership-title b { flex:0 0 auto; }
+.ownership-title .unclaimed { padding:4px 9px; border-radius:20px; background:#fff0e8; color:#b94a2e; font-size:10px; text-transform:capitalize; }
+.ownership-add { display:flex; align-items:center; gap:7px; white-space:nowrap; }
+.ownership-columns { display:grid; grid-template-columns:1fr 1fr; }
+.ownership-columns>section { min-width:0; padding:20px 22px; }
+.ownership-columns>section+section { border-left:1px solid var(--line); }
+.ownership-columns h4 { display:flex; align-items:center; gap:7px; margin-bottom:10px; font-size:12px; text-transform:uppercase; letter-spacing:.06em; }
+.ownership-columns h4 span { display:grid; place-items:center; min-width:20px; height:20px; padding:0 5px; border-radius:10px; background:var(--soft); color:var(--muted); font-size:10px; }
+.ownership-owner,.ownership-claim { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:67px; padding:10px 0; border-top:1px solid var(--line); }
+.ownership-owner:first-of-type,.ownership-claim:first-of-type { border-top:0; }
+.ownership-owner .admin-user-identity,.ownership-claim .admin-user-identity { min-width:0; }
+.ownership-owner .admin-user-identity>img,.ownership-owner .admin-user-identity>span,.ownership-claim .admin-user-identity>img,.ownership-claim .admin-user-identity>span { width:37px; height:37px; }
+.ownership-owner .admin-user-identity small,.ownership-claim .admin-user-identity small { max-width:250px; font-size:10px; }
+.ownership-actions { display:flex; align-items:center; gap:5px; }
+.owners-accordion-trigger { display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; align-items:center; gap:11px; width:100%; min-height:66px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:var(--soft); color:var(--ink); text-align:left; }
+.owners-accordion-trigger:hover { border-color:#d8c9bb; background:#f2efeb; }
+.owner-avatar-stack { display:flex; align-items:center; padding-left:8px; }
+.owner-avatar-stack img,.owner-avatar-stack i { display:grid; place-items:center; width:34px; height:34px; margin-left:-8px; border:2px solid var(--soft); border-radius:50%; object-fit:cover; background:#e7ded5; color:var(--ink); font-size:11px; font-style:normal; font-weight:900; }
+.owners-accordion-trigger:hover .owner-avatar-stack img,.owners-accordion-trigger:hover .owner-avatar-stack i { border-color:#f2efeb; }
+.owners-accordion-copy { min-width:0; }
+.owners-accordion-copy strong,.owners-accordion-copy small { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.owners-accordion-copy strong { font-size:12px; }
+.owners-accordion-copy small { margin-top:3px; color:var(--muted); font-size:10px; }
+.owners-manage-label { color:var(--muted); font-size:10px; font-weight:800; }
+.owners-accordion-trigger>svg { transition:transform .18s ease; }
+.owners-accordion-trigger>svg.expanded { transform:rotate(180deg); }
+.ownership-owner-list { margin-top:8px; padding:0 3px; border-top:1px solid var(--line); }
+.ownership-transfer,.ownership-remove,.ownership-close { display:flex; align-items:center; gap:5px; padding:8px 9px; border:0; border-radius:9px; background:var(--soft); color:#555; font-size:11px; font-weight:800; }
+.ownership-remove { color:#a6382a; }
+.ownership-remove:hover { background:#fff0ed; }
+.ownership-none { margin:18px 0 8px; color:var(--muted); font-size:12px; }
+.claim-status { padding:5px 8px; border-radius:8px; font-size:10px; font-weight:900; text-transform:capitalize; }
+.claim-status.approved { background:#e6f4ec; color:var(--green); }
+.claim-status.pending { background:#fff0cc; color:#8a6200; }
+.claim-status.rejected { background:#fff0ed; color:#a6382a; }
+.ownership-picker { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:15px; padding:20px 22px; border-top:1px solid #eadfd7; background:#fff8f4; }
+.ownership-picker h4,.ownership-picker p,.ownership-picker strong { margin:0; }
+.ownership-picker p { margin-top:4px; color:var(--muted); font-size:12px; }
+.ownership-picker>form { grid-column:1/-1; display:grid; grid-template-columns:minmax(0,1fr) auto; gap:9px; }
+.ownership-close { align-self:start; background:transparent; }
+.ownership-user-results { grid-column:1/-1; overflow:hidden; border:1px solid var(--line); border-radius:14px; background:#fff; }
+.ownership-user-results>button { display:flex; align-items:center; justify-content:space-between; gap:15px; width:100%; min-height:66px; padding:10px 13px; border:0; border-bottom:1px solid var(--line); background:#fff; text-align:left; }
+.ownership-user-results>button:last-child { border-bottom:0; }
+.ownership-user-results>button:hover { background:var(--soft); }
+.ownership-user-results>button>b { color:var(--green); font-size:11px; }
+.ownership-empty { margin-top:18px; }
 .review-summary { display:flex; flex-direction:column; align-items:flex-end; }
 .review-summary strong { font-size:30px; }
 .review-summary span { color:var(--muted); font-size:12px; }
@@ -356,7 +413,7 @@ header>div { display:flex; align-items:center; gap:10px; }
 .notification-copy small { margin-top:7px; color:#999; font-size:10px; }
 .notification-post-preview { width:48px; height:58px; border-radius:9px; object-fit:cover; }
 .notification-open { padding:7px 10px; border-radius:9px; background:var(--soft); color:#555; font-size:11px; font-weight:800; }
-@media(max-width:800px){.dashboard{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.content{height:100%;min-height:0}aside{position:static;height:auto;padding:14px}aside .brand,.aside-footer,.admin-chip{display:none}.restaurant-chip{margin-bottom:10px}nav{grid-template-columns:repeat(3,1fr);margin:0}.admin-dashboard nav{grid-template-columns:repeat(2,1fr)}nav button{justify-content:center;font-size:12px}.nav-premium{display:none}header{padding:0 20px}.page-stack,.admin-content{padding:30px 18px}.stats,.claims-grid,.performance-stats,.performance-grid,.premium-insights{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-direction:column}.official-card{min-height:0}.phone-art{display:none}.dish-row{grid-template-columns:48px 1fr 50px 30px 35px 28px 28px}.dish-form,.profile-form{grid-template-columns:1fr}.image-picker,.profile-form .full,.profile-form .form-footer{grid-column:auto}.admin-user-row{align-items:flex-start;flex-direction:column}.admin-row-actions{width:100%;justify-content:flex-start}.admin-search-card form{grid-template-columns:1fr}.login-card{padding:28px}.login-card h1{font-size:35px}.notifications-popover{position:fixed;top:72px;right:12px;left:12px;width:auto;max-height:calc(100vh - 84px)}}
+@media(max-width:800px){.dashboard{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.content{height:100%;min-height:0}aside{position:static;height:auto;padding:14px}aside .brand,.aside-footer,.admin-chip{display:none}.restaurant-chip{margin-bottom:10px}nav{grid-template-columns:repeat(3,1fr);margin:0}.admin-dashboard nav{grid-template-columns:repeat(3,1fr)}nav button{justify-content:center;font-size:12px}.nav-premium{display:none}header{padding:0 20px}.page-stack,.admin-content{padding:30px 18px}.stats,.claims-grid,.performance-stats,.performance-grid,.premium-insights{grid-template-columns:1fr}.page-heading{align-items:flex-start;flex-direction:column}.official-card{min-height:0}.phone-art{display:none}.dish-row{grid-template-columns:48px 1fr 50px 30px 35px 28px 28px}.dish-form,.profile-form{grid-template-columns:1fr}.image-picker,.profile-form .full,.profile-form .form-footer{grid-column:auto}.admin-user-row{align-items:flex-start;flex-direction:column}.admin-row-actions{width:100%;justify-content:flex-start}.admin-search-card form{grid-template-columns:1fr}.ownership-columns{grid-template-columns:1fr}.ownership-columns>section+section{border-top:1px solid var(--line);border-left:0}.ownership-restaurant{grid-template-columns:46px minmax(0,1fr)}.ownership-restaurant>img,.ownership-restaurant>span{width:46px;height:46px}.ownership-add{grid-column:1/-1;justify-content:center}.login-card{padding:28px}.login-card h1{font-size:35px}.notifications-popover{position:fixed;top:72px;right:12px;left:12px;width:auto;max-height:calc(100vh - 84px)}}
 @media(max-width:600px){.cover-editor{height:185px}.logo-editor{align-items:flex-start}.logo-preview{width:88px;height:88px;margin-top:-42px;border-width:5px}.logo-editor>div:last-child{align-items:flex-start;flex-direction:column;gap:5px}.logo-editor small{font-size:10px}}
 @media(max-width:900px){.messages-page{padding:24px 18px 18px}.messages-heading{margin-bottom:16px}.messages-workspace{grid-template-columns:280px minmax(0,1fr)}}
 @media(max-width:650px){.messages-page{padding-top:18px}.messages-heading{margin-bottom:12px}.messages-heading .eyebrow,.messages-heading .muted{display:none}.messages-heading h2{margin:0;font-size:28px}.messages-workspace{grid-template-columns:1fr;grid-template-rows:minmax(120px,34%) minmax(0,66%)}.conversation-list{max-height:none;border-right:0;border-bottom:1px solid var(--line)}.conversation-panel{height:auto;min-height:0}.replying-as{display:none}.message-bubble{max-width:86%}}

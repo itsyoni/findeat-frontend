@@ -1,6 +1,6 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
-import { TextInput, ThemedSafeAreaView } from "@/components/common";
+import { SkeletonList, TextInput, ThemedSafeAreaView } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
@@ -229,7 +229,7 @@ export default function CreateGroupScreen() {
               )}
 
               {searching || (!showingSearch && loadingSuggestions) ? (
-                <ActivityIndicator className="mt-8" />
+                <SkeletonList />
               ) : (
                 <FlatList
                   data={visibleFriends}

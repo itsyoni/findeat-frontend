@@ -82,7 +82,7 @@ export default function ChatsScreen() {
   }
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="list" />;
   }
 
   return (

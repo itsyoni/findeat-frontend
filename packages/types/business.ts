@@ -17,4 +17,4 @@ export type BusinessDashboardSection =
   | "profile"
   | "admin";
 
-export type AdminDashboardSection = "claims" | "admins";
+export type AdminDashboardSection = "claims" | "ownership" | "admins";

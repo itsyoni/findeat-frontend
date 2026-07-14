@@ -314,7 +314,7 @@ export default function ContentPost({
           )}
         </View>
 
-        <View className="absolute bottom-26 right-4 items-center gap-5">
+        <View className="absolute bottom-26 right-4 w-16 items-center gap-5">
           <TouchableOpacity onPress={handleLike}>
             <Animated.View style={likeAnimatedStyle}>
               <HeartIcon
@@ -362,7 +362,7 @@ export default function ContentPost({
               </Text>
             </TouchableOpacity>
           )}
-          <TouchableOpacity className="items-center" onPress={handleWantToTry}>
+          <TouchableOpacity className="w-16 items-center" onPress={handleWantToTry}>
             <View className="relative h-[35px] w-[35px]">
               <BookmarkSimpleIcon
                 weight="fill"
@@ -388,7 +388,11 @@ export default function ContentPost({
               )}
             </View>
 
-            <Text style={textShadow} className="mt-1 text-center text-xs font-bold text-white">
+            <Text
+              numberOfLines={1}
+              style={textShadow}
+              className="mt-1 w-16 text-center text-xs font-bold text-white"
+            >
               {t(isPlaceSaved ? "savedPlace" : "savePlace")}
             </Text>
           </TouchableOpacity>

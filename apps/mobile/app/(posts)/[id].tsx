@@ -234,7 +234,7 @@ export default function PostScreen() {
   const loading = !id || loadedPostId !== id;
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="feed" />;
   }
 
   return (

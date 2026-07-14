@@ -1,11 +1,11 @@
-import { CommentsBottomSheet } from "@/components/common";
+import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, View } from "react-native";
+import { Alert } from "react-native";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -66,11 +66,7 @@ export default function ProfileReviewsFeedScreen() {
   }
 
   if (loading || !profile) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen variant="feed" />;
   }
 
   return (

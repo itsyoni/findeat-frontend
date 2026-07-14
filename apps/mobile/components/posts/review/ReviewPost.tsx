@@ -90,12 +90,7 @@ function ReviewPaginationDot({
     ),
   }));
 
-  return (
-    <Animated.View
-      className="h-1.5 rounded-full"
-      style={animatedStyle}
-    />
-  );
+  return <Animated.View className="h-1.5 rounded-full" style={animatedStyle} />;
 }
 
 export default function ReviewPost({
@@ -167,11 +162,47 @@ export default function ReviewPost({
   const isVisited = !!userRestaurant?.visited;
   const isFavorite = !!userRestaurant?.favorite;
 
+  const heartOverlayScale = useSharedValue(0);
+  const heartOverlayOpacity = useSharedValue(0);
+  const heartOverlayX = useSharedValue(0);
+  const heartOverlayY = useSharedValue(0);
+  const heartOverlayRotation = useSharedValue(0);
+
+  const heartOverlayStyle = useAnimatedStyle(() => ({
+    opacity: heartOverlayOpacity.value,
+    left: heartOverlayX.value - 55,
+    top: heartOverlayY.value - 55,
+    transform: [
+      { rotate: `${heartOverlayRotation.value}deg` },
+      { scale: heartOverlayScale.value },
+    ],
+  }));
+
   const likeScale = useSharedValue(1);
 
   const likeAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: likeScale.value }],
   }));
+
+  function handleDoubleTapLike(x: number, y: number) {
+    heartOverlayX.set(x);
+    heartOverlayY.set(y);
+    heartOverlayRotation.set(Math.random() * 30 - 15);
+    heartOverlayOpacity.set(1);
+    heartOverlayScale.set(0.4);
+    heartOverlayScale.set(
+      withSequence(withSpring(1.25), withSpring(1), withSpring(0)),
+    );
+    heartOverlayOpacity.set(
+      withSequence(withSpring(1), withSpring(1), withSpring(0)),
+    );
+
+    if (post.isLiked) return;
+
+    likeScale.set(1);
+    likeScale.set(withSequence(withSpring(1.35), withSpring(1)));
+    onToggleLike(post.id, false);
+  }
 
   function handleLike() {
     if (!post.isLiked) {
@@ -266,7 +297,8 @@ export default function ReviewPost({
                 className="mt-0.5 self-start flex-row items-center"
               >
                 <Text className="text-xs text-gray-500">
-                  {post.restaurant.name}{post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
+                  {post.restaurant.name}
+                  {post.restaurant.city ? ` · ${post.restaurant.city}` : ""}
                 </Text>
                 <RestaurantBadge size={12} status={post.restaurant.status} />
               </TouchableOpacity>
@@ -285,122 +317,153 @@ export default function ReviewPost({
         )}
       </View>
 
-      <FlatList
-        horizontal
-        pagingEnabled
-        scrollEnabled={!isPinchingMedia}
-        data={slides}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={reviewViewabilityConfig}
-        renderItem={({ item }) => (
-          <View style={{ width }} className="h-96 bg-gray-100">
-            {item.imageUrl ? (
-              <PinchZoomImage
-                uri={item.imageUrl}
-                style={{ width: "100%", height: "100%" }}
-                resizeMode="cover"
-                onPinchStart={() => setIsPinchingMedia(true)}
-                onPinchEnd={() => setIsPinchingMedia(false)}
-              />
-            ) : (
-              <View className="h-full w-full items-center justify-center bg-gray-900">
-                <Text className="text-white">No image</Text>
-              </View>
-            )}
+      <View className="relative">
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            {
+              position: "absolute",
+              width: 110,
+              height: 110,
+              zIndex: 20,
+              alignItems: "center",
+              justifyContent: "center",
+            },
+            heartOverlayStyle,
+          ]}
+        >
+          <HeartIcon
+            size={110}
+            color="#FF3040"
+            weight="fill"
+            style={{
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.35,
+              shadowRadius: 4,
+              elevation: 6,
+            }}
+          />
+        </Animated.View>
 
-            {item.type === "COVER" && (
-              <View
-                pointerEvents="none"
-                className="absolute inset-0 justify-end p-5"
-                style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
-              >
-                <Text className="text-3xl font-bold text-white">
-                  ⭐ {review?.overallRating ?? "-"}/10
-                </Text>
-
-                <View className="mt-3 flex-row flex-wrap gap-2">
-                  {review?.atmosphereRating != null && (
-                    <View className="rounded-full bg-white/20 px-3 py-2">
-                      <Text className="font-bold text-white">
-                        Atmosphere {review.atmosphereRating}/10
-                      </Text>
-                    </View>
-                  )}
-
-                  {review?.serviceRating != null && (
-                    <View className="rounded-full bg-white/20 px-3 py-2">
-                      <Text className="font-bold text-white">
-                        Service {review.serviceRating}/10
-                      </Text>
-                    </View>
-                  )}
-
-                  {review?.valueRating != null && (
-                    <View className="rounded-full bg-white/20 px-3 py-2">
-                      <Text className="font-bold text-white">
-                        Value {review.valueRating}/10
-                      </Text>
-                    </View>
-                  )}
-
-                  {totalPrice > 0 && (
-                    <View className="rounded-full bg-white/20 px-3 py-2">
-                      <Text className="font-bold text-white">
-                        Total ₪{totalPrice}
-                      </Text>
-                    </View>
-                  )}
+        <FlatList
+          horizontal
+          pagingEnabled
+          scrollEnabled={!isPinchingMedia}
+          data={slides}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          onViewableItemsChanged={onViewableItemsChanged}
+          viewabilityConfig={reviewViewabilityConfig}
+          renderItem={({ item }) => (
+            <View style={{ width }} className="h-96 bg-gray-100">
+              {item.imageUrl ? (
+                <PinchZoomImage
+                  uri={item.imageUrl}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                  onDoubleTap={handleDoubleTapLike}
+                  onPinchStart={() => setIsPinchingMedia(true)}
+                  onPinchEnd={() => setIsPinchingMedia(false)}
+                />
+              ) : (
+                <View className="h-full w-full items-center justify-center bg-gray-900">
+                  <Text className="text-white">No image</Text>
                 </View>
-              </View>
-            )}
+              )}
 
-            {item.type === "DISH" && (
-              <View
-                className="absolute bottom-0 left-0 right-0 p-5"
-                style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
-              >
-                <View className="flex-row items-end justify-between gap-3">
-                  <View className="flex-1">
-                    <Text className="text-2xl font-bold text-white">
-                      {item.dishName}
-                    </Text>
+              {item.type === "COVER" && (
+                <View
+                  pointerEvents="none"
+                  className="absolute inset-0 justify-end p-5"
+                  style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+                >
+                  <Text className="text-3xl font-bold text-white">
+                    ⭐ {review?.overallRating ?? "-"}/10
+                  </Text>
 
-                    {item.isLinkedToMenu && item.menuItemId && (
-                      <TouchableOpacity
-                        className="mt-2 self-start rounded-full bg-white/20 px-3 py-1"
-                        onPress={() =>
-                          router.push({
-                            pathname: "/menu-items/[id]",
-                            params: { id: item.menuItemId as string },
-                          })
-                        }
-                      >
-                        <Text className="text-xs font-bold text-white">
-                          ✓ Official menu item
+                  <View className="mt-3 flex-row flex-wrap gap-2">
+                    {review?.atmosphereRating != null && (
+                      <View className="rounded-full bg-white/20 px-3 py-2">
+                        <Text className="font-bold text-white">
+                          Atmosphere {review.atmosphereRating}/10
                         </Text>
-                      </TouchableOpacity>
+                      </View>
                     )}
 
-                    {item.rating != null && (
-                      <Text className="mt-1 font-bold text-white">
-                        ⭐ {item.rating}/10
+                    {review?.serviceRating != null && (
+                      <View className="rounded-full bg-white/20 px-3 py-2">
+                        <Text className="font-bold text-white">
+                          Service {review.serviceRating}/10
+                        </Text>
+                      </View>
+                    )}
+
+                    {review?.valueRating != null && (
+                      <View className="rounded-full bg-white/20 px-3 py-2">
+                        <Text className="font-bold text-white">
+                          Value {review.valueRating}/10
+                        </Text>
+                      </View>
+                    )}
+
+                    {totalPrice > 0 && (
+                      <View className="rounded-full bg-white/20 px-3 py-2">
+                        <Text className="font-bold text-white">
+                          Total ₪{totalPrice}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              )}
+
+              {item.type === "DISH" && (
+                <View
+                  className="absolute bottom-0 left-0 right-0 p-5"
+                  style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
+                >
+                  <View className="flex-row items-end justify-between gap-3">
+                    <View className="flex-1">
+                      <Text className="text-2xl font-bold text-white">
+                        {item.dishName}
+                      </Text>
+
+                      {item.isLinkedToMenu && item.menuItemId && (
+                        <TouchableOpacity
+                          className="mt-2 self-start rounded-full bg-white/20 px-3 py-1"
+                          onPress={() =>
+                            router.push({
+                              pathname: "/menu-items/[id]",
+                              params: { id: item.menuItemId as string },
+                            })
+                          }
+                        >
+                          <Text className="text-xs font-bold text-white">
+                            ✓ Official menu item
+                          </Text>
+                        </TouchableOpacity>
+                      )}
+
+                      {item.rating != null && (
+                        <Text className="mt-1 font-bold text-white">
+                          ⭐ {item.rating}/10
+                        </Text>
+                      )}
+                    </View>
+
+                    {item.price != null && (
+                      <Text className="text-xl font-bold text-white">
+                        ₪{item.price}
                       </Text>
                     )}
                   </View>
-
-                  {item.price != null && (
-                    <Text className="text-xl font-bold text-white">
-                      ₪{item.price}
-                    </Text>
-                  )}
                 </View>
-              </View>
-            )}
-          </View>
-        )}
-      />
+              )}
+            </View>
+          )}
+        />
+      </View>
 
       {slides.length > 1 && (
         <View className="mt-3 flex-row justify-center gap-1">

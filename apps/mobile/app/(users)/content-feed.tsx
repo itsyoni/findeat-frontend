@@ -209,7 +209,7 @@ export default function UserContentFeedScreen() {
   const loading = !userId || loadedUserId !== userId;
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="feed" />;
   }
 
   return (

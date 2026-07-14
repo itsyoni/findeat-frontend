@@ -91,7 +91,7 @@ export default function ManageMenuScreen() {
   );
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="menu" />;
   }
 
   if (!menu) {

@@ -1,18 +1,17 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
+import { LoadingScreen, ThemedSafeAreaView } from "@/components/common";
 import { api } from "@/lib/api";
 import { Chat } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   Pressable,
   TouchableOpacity,
   View,
 } from "react-native";
-import { ThemedSafeAreaView } from "@/components/common";
 
 export default function GroupDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -39,11 +38,7 @@ export default function GroupDetailsScreen() {
   }, [id]);
 
   if (loading || !chat) {
-    return (
-      <View className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen variant="list" />;
   }
 
   return (

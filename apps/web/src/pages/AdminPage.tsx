@@ -4,6 +4,7 @@ import { ArrowLeftIcon } from "@phosphor-icons/react/dist/csr/ArrowLeft";
 import { CheckCircleIcon } from "@phosphor-icons/react/dist/csr/CheckCircle";
 import { SealCheckIcon } from "@phosphor-icons/react/dist/csr/SealCheck";
 import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { StorefrontIcon } from "@phosphor-icons/react/dist/csr/Storefront";
 import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
 import type {
   AdminDashboardSection,
@@ -12,6 +13,7 @@ import type {
   RestaurantClaim,
 } from "@findeat/types";
 import { AccountAvatar } from "../components/AccountAvatar";
+import { RestaurantOwnershipManager } from "../components/RestaurantOwnershipManager";
 import { UserIdentity } from "../components/UserIdentity";
 import { request } from "../lib/api";
 
@@ -174,6 +176,15 @@ export function AdminPage({
             <small className="nav-count">{claims.length}</small>
           </button>
           <button
+            className={section === "ownership" ? "active" : ""}
+            onClick={() => {
+              setSection("ownership");
+              setError("");
+            }}
+          >
+            <StorefrontIcon className="nav-icon" weight="duotone" /> Ownership
+          </button>
+          <button
             className={section === "admins" ? "active" : ""}
             onClick={() => {
               setSection("admins");
@@ -285,6 +296,8 @@ export function AdminPage({
                 </div>
               )}
             </>
+          ) : section === "ownership" ? (
+            <RestaurantOwnershipManager />
           ) : (
             <>
               <div className="page-heading">

@@ -28,7 +28,7 @@ export default function BusinessMenuScreen() {
   );
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="menu" />;
   }
 
   return (

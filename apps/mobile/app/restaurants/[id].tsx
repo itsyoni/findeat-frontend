@@ -274,7 +274,7 @@ export default function RestaurantScreen() {
   }, [restaurant]);
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="profile" />;
   }
 
   if (!restaurant) {

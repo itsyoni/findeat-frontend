@@ -1,10 +1,9 @@
-import { TextInput , ThemedSafeAreaView } from "@/components/common";
+import { SkeletonList, TextInput , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Dish, Restaurant } from "@findeat/types";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   Image,
   ScrollView,
   TouchableOpacity,
@@ -94,9 +93,7 @@ export default function SelectMenuDishStep({
         />
 
         {loading && (
-          <View className="mt-10 items-center">
-            <ActivityIndicator />
-          </View>
+          <SkeletonList variant="menu" count={4} />
         )}
 
         {!loading && filteredMenus.length === 0 && (

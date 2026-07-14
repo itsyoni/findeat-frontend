@@ -1,4 +1,4 @@
-import { AppButton, IconButton } from "@/components/common";
+import { AppButton, IconButton, LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import FormInput from "@/components/forms/FormInput";
@@ -31,6 +31,7 @@ export default function EditProfileScreen() {
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [newCoverUri, setNewCoverUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const { refreshUser } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [newAvatarUri, setNewAvatarUri] = useState<string | null>(null);
@@ -72,12 +73,19 @@ export default function EditProfileScreen() {
         setDisplayName(data.displayName ?? "");
         setCoverUrl(data.coverUrl ?? null);
       })
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => {
+        if (!cancelled) setInitialLoading(false);
+      });
 
     return () => {
       cancelled = true;
     };
   }, []);
+
+  if (initialLoading) {
+    return <LoadingScreen variant="profile" />;
+  }
 
   async function saveProfile() {
     if (!username.trim()) {

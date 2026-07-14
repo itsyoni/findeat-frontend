@@ -107,7 +107,7 @@ export default function ConnectionsScreen() {
   }, [loadConnections]);
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="list" />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import Avatar from "@/components/common/Avatar";
 import Text from "@/components/common/AppText";
+import { SkeletonList } from "@/components/common";
 import TextInput from "@/components/common/inputs/AppTextInput";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
@@ -128,7 +129,9 @@ export default function FullPageRestaurantPicker({
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20 }}
         ListEmptyComponent={
-          !searching ? (
+          searching ? (
+            <SkeletonList />
+          ) : (
             <View className="flex-1 items-center justify-center px-8 pb-24">
               <View className="h-20 w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
                 <StorefrontIcon size={35} color="#9CA3AF" weight="fill" />
@@ -139,7 +142,7 @@ export default function FullPageRestaurantPicker({
                   : t("create:searchRestaurantPrompt")}
               </Text>
             </View>
-          ) : null
+          )
         }
         renderItem={({ item }) => {
           const restaurant =

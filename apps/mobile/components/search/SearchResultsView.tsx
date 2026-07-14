@@ -1,10 +1,9 @@
 import SearchBar from "@/components/common/inputs/SearchBar";
+import { SkeletonList } from "@/components/common";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   TouchableOpacity,
-  View,
 } from "react-native";
 import Animated, {
   FadeIn,
@@ -102,9 +101,7 @@ export default function SearchResultsView<T>({
       </Animated.View>
 
       {loading ? (
-        <View className="mt-10 items-center">
-          <ActivityIndicator />
-        </View>
+        <SkeletonList />
       ) : (
         <FlatList
           data={results}

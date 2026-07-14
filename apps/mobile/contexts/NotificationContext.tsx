@@ -73,14 +73,21 @@ Notifications.setNotificationHandler({
 
 function openPushData(data?: Record<string, unknown>) {
   if (!data) return;
-  if (typeof data.conversationId === "string")
-    router.push(`/chats/${data.conversationId}`);
-  else if (typeof data.postId === "string")
-    router.push({ pathname: "/(posts)/[id]", params: { id: data.postId } });
-  else if (typeof data.restaurantId === "string")
-    router.push(`/restaurants/${data.restaurantId}`);
-  else if (typeof data.actorId === "string")
-    router.push({ pathname: "/(users)/[id]", params: { id: data.actorId } });
+  const conversationId = stringPushValue(data.conversationId);
+  const postId = stringPushValue(data.postId);
+  const restaurantId = stringPushValue(data.restaurantId);
+  const actorId = stringPushValue(data.actorId);
+
+  if (conversationId) router.push(`/chats/${conversationId}`);
+  else if (postId)
+    router.push({ pathname: "/(posts)/[id]", params: { id: postId } });
+  else if (restaurantId) router.push(`/restaurants/${restaurantId}`);
+  else if (actorId)
+    router.push({ pathname: "/(users)/[id]", params: { id: actorId } });
+}
+
+function stringPushValue(value: unknown) {
+  return typeof value === "string" && value.trim() ? value : null;
 }
 
 export function NotificationProvider({
@@ -89,12 +96,18 @@ export function NotificationProvider({
   children: React.ReactNode;
 }) {
   const { user, token } = useAuth();
+  const userId = user?.id;
   const queryClient = useQueryClient();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const [popup, setPopup] = useState<AppNotification | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const notificationsScreenOpen = useRef(false);
+  const pathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    pathnameRef.current = pathname;
+  }, [pathname]);
 
   useEffect(() => {
     notificationsScreenOpen.current = pathname.startsWith("/notifications");
@@ -156,7 +169,7 @@ export function NotificationProvider({
   }, [queryClient, token, user]);
 
   useEffect(() => {
-    if (!user || !Device.isDevice || Platform.OS === "web") return;
+    if (!userId || !Device.isDevice || Platform.OS === "web") return;
 
     let cancelled = false;
     let retryTimer: ReturnType<typeof setTimeout> | null = null;
@@ -213,6 +226,40 @@ export function NotificationProvider({
       Notifications.addNotificationResponseReceivedListener((response) => {
         openPushData(response.notification.request.content.data);
       });
+    const receivedSubscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        const content = notification.request.content;
+        const data = content.data ?? {};
+        const conversationId = stringPushValue(data.conversationId);
+
+        // Activity notifications already arrive through the live notification
+        // socket. Native foreground handling is only needed for chat messages.
+        if (data.type !== "MESSAGE" || !conversationId) return;
+        if (pathnameRef.current === `/chats/${conversationId}`) return;
+
+        const senderName =
+          stringPushValue(data.senderName) || content.title || "New message";
+        const senderAvatarUrl = stringPushValue(data.senderAvatarUrl);
+        setPopup({
+          id: notification.request.identifier,
+          recipientId: userId,
+          type: "MESSAGE",
+          title: senderName,
+          body: content.body,
+          conversationId,
+          restaurantId: stringPushValue(data.restaurantId),
+          actor: {
+            id: "",
+            username: senderName,
+            displayName: senderName,
+            avatarUrl: senderAvatarUrl,
+          },
+          createdAt: new Date().toISOString(),
+        });
+        if (timer.current) clearTimeout(timer.current);
+        timer.current = setTimeout(() => setPopup(null), 4500);
+      },
+    );
     const appStateSubscription = AppState.addEventListener(
       "change",
       (state) => {
@@ -227,19 +274,28 @@ export function NotificationProvider({
       cancelled = true;
       if (retryTimer) clearTimeout(retryTimer);
       responseSubscription.remove();
+      receivedSubscription.remove();
       appStateSubscription.remove();
     };
-  }, [user?.id]);
+  }, [userId]);
 
-  async function openNotification(item: AppNotification) {
+  function openNotification(item: AppNotification) {
     setPopup(null);
-    await api.notifications.markRead(item.id);
-    void queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
-    void queryClient.invalidateQueries({
-      queryKey: notificationUnreadQueryKey,
-    });
     const href = notificationHref(item);
     if (href) router.push(href);
+
+    // Message pushes are intentionally not stored in the activity feed. For
+    // stored notifications, navigation must never wait on this network call.
+    if (item.type === "MESSAGE") return;
+    void api.notifications
+      .markRead(item.id)
+      .then(() => {
+        void queryClient.invalidateQueries({ queryKey: notificationsQueryKey });
+        void queryClient.invalidateQueries({
+          queryKey: notificationUnreadQueryKey,
+        });
+      })
+      .catch((error) => console.warn("mark notification read failed", error));
   }
 
   return (
@@ -254,7 +310,7 @@ export function NotificationProvider({
             key={popup.id}
             item={popup}
             onDismiss={() => setPopup(null)}
-            onPress={() => void openNotification(popup)}
+            onPress={() => openNotification(popup)}
           />
         ) : null}
       </View>

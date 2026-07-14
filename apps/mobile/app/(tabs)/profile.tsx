@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
@@ -7,7 +8,7 @@ import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 
 export default function ProfileScreen() {
   const { t } = useTranslation(["common", "profile"]);
@@ -26,11 +27,7 @@ export default function ProfileScreen() {
   );
 
   if (loading || !profile) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen variant="profile" />;
   }
 
   return (

@@ -1,4 +1,4 @@
-import { LoadingScreen } from "@/components/common";
+import { EmptyState, LoadingScreen } from "@/components/common";
 import AppBottomSheet from "@/components/common/AppBottomSheet";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
@@ -26,10 +26,17 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Mapbox from "@rnmapbox/maps";
 import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
-import { CheckIcon, CrosshairIcon, FunnelIcon, XIcon } from "phosphor-react-native";
+import {
+  CheckIcon,
+  CrosshairIcon,
+  FunnelIcon,
+  StorefrontIcon,
+  XIcon,
+} from "phosphor-react-native";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import RestaurantStats from "@/components/restaurants/RestaurantStats";
+import MapRestaurantListCard from "@/components/restaurants/MapRestaurantListCard";
 import { useAuth } from "@/contexts/AuthContext";
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "");
@@ -356,29 +363,37 @@ export default function MapScreen() {
     );
   }
 
-  function renderRestaurant(restaurant: Restaurant) {
+  function renderRestaurantSearchResult(restaurant: Restaurant) {
     return (
-      <View className="flex-row items-center border-b border-gray-100 p-4">
-        <Avatar uri={restaurant.logoUrl} username={restaurant.name} size={56} fallbackType="restaurant" />
-
-        <View className="ml-4 flex-1">
+      <View className="flex-row items-center border-b border-gray-100 px-4 py-3 dark:border-gray-900">
+        <Avatar
+          uri={restaurant.logoUrl}
+          username={restaurant.name}
+          size={52}
+          fallbackType="restaurant"
+        />
+        <View className="ml-3 min-w-0 flex-1">
           <View className="flex-row items-center">
-            <Text className="text-base font-bold text-black dark:text-white">{restaurant.name}</Text>
+            <Text
+              numberOfLines={1}
+              className="shrink text-base font-bold text-black dark:text-white"
+            >
+              {restaurant.name}
+            </Text>
             <RestaurantBadge status={restaurant.status} />
           </View>
-
-          {!!restaurant.address && (
-            <Text className="mt-1 text-sm text-gray-500">
-              {restaurant.address}
+          {restaurant.address || restaurant.city ? (
+            <Text numberOfLines={1} className="mt-1 text-sm text-gray-500">
+              {[restaurant.address, restaurant.city].filter(Boolean).join(", ")}
             </Text>
-          )}
+          ) : null}
         </View>
       </View>
     );
   }
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="map" />;
   }
 
   const selectedReviews =
@@ -412,7 +427,7 @@ export default function MapScreen() {
             searchFn={restaurantSearchFn}
             onCancel={() => setIsSearching(false)}
             onSelect={selectRestaurant}
-            renderItem={renderRestaurant}
+            renderItem={renderRestaurantSearchResult}
           />
         </Animated.View>
       ) : (
@@ -429,12 +444,12 @@ export default function MapScreen() {
             rightAccessory={
               <TouchableOpacity
                 onPress={() => setFiltersOpen(true)}
-                className="h-full aspect-square items-center justify-center rounded-2xl bg-ink dark:bg-white"
+                className="h-full aspect-square items-center justify-center rounded-2xl bg-ink"
               >
                 <FunnelIcon
                   size={21}
-                  color={isDark ? "#000" : "#FFF"}
-                  weight={mapFilter === "ALL" ? "regular" : "fill"}
+                  color="#FFF"
+                  weight="fill"
                 />
               </TouchableOpacity>
             }
@@ -807,20 +822,47 @@ export default function MapScreen() {
             </View>
           ) : (
             <FlatList
+              className="bg-canvas dark:bg-black"
               data={restaurants}
               keyExtractor={(item) => item.id}
               keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ flexGrow: 1, paddingBottom: 110 }}
+              ListHeaderComponent={
+                <View className="flex-row items-end justify-between px-4 pb-4 pt-5">
+                  <View className="flex-1 pr-3">
+                    <Text className="text-2xl font-bold text-black dark:text-white">
+                      {t("map:placesNearYou")}
+                    </Text>
+                    <Text className="mt-1 text-sm text-gray-500">
+                      {t(`map:sort${mapSort}`)}
+                    </Text>
+                  </View>
+                  <View className="rounded-full bg-[#EEE9DF] px-3 py-2 dark:bg-gray-900">
+                    <Text className="text-xs font-bold text-black dark:text-white">
+                      {t("map:placesFound", { count: restaurants.length })}
+                    </Text>
+                  </View>
+                </View>
+              }
+              ListEmptyComponent={
+                <EmptyState
+                  icon={StorefrontIcon}
+                  title={t("map:noRestaurantsFound")}
+                  description={t("map:noPlacesDescription")}
+                />
+              }
               renderItem={({ item }) => (
-                <TouchableOpacity
-                  onPress={() =>
+                <MapRestaurantListCard
+                  restaurant={item}
+                  onOpen={() =>
                     router.push({
                       pathname: "/restaurants/[id]",
                       params: { id: item.id },
                     })
                   }
-                >
-                  {renderRestaurant(item)}
-                </TouchableOpacity>
+                  onShowOnMap={() => selectRestaurant(item)}
+                />
               )}
             />
           )}

@@ -9,12 +9,13 @@ import {
 } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import { useCallback, useRef, useState } from "react";
-import { ActivityIndicator, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Avatar from "./Avatar";
 import Text from "./AppText";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import SkeletonList from "./feedback/SkeletonList";
 
 type Props = {
   postId: string | null;
@@ -246,9 +247,7 @@ export default function CommentsBottomSheet({
         }
         ListEmptyComponent={
           loading ? (
-            <View className="flex-1 items-center justify-center py-10">
-              <ActivityIndicator />
-            </View>
+            <SkeletonList variant="comments" count={5} />
           ) : (
             <View className="flex-1 items-center justify-center py-10">
               <Text className="text-center text-base text-gray-400">

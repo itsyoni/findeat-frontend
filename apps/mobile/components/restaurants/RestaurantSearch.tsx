@@ -19,6 +19,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SkeletonList } from "@/components/common";
 import RestaurantBadge from "./RestaurantBadge";
 
 type Props = {
@@ -277,14 +278,7 @@ export default function RestaurantSearch({
         contentContainerStyle={{ paddingBottom: 16, flexGrow: 1 }}
         ListEmptyComponent={
           searching || (!showingSearch && loadingNearby) ? (
-            <View className="items-center py-12">
-              <ActivityIndicator />
-              <Text className="mt-3 text-gray-500">
-                {showingSearch
-                  ? t("create:searchingPlaces")
-                  : t("create:findingNearby")}
-              </Text>
-            </View>
+            <SkeletonList />
           ) : (
             <View className="items-center py-12">
               <View className="h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">

@@ -1,6 +1,6 @@
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
-import { CommentsBottomSheet } from "@/components/common";
+import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
@@ -9,7 +9,6 @@ import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   Alert,
   Dimensions,
   TouchableOpacity,
@@ -81,11 +80,7 @@ export default function ProfileContentFeedScreen() {
   }
 
   if (loading || !profile) {
-    return (
-      <View className="flex-1 items-center justify-center bg-black">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen variant="feed" backgroundColor="bg-black" />;
   }
 
   return (

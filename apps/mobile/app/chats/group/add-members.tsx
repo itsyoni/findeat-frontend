@@ -91,7 +91,7 @@ export default function AddGroupMembersScreen() {
   }
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="list" />;
   }
 
   return (

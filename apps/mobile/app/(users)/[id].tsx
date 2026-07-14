@@ -1,3 +1,4 @@
+import { LoadingScreen } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import FullScreenImageViewer from "@/components/common/FullScreenImageViewer";
@@ -19,7 +20,7 @@ import {
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import { CaretLeftIcon, DotsThreeIcon } from "phosphor-react-native";
 import { useMemo, useState } from "react";
-import { ActivityIndicator, Image, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 
@@ -88,11 +89,7 @@ export default function UserProfileScreen() {
   }
 
   if (loading || !user) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen variant="profile" />;
   }
 
   return (

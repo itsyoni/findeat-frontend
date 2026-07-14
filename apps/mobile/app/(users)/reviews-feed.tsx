@@ -197,7 +197,7 @@ export default function UserReviewsFeedScreen() {
   const loading = !userId || loadedUserId !== userId;
 
   if (loading) {
-    return <LoadingScreen />;
+    return <LoadingScreen variant="feed" />;
   }
 
   return (

@@ -14,6 +14,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useAppTheme } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { PortalHost } from "@gorhom/portal";
+import { LoadingScreen } from "@/components/common";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,7 +85,7 @@ function RootNavigator() {
     }
   }, [user, isLoading, segments]);
 
-  if (isLoading) return null;
+  if (isLoading) return <LoadingScreen variant="feed" />;
 
   return (
     <>

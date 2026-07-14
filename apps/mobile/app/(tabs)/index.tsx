@@ -1,4 +1,4 @@
-import { CommentsBottomSheet } from "@/components/common";
+import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
@@ -21,7 +21,7 @@ import type { FeedPage } from "@findeat/types";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Alert, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
@@ -187,11 +187,7 @@ export default function HomeScreen() {
   }
 
   if (authLoading || feed.isPending) {
-    return (
-      <View className="flex-1 items-center justify-center bg-canvas dark:bg-black">
-        <ActivityIndicator />
-      </View>
-    );
+    return <LoadingScreen variant="feed" />;
   }
 
   return (
