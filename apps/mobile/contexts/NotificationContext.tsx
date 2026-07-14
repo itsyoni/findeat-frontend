@@ -110,6 +110,13 @@ export function NotificationProvider({
     const socket = io(`${API_URL}/notifications`, { auth: { token } });
 
     socket.on("notification", (item: AppNotification) => {
+      // Chat unread state belongs in the chats UI, not the activity feed or its
+      // in-app popup. This also protects clients connected to an older backend.
+      if (item.type === "MESSAGE") {
+        setPopup(null);
+        return;
+      }
+
       const current = queryClient.getQueryData<InfiniteData<NotificationsPage>>(
         notificationsQueryKey,
       );

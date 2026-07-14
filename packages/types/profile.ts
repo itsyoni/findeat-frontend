@@ -1,6 +1,6 @@
-import { Post } from "./post";
-import { RestaurantMembership } from "./restaurant";
-import { User } from "./user";
+import type { Post } from "./post";
+import type { RestaurantMembership } from "./restaurant";
+import type { User } from "./user";
 
 export type UserRelationship = "NONE" | "FOLLOWING" | "FOLLOWED_BY" | "FRIENDS";
 

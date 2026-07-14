@@ -1,6 +1,6 @@
-import { Post } from "./post";
-import { Restaurant } from "./restaurant";
-import { UserSummary } from "./user";
+import type { Post } from "./post";
+import type { Restaurant } from "./restaurant";
+import type { UserSummary } from "./user";
 
 export type ChatType = "DIRECT" | "GROUP" | "RESTAURANT";
 
@@ -52,4 +52,26 @@ export type Message = {
   createdAt: string;
   senderId: string;
   sender: UserSummary;
+  sentAsRestaurantId?: string | null;
+  sentAsRestaurant?: Pick<Restaurant, "id" | "name" | "logoUrl"> | null;
+};
+
+export type RestaurantConversation = {
+  id: string;
+  lastMessage?: string | null;
+  lastMessageAt?: string | null;
+  unreadCount: number;
+  customer?: UserSummary | null;
+};
+
+export type RestaurantMessage = {
+  id: string;
+  type: "TEXT" | "IMAGE" | "POST" | "RESTAURANT" | "POLL" | "SYSTEM";
+  content?: string | null;
+  imageUrl?: string | null;
+  createdAt: string;
+  senderId: string;
+  sender: UserSummary;
+  sentAsRestaurantId?: string | null;
+  sentAsRestaurant?: Pick<Restaurant, "id" | "name" | "logoUrl"> | null;
 };

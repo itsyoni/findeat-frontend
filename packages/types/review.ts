@@ -1,5 +1,6 @@
-import { SelectedRestaurant } from "./restaurant";
-import { PostVisibility } from "./post";
+import type { SelectedRestaurant } from "./restaurant";
+import type { PostVisibility } from "./post";
+import type { UserSummary } from "./user";
 
 export type CreateReviewStep =
   | "RESTAURANT"
@@ -34,4 +35,25 @@ export type CreateReviewDraft = {
   valueRating?: number;
   totalPrice?: number;
   items: ReviewDishDraft[];
+};
+
+export type RestaurantReviewItem = {
+  id: string;
+  name: string;
+  rating?: number | null;
+  text?: string | null;
+};
+
+export type RestaurantReview = {
+  id: string;
+  imageUrl?: string | null;
+  description?: string | null;
+  rating?: number | null;
+  createdAt: string;
+  author: UserSummary;
+  items: RestaurantReviewItem[];
+  _count: {
+    likes: number;
+    comments: number;
+  };
 };

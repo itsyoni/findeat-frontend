@@ -14,7 +14,9 @@ export type NotificationType =
   | 'POLL_CREATED'
   | 'POLL_ENDED'
   | 'RESTAURANT_CLAIM_APPROVED'
-  | 'RESTAURANT_CLAIM_REJECTED';
+  | 'RESTAURANT_CLAIM_REJECTED'
+  | 'RESTAURANT_FOLLOW'
+  | 'RESTAURANT_REVIEW';
 
 export type AppNotification = {
   id: string;
@@ -43,4 +45,8 @@ export type AppNotification = {
 export type NotificationsPage = {
   items: AppNotification[];
   nextCursor: string | null;
+};
+
+export type RestaurantNotificationsPage = NotificationsPage & {
+  unreadCount: number;
 };

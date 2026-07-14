@@ -11,7 +11,7 @@ import {
   ShareFatIcon,
   DotsThreeOutlineIcon,
 } from "phosphor-react-native";
-import { Image, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
@@ -22,6 +22,7 @@ import Animated, {
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import { useTranslation } from "react-i18next";
 import PostVisibilityIcon from "@/components/posts/PostVisibilityIcon";
+import PinchZoomImage from "@/components/common/PinchZoomImage";
 
 type Props = {
   post: Post;
@@ -193,9 +194,9 @@ export default function ContentPost({
           />
         </Animated.View>
         {imageUrl ? (
-          <Image
-            source={{ uri: imageUrl }}
-            className="absolute inset-0 h-full w-full"
+          <PinchZoomImage
+            uri={imageUrl}
+            style={{ position: "absolute", inset: 0 }}
             resizeMode="cover"
           />
         ) : (

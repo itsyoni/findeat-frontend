@@ -1,5 +1,6 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
+import FullScreenImageViewer from "@/components/common/FullScreenImageViewer";
 import Tabs from "@/components/common/Tabs";
 import ProfileManagedRestaurants from "@/components/profile/ProfileManagedRestaurants";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
@@ -28,6 +29,7 @@ export default function UserProfileScreen() {
   const { t } = useTranslation(["common", "profile"]);
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [avatarOpen, setAvatarOpen] = useState(false);
   const {
     profile: user,
     setProfile: setUser,
@@ -135,9 +137,16 @@ export default function UserProfileScreen() {
 
         <View className="-mt-7 flex-1 rounded-t-[30px] bg-white dark:bg-black">
           <View className="-mt-12 items-center px-5">
-            <View className="rounded-full bg-white p-1.5 dark:bg-black">
+            <TouchableOpacity
+              activeOpacity={user.avatarUrl ? 0.8 : 1}
+              disabled={!user.avatarUrl}
+              accessibilityRole={user.avatarUrl ? "imagebutton" : undefined}
+              accessibilityLabel={user.avatarUrl ? "Open profile picture" : undefined}
+              onPress={() => setAvatarOpen(true)}
+              className="rounded-full bg-white p-1.5 dark:bg-black"
+            >
               <Avatar uri={user.avatarUrl} username={user.username} size={100} />
-            </View>
+            </TouchableOpacity>
           </View>
         <View className="items-center px-5">
           <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
@@ -249,6 +258,11 @@ export default function UserProfileScreen() {
         open={optionsOpen}
         onClose={() => setOptionsOpen(false)}
         type="USER"
+      />
+      <FullScreenImageViewer
+        uri={user.avatarUrl}
+        visible={avatarOpen}
+        onClose={() => setAvatarOpen(false)}
       />
     </View>
   );

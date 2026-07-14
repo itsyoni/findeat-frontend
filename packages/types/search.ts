@@ -1,4 +1,4 @@
-import { UserRelationship } from "./profile";
+import type { UserRelationship } from "./profile";
 
 export type SearchEntityType = "USER" | "RESTAURANT" | "DISH";
 

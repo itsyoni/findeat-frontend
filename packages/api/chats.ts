@@ -8,6 +8,17 @@ export function createChatsApi(api: AxiosInstance) {
       return data;
     },
 
+    async findRestaurantConversation(restaurantId: string) {
+      const { data } = await api.get<Chat[]>("/chats");
+      return (
+        data.find(
+          (chat) =>
+            chat.type === "RESTAURANT" &&
+            chat.restaurantId === restaurantId,
+        ) ?? null
+      );
+    },
+
     async sendDirectMessage(userId: string, content: string) {
       const { data } = await api.post(`/chats/direct/${userId}/messages`, {
         content,

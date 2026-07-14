@@ -21,7 +21,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { Socket } from "socket.io-client";
 import { io } from "socket.io-client";
-import { LoadingScreen } from "@/components/common";
+import ChatSkeleton, { ChatHeaderSkeleton } from "@/components/chats/ChatSkeleton";
 import Animated, {
   cancelAnimation,
   FadeIn,
@@ -141,12 +141,21 @@ export default function ChatScreen() {
 
   const { id } = params;
   const isNewChat = id === "new-direct" || id === "new-restaurant";
+  const shouldResolveRestaurantChat =
+    id === "new-restaurant" &&
+    params.type === "RESTAURANT" &&
+    !!params.restaurantId;
 
   const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [content, setContent] = useState("");
   const [composerHeight, setComposerHeight] = useState(42);
-  const [loading, setLoading] = useState(!isNewChat);
+  const [loading, setLoading] = useState(
+    !isNewChat || shouldResolveRestaurantChat,
+  );
+  const [isThreadReady, setIsThreadReady] = useState(
+    isNewChat && !shouldResolveRestaurantChat,
+  );
   const [refreshing, setRefreshing] = useState(false);
   const [sending, setSending] = useState(false);
   const [animateNewMessages, setAnimateNewMessages] = useState(false);
@@ -163,6 +172,18 @@ export default function ChatScreen() {
     new Map<string, ReturnType<typeof setTimeout>>(),
   );
   const sentTypingRef = useRef(false);
+  const shouldScrollToEndRef = useRef(false);
+  const scrollToEndAnimatedRef = useRef(false);
+  const hasPositionedAtBottomRef = useRef(false);
+
+  const scheduleScrollToEnd = useCallback((animated: boolean) => {
+    shouldScrollToEndRef.current = true;
+    scrollToEndAnimatedRef.current = animated;
+
+    requestAnimationFrame(() => {
+      messagesListRef.current?.scrollToEnd({ animated });
+    });
+  }, []);
 
   const otherUser = chat?.participants.find((p) => p.userId !== user?.id)?.user;
 
@@ -258,26 +279,55 @@ export default function ChatScreen() {
     setChat(chat);
   }, [conversationId, isNewChat]);
 
-  const loadMessages = useCallback(async () => {
+  const loadMessages = useCallback(async (prepareInitialPosition = false) => {
     if (isNewChat) return;
 
     const messages = await api.chats.messages(conversationId);
+    if (prepareInitialPosition) {
+      hasPositionedAtBottomRef.current = false;
+      setIsThreadReady(false);
+    }
+    shouldScrollToEndRef.current = true;
+    scrollToEndAnimatedRef.current = false;
     setMessages(messages);
 
     requestAnimationFrame(() => setAnimateNewMessages(true));
   }, [conversationId, isNewChat]);
 
   useEffect(() => {
+    let active = true;
+
     async function init() {
       if (isNewChat) {
         setAnimateNewMessages(true);
+
+        if (shouldResolveRestaurantChat && params.restaurantId) {
+          try {
+            setLoading(true);
+            const existingChat =
+              await api.chats.findRestaurantConversation(params.restaurantId);
+
+            if (!active) return;
+
+            if (existingChat) {
+              setChat(existingChat);
+              setConversationId(existingChat.id);
+              router.setParams({ id: existingChat.id });
+              return;
+            }
+          } catch (error) {
+            console.error("Could not resolve restaurant conversation", error);
+          }
+        }
+
+        if (!active) return;
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        await Promise.all([loadChat(), loadMessages()]);
+        await Promise.all([loadChat(), loadMessages(true)]);
       } catch (error) {
         console.error(error);
       } finally {
@@ -285,8 +335,18 @@ export default function ChatScreen() {
       }
     }
 
-    init();
-  }, [isNewChat, loadChat, loadMessages]);
+    void init();
+
+    return () => {
+      active = false;
+    };
+  }, [
+    isNewChat,
+    loadChat,
+    loadMessages,
+    params.restaurantId,
+    shouldResolveRestaurantChat,
+  ]);
 
   useEffect(() => {
     if (!user?.id || isNewChat) return;
@@ -385,7 +445,7 @@ export default function ChatScreen() {
     if (isNewChat) return;
 
     setRefreshing(true);
-    await Promise.all([loadChat(), loadMessages()]);
+    await Promise.all([loadChat(), loadMessages(false)]);
     setRefreshing(false);
   }
 
@@ -410,13 +470,10 @@ export default function ChatScreen() {
     };
 
     stopTyping();
+    scheduleScrollToEnd(hasPositionedAtBottomRef.current);
     setMessages((current) => [...current, optimisticMessage]);
     setContent("");
     setComposerHeight(42);
-
-    requestAnimationFrame(() => {
-      messagesListRef.current?.scrollToEnd({ animated: true });
-    });
 
     try {
       setSending(true);
@@ -553,16 +610,13 @@ export default function ChatScreen() {
     });
   }
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
-
-  const statusText = getStatusText();
+  const statusText = loading ? "" : getStatusText();
 
   return (
     <>
       <Stack.Screen
         options={{
+          headerShown: true,
           header: () => (
             <SafeAreaView
               edges={["top"]}
@@ -581,7 +635,7 @@ export default function ChatScreen() {
                   />
                 </Pressable>
 
-                <Pressable
+                {loading ? <ChatHeaderSkeleton /> : <Pressable
                   onPress={openChatProfile}
                   disabled={isNewChat}
                   className="min-w-0 flex-1 flex-row items-center py-2"
@@ -610,7 +664,7 @@ export default function ChatScreen() {
                       </Text>
                     ) : null}
                   </View>
-                </Pressable>
+                </Pressable>}
               </View>
             </SafeAreaView>
           ),
@@ -626,13 +680,43 @@ export default function ChatScreen() {
           behavior={Platform.OS === "ios" ? "padding" : undefined}
           keyboardVerticalOffset={110}
         >
+          {(loading || !isThreadReady) && <ChatSkeleton />}
+          {!loading && <>
           <FlatList
             ref={messagesListRef}
+            style={{ opacity: isThreadReady ? 1 : 0 }}
             refreshing={refreshing}
             onRefresh={onRefresh}
             data={messages}
             keyExtractor={(item) => item.renderKey ?? item.id}
             keyboardShouldPersistTaps="handled"
+            onLayout={() => {
+              if (!shouldScrollToEndRef.current) return;
+              requestAnimationFrame(() => {
+                messagesListRef.current?.scrollToEnd({
+                  animated: scrollToEndAnimatedRef.current,
+                });
+                if (!isThreadReady) {
+                  requestAnimationFrame(() => setIsThreadReady(true));
+                }
+              });
+            }}
+            onScrollBeginDrag={() => {
+              shouldScrollToEndRef.current = false;
+            }}
+            onContentSizeChange={() => {
+              if (!shouldScrollToEndRef.current) return;
+              messagesListRef.current?.scrollToEnd({
+                animated: scrollToEndAnimatedRef.current,
+              });
+              hasPositionedAtBottomRef.current = true;
+              if (!isThreadReady) {
+                requestAnimationFrame(() => {
+                  messagesListRef.current?.scrollToEnd({ animated: false });
+                  requestAnimationFrame(() => setIsThreadReady(true));
+                });
+              }
+            }}
             contentContainerStyle={{
               flexGrow: 1,
               paddingHorizontal: 12,
@@ -669,6 +753,9 @@ export default function ChatScreen() {
                 !previousMessage ||
                 !isSameDay(previousMessage.createdAt, item.createdAt);
 
+              const nextMessageIsDifferentSender =
+                !!nextMessage && nextMessage.senderId !== item.senderId;
+
               return (
                 <View>
                   {shouldShowDateSeparator && (
@@ -691,7 +778,7 @@ export default function ChatScreen() {
                         : undefined
                     }
                     layout={LinearTransition.duration(160)}
-                    className={`mb-1 flex-row ${
+                    className={`${nextMessageIsDifferentSender ? "mb-3" : "mb-1"} flex-row ${
                       isMine ? "justify-end" : "justify-start"
                     }`}
                   >
@@ -883,6 +970,7 @@ export default function ChatScreen() {
               )}
             </TouchableOpacity>
           </View>
+          </>}
         </KeyboardAvoidingView>
       </SafeAreaView>
     </>

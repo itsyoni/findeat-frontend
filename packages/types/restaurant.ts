@@ -1,5 +1,5 @@
-import { Menu } from "./menu";
-import { UserRestaurant, UserSummary } from "./user";
+import type { Menu } from "./menu";
+import type { UserRestaurant, UserSummary } from "./user";
 
 export type RestaurantStatus =
   | "PENDING"
@@ -34,7 +34,20 @@ export type RestaurantMembership = {
   };
 };
 
-export type ManagedRestaurant = Restaurant;
+export type ManagedRestaurant = {
+  id: string;
+  name: string;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
+  address?: string | null;
+  city?: string | null;
+  phone?: string | null;
+  website?: string | null;
+  instagram?: string | null;
+  followersCount?: number;
+  averageRating?: number | null;
+  reviewsCount?: number;
+};
 
 export type RestaurantPostSection = "OFFICIAL" | "COMMUNITY" | "REVIEWS";
 

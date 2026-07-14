@@ -34,6 +34,30 @@ import { useAuth } from "@/contexts/AuthContext";
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "");
 
+const MAP_STATUS_IMAGES = {
+  "map-status-favorite": require("@/assets/images/map-status-heart.png"),
+  "map-status-visited": require("@/assets/images/map-status-check.png"),
+};
+
+const MAP_LOGO_TRANSFORMATION =
+  "c_fill,g_auto,h_128,w_128,r_max,b_transparent,f_png,q_auto";
+
+function getCircularMapLogoUrl(url: string) {
+  if (url.includes("/image/upload/")) {
+    return url.replace(
+      "/image/upload/",
+      `/image/upload/${MAP_LOGO_TRANSFORMATION}/`,
+    );
+  }
+
+  const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  if (cloudName && /^https?:\/\//i.test(url)) {
+    return `https://res.cloudinary.com/${cloudName}/image/fetch/${MAP_LOGO_TRANSFORMATION}/${encodeURIComponent(url)}`;
+  }
+
+  return url;
+}
+
 export default function MapScreen() {
   const { restaurantId } = useLocalSearchParams<{ restaurantId?: string }>();
   const { t } = useTranslation(["common", "map", "restaurants"]);
@@ -112,7 +136,7 @@ export default function MapScreen() {
           .filter((restaurant) => !!restaurant.logoUrl)
           .map((restaurant) => [
             `restaurant-logo-${restaurant.id}`,
-            { uri: restaurant.logoUrl as string },
+            { uri: getCircularMapLogoUrl(restaurant.logoUrl as string) },
           ]),
       ),
     [restaurantsWithLocation],
@@ -138,9 +162,9 @@ export default function MapScreen() {
           hasLogo: !!restaurant.logoUrl,
           logoImage: `restaurant-logo-${restaurant.id}`,
           fallbackLetter: restaurant.name.trim().charAt(0).toUpperCase(),
-          statusIcon: restaurant.userRestaurant?.favorite
-            ? "★"
-            : "✓",
+          statusIconImage: restaurant.userRestaurant?.favorite
+            ? "map-status-favorite"
+            : "map-status-visited",
         },
         geometry: {
           type: "Point" as const,
@@ -447,7 +471,9 @@ export default function MapScreen() {
                 />
                 <Mapbox.UserLocation visible />
 
-                <Mapbox.Images images={restaurantLogoImages} />
+                <Mapbox.Images
+                  images={{ ...restaurantLogoImages, ...MAP_STATUS_IMAGES }}
+                />
 
                 <Mapbox.ShapeSource
                   id="restaurants"
@@ -568,7 +594,7 @@ export default function MapScreen() {
                     ]}
                     style={{
                       iconImage: ["get", "logoImage"],
-                      iconSize: 0.1,
+                      iconSize: 0.25,
                       iconAllowOverlap: true,
                       iconIgnorePlacement: true,
                     }}
@@ -619,13 +645,10 @@ export default function MapScreen() {
                       ["==", ["get", "hasOverlayStatus"], true],
                     ]}
                     style={{
-                      textField: ["get", "statusIcon"],
-                      textSize: 20,
-                      textColor: "#FFFFFF",
-                      textHaloColor: "rgba(0, 0, 0, 0.25)",
-                      textHaloWidth: 1,
-                      textAllowOverlap: true,
-                      textIgnorePlacement: true,
+                      iconImage: ["get", "statusIconImage"],
+                      iconSize: 0.3,
+                      iconAllowOverlap: true,
+                      iconIgnorePlacement: true,
                     }}
                   />
 

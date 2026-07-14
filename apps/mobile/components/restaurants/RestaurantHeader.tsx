@@ -1,4 +1,5 @@
 import Avatar from '@/components/common/Avatar';
+import FullScreenImageViewer from '@/components/common/FullScreenImageViewer';
 import { Restaurant } from '@findeat/types';
 import { router } from 'expo-router';
 import { ArrowLeftIcon, CaretRightIcon, ChatCircleIcon, DotsThreeIcon, MapPinIcon } from 'phosphor-react-native';
@@ -9,6 +10,7 @@ import Text from '../common/AppText';
 import RestaurantFollowButton from './RestaurantFollowButton';
 import RestaurantStats from './RestaurantStats';
 import RestaurantBadge from './RestaurantBadge';
+import { useState } from 'react';
 
 type Props = {
   restaurant: Restaurant;
@@ -18,6 +20,7 @@ type Props = {
 
 export default function RestaurantHeader({ restaurant, onToggleFollow, onOpenOptions }: Props) {
   const { t } = useTranslation('restaurants');
+  const [logoOpen, setLogoOpen] = useState(false);
   const location = [restaurant.address, restaurant.city].filter(Boolean).join(', ');
   const reviewPosts = restaurant.posts.filter((post) => post.type === 'REVIEW');
   const ratings = reviewPosts
@@ -47,9 +50,16 @@ export default function RestaurantHeader({ restaurant, onToggleFollow, onOpenOpt
       </View>
 
       <View className="-mt-7 items-center rounded-t-[30px] bg-white pb-5 dark:bg-black">
-        <View className="-mt-14 rounded-full bg-white p-1.5 dark:bg-black">
+        <TouchableOpacity
+          activeOpacity={restaurant.logoUrl ? 0.8 : 1}
+          disabled={!restaurant.logoUrl}
+          accessibilityRole={restaurant.logoUrl ? "imagebutton" : undefined}
+          accessibilityLabel={restaurant.logoUrl ? "Open restaurant picture" : undefined}
+          onPress={() => setLogoOpen(true)}
+          className="-mt-14 rounded-full bg-white p-1.5 dark:bg-black"
+        >
           <Avatar uri={restaurant.logoUrl} username={restaurant.name} size={104} fallbackType="restaurant" />
-        </View>
+        </TouchableOpacity>
         <View className="mt-3 flex-row items-center justify-center px-6">
         <Text weight="bold" className="text-center text-2xl text-black dark:text-white">{restaurant.name}</Text>
         <RestaurantBadge size={19} status={restaurant.status} />
@@ -91,6 +101,11 @@ export default function RestaurantHeader({ restaurant, onToggleFollow, onOpenOpt
           <RestaurantFollowButton isFollowing={restaurant.isFollowing} onPress={onToggleFollow} />
         )}
       </View>
+      <FullScreenImageViewer
+        uri={restaurant.logoUrl}
+        visible={logoOpen}
+        onClose={() => setLogoOpen(false)}
+      />
     </View>
   );
 }

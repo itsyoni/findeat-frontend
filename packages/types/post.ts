@@ -1,5 +1,5 @@
-import { Restaurant } from "./restaurant";
-import { UserSummary } from "./user";
+import type { Restaurant } from "./restaurant";
+import type { UserSummary } from "./user";
 
 export type PostType = "CONTENT" | "REVIEW";
 export type PostVisibility = "PUBLIC" | "FRIENDS" | "PRIVATE";

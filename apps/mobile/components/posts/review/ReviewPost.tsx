@@ -13,7 +13,6 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import {
   FlatList,
-  Image,
   I18nManager,
   TouchableOpacity,
   useWindowDimensions,
@@ -31,6 +30,7 @@ import { useAppTheme } from "@/contexts/ThemeContext";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import { useTranslation } from "react-i18next";
 import PostVisibilityIcon from "@/components/posts/PostVisibilityIcon";
+import PinchZoomImage from "@/components/common/PinchZoomImage";
 
 type Props = {
   post: Post;
@@ -295,9 +295,9 @@ export default function ReviewPost({
         renderItem={({ item }) => (
           <View style={{ width }} className="h-96 bg-gray-100">
             {item.imageUrl ? (
-              <Image
-                source={{ uri: item.imageUrl }}
-                className="h-full w-full"
+              <PinchZoomImage
+                uri={item.imageUrl}
+                style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
               />
             ) : (

@@ -1,4 +1,4 @@
-import { UserSummary } from "./user";
+import type { UserSummary } from "./user";
 
 export type Comment = {
   id: string;

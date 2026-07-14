@@ -11,6 +11,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@findeat/types": "*",
+    "@phosphor-icons/react": "^2.1.10",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },

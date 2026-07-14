@@ -13,6 +13,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useAppTheme } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
+import { PortalHost } from "@gorhom/portal";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,6 +58,7 @@ export default function RootLayout() {
               </AuthProvider>
             </QueryClientProvider>
           </SafeAreaProvider>
+          <PortalHost name="pinch-zoom" />
         </BottomSheetModalProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
@@ -95,6 +97,15 @@ function RootNavigator() {
         <Stack.Screen name="business/index" />
         <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="chats/[id]"
+          options={{
+            headerShown: false,
+            contentStyle: {
+              backgroundColor: isDark ? "#080808" : "#FBFAF8",
+            },
+          }}
+        />
         <Stack.Screen name="restaurants/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="menu-items/[id]" options={{ headerShown: false }} />
       </Stack>
