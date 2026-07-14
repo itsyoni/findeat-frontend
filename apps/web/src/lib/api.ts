@@ -6,10 +6,14 @@ import type {
   RestaurantReview,
 } from '@findeat/types'
 
-const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '')
+export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '')
+
+export function getAccessToken() {
+  return localStorage.getItem('findeat-business-token')
+}
 
 export async function request<T = unknown>(path: string, init?: RequestInit): Promise<T> {
-  const token = localStorage.getItem('findeat-business-token')
+  const token = getAccessToken()
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
     headers: {

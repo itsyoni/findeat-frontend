@@ -20,6 +20,8 @@ import type {
 } from "@findeat/types";
 import { AccountAvatar } from "../components/AccountAvatar";
 import { NotificationsPopover } from "../components/NotificationsPopover";
+import { useInboxSocket } from "../hooks/useInboxSocket";
+import { useRestaurantActivitySocket } from "../hooks/useRestaurantActivitySocket";
 import {
   fetchRestaurantConversations,
   fetchRestaurantNotifications,
@@ -61,6 +63,7 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
   const restaurant =
     restaurants.find((item) => item.id === selectedRestaurantId) ??
     restaurants[0];
+  const activeRestaurantId = restaurant?.id;
 
   const loadRestaurantConversations = useCallback(
     async (restaurantId: string) => {
@@ -87,6 +90,66 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
     },
     [],
   );
+
+  const refreshRestaurantSummary = useCallback(async () => {
+    setRestaurants(await request<ManagedRestaurant[]>("/restaurants/me"));
+  }, []);
+
+  const handleLiveActivity = useCallback(
+    (notification: AppNotification) => {
+      setRestaurantNotifications((current) => [
+        notification,
+        ...current.filter((item) => item.id !== notification.id),
+      ].slice(0, 40));
+      if (!notification.readAt) {
+        setRestaurantUnreadCount((current) => current + 1);
+      }
+
+      if (!notification.restaurantId) return;
+      void loadRestaurantNotifications(notification.restaurantId);
+
+      if (notification.type === "MESSAGE") {
+        void loadRestaurantConversations(notification.restaurantId);
+      } else if (notification.type === "RESTAURANT_REVIEW") {
+        void loadRestaurantReviews(notification.restaurantId).then(setReviews);
+      } else if (notification.type === "RESTAURANT_FOLLOW") {
+        void refreshRestaurantSummary();
+      }
+    },
+    [
+      loadRestaurantConversations,
+      loadRestaurantNotifications,
+      refreshRestaurantSummary,
+    ],
+  );
+
+  const refreshLiveActivity = useCallback(() => {
+    if (!activeRestaurantId) return;
+    void loadRestaurantNotifications(activeRestaurantId);
+    void loadRestaurantConversations(activeRestaurantId);
+  }, [
+    activeRestaurantId,
+    loadRestaurantConversations,
+    loadRestaurantNotifications,
+  ]);
+
+  useRestaurantActivitySocket({
+    restaurantId: activeRestaurantId,
+    onConnected: refreshLiveActivity,
+    onNotification: handleLiveActivity,
+  });
+
+  const refreshLiveInbox = useCallback(() => {
+    if (!activeRestaurantId) return;
+    void loadRestaurantConversations(activeRestaurantId);
+  }, [activeRestaurantId, loadRestaurantConversations]);
+
+  useInboxSocket({
+    conversationIds: conversations.map((conversation) => conversation.id),
+    userId: account?.id,
+    onConnected: refreshLiveInbox,
+    onMessage: refreshLiveInbox,
+  });
 
   const load = useCallback(async () => {
     try {
@@ -175,7 +238,7 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
     const interval = window.setInterval(() => {
       void loadRestaurantNotifications(restaurant.id);
       void loadRestaurantConversations(restaurant.id);
-    }, 15_000);
+    }, 60_000);
     return () => window.clearInterval(interval);
   }, [
     loadRestaurantConversations,

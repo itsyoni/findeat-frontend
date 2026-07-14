@@ -1,0 +1,38 @@
+import { useEffect } from "react";
+import type { RestaurantMessage } from "@findeat/types";
+import { io } from "socket.io-client";
+import { API_URL } from "../lib/api";
+
+type InboxSocketOptions = {
+  conversationIds: string[];
+  userId?: string;
+  onConnected: () => void;
+  onMessage: (message: RestaurantMessage) => void;
+};
+
+export function useInboxSocket({
+  conversationIds,
+  userId,
+  onConnected,
+  onMessage,
+}: InboxSocketOptions) {
+  const conversationKey = [...conversationIds].sort().join(",");
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const socket = io(API_URL, { auth: { userId } });
+
+    socket.on("connect", () => {
+      for (const conversationId of conversationKey.split(",").filter(Boolean)) {
+        socket.emit("join_conversation", { conversationId });
+      }
+      onConnected();
+    });
+    socket.on("receive_message", onMessage);
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [conversationKey, onConnected, onMessage, userId]);
+}

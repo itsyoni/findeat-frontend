@@ -7,6 +7,7 @@ import type {
   RestaurantConversation,
   RestaurantMessage,
 } from "@findeat/types";
+import { useConversationSocket } from "../hooks/useConversationSocket";
 import { fetchRestaurantMessages, sendRestaurantReply } from "../lib/api";
 
 type MessagesPageProps = {
@@ -66,6 +67,43 @@ export function MessagesPage({
     [restaurant.id],
   );
 
+  const handleLiveMessage = useCallback(
+    (incoming: RestaurantMessage) => {
+      setMessages((current) => {
+        if (current.some((message) => message.id === incoming.id)) {
+          return current;
+        }
+
+        const pendingIndex = current.findIndex(
+          (message) =>
+            message.id.startsWith("pending-") &&
+            message.content === incoming.content &&
+            incoming.sentAsRestaurantId === restaurant.id,
+        );
+        if (pendingIndex === -1) return [...current, incoming];
+
+        const next = [...current];
+        next[pendingIndex] = incoming;
+        return next;
+      });
+      void reloadConversations(restaurant.id);
+    },
+    [reloadConversations, restaurant.id],
+  );
+
+  const refreshConnectedConversation = useCallback(() => {
+    if (!selectedId) return;
+    void loadMessages(selectedId, false);
+    void reloadConversations(restaurant.id);
+  }, [loadMessages, reloadConversations, restaurant.id, selectedId]);
+
+  useConversationSocket({
+    conversationId: selectedId,
+    userId: account.id,
+    onConnected: refreshConnectedConversation,
+    onMessage: handleLiveMessage,
+  });
+
   useEffect(() => {
     if (!selectedId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -78,7 +116,7 @@ export function MessagesPage({
     const interval = window.setInterval(() => {
       void loadMessages(selectedId, false);
       void reloadConversations(restaurant.id);
-    }, 5_000);
+    }, 30_000);
     return () => window.clearInterval(interval);
   }, [loadMessages, reloadConversations, restaurant.id, selectedId]);
 
