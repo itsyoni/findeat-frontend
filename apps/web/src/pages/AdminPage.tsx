@@ -1,12 +1,10 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
-import {
-  ArrowLeftIcon,
-  CheckCircleIcon,
-  SealCheckIcon,
-  ShieldCheckIcon,
-  UsersThreeIcon,
-} from "@phosphor-icons/react";
+import { ArrowLeftIcon } from "@phosphor-icons/react/dist/csr/ArrowLeft";
+import { CheckCircleIcon } from "@phosphor-icons/react/dist/csr/CheckCircle";
+import { SealCheckIcon } from "@phosphor-icons/react/dist/csr/SealCheck";
+import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
 import type {
   AdminDashboardSection,
   AdminUser,

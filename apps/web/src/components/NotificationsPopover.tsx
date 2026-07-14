@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { AppNotification, BusinessDashboardSection, ManagedRestaurant } from '@findeat/types'
-import { BellSlashIcon, XIcon } from '@phosphor-icons/react'
+import { BellSlashIcon } from '@phosphor-icons/react/dist/csr/BellSlash'
+import { XIcon } from '@phosphor-icons/react/dist/csr/X'
 
 function notificationCopy(notification: AppNotification) {
   const actor = notification.actor?.displayName || notification.actor?.username || 'Someone'

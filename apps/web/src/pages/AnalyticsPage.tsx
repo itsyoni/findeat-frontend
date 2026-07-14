@@ -1,5 +1,5 @@
 import type { Menu, RestaurantReview } from '@findeat/types'
-import { StarIcon } from '@phosphor-icons/react'
+import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
 
 export function AnalyticsPage({ menus, reviews }: { menus: Menu[]; reviews: RestaurantReview[] }) {
   const ratedReviews = reviews.filter((review) => review.rating != null)

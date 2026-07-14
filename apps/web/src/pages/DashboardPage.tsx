@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  BellIcon,
-  ChartLineUpIcon,
-  ChatCircleDotsIcon,
-  HouseIcon,
-  ListDashesIcon,
-  ShieldCheckIcon,
-  StarIcon,
-  StorefrontIcon,
-} from "@phosphor-icons/react";
+import { BellIcon } from "@phosphor-icons/react/dist/csr/Bell";
+import { ChartLineUpIcon } from "@phosphor-icons/react/dist/csr/ChartLineUp";
+import { ChatCircleDotsIcon } from "@phosphor-icons/react/dist/csr/ChatCircleDots";
+import { HouseIcon } from "@phosphor-icons/react/dist/csr/House";
+import { ListDashesIcon } from "@phosphor-icons/react/dist/csr/ListDashes";
+import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
+import { StarIcon } from "@phosphor-icons/react/dist/csr/Star";
+import { StorefrontIcon } from "@phosphor-icons/react/dist/csr/Storefront";
 import type {
   AdminUser,
   AppNotification,

@@ -1,15 +1,13 @@
 import { useMemo, useState } from "react";
 import type { FormEvent } from "react";
-import {
-  CaretDownIcon,
-  CaretRightIcon,
-  CheckIcon,
-  ListDashesIcon,
-  PencilSimpleIcon,
-  PlusIcon,
-  StarIcon,
-  TrashIcon,
-} from "@phosphor-icons/react";
+import { CaretDownIcon } from "@phosphor-icons/react/dist/csr/CaretDown";
+import { CaretRightIcon } from "@phosphor-icons/react/dist/csr/CaretRight";
+import { CheckIcon } from "@phosphor-icons/react/dist/csr/Check";
+import { ListDashesIcon } from "@phosphor-icons/react/dist/csr/ListDashes";
+import { PencilSimpleIcon } from "@phosphor-icons/react/dist/csr/PencilSimple";
+import { PlusIcon } from "@phosphor-icons/react/dist/csr/Plus";
+import { StarIcon } from "@phosphor-icons/react/dist/csr/Star";
+import { TrashIcon } from "@phosphor-icons/react/dist/csr/Trash";
 import type { Dish, Menu } from "@findeat/types";
 import { DishEditorModal } from "../components/DishEditorModal";
 import { request, uploadImage } from "../lib/api";

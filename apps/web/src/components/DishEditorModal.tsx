@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { ImageIcon, XIcon } from "@phosphor-icons/react";
+import { ImageIcon } from "@phosphor-icons/react/dist/csr/Image";
+import { XIcon } from "@phosphor-icons/react/dist/csr/X";
 import type { Dish } from "@findeat/types";
 import { request, uploadImage } from "../lib/api";
 

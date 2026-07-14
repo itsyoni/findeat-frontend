@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { RestaurantReview } from '@findeat/types'
-import { StarIcon } from '@phosphor-icons/react'
+import { StarIcon } from '@phosphor-icons/react/dist/csr/Star'
 
 export function ReviewsPage({ reviews }: { reviews: RestaurantReview[] }) {
   const [query, setQuery] = useState('')

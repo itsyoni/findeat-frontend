@@ -10,7 +10,15 @@ import { router } from "expo-router";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Image, ScrollView, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/contexts/ThemeContext";
 
@@ -232,11 +240,17 @@ export default function EditProfileScreen() {
     <SafeAreaView
       style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
-      <ScrollView
-        className="flex-1 bg-canvas dark:bg-black"
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode="interactive"
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
+        <ScrollView
+          className="flex-1 bg-canvas dark:bg-black"
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+          automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
+          contentInsetAdjustmentBehavior="automatic"
+        >
         <View className="flex-row items-center px-5 pt-4">
           <IconButton
             icon={CaretLeftIcon}
@@ -310,7 +324,8 @@ export default function EditProfileScreen() {
           />
 
         </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

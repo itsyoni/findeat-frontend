@@ -12,7 +12,6 @@ import {
   DotsThreeOutlineIcon,
 } from "phosphor-react-native";
 import { TouchableOpacity, View } from "react-native";
-import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -31,6 +30,8 @@ type Props = {
   onOpenComments: (postId: string) => void;
   onOpenSharePost: (postId: string) => void;
   onOpenPostOptions: (postId: string) => void;
+  onPinchStart?: () => void;
+  onPinchEnd?: () => void;
   onToggleWantToTry: (
     postId: string,
     restaurantId: string,
@@ -46,6 +47,8 @@ export default function ContentPost({
   onToggleWantToTry,
   onOpenSharePost,
   onOpenPostOptions,
+  onPinchStart,
+  onPinchEnd,
 }: Props) {
   const { t } = useTranslation("restaurants");
   const userRestaurant = post.restaurant?.userSaves?.[0];
@@ -106,15 +109,6 @@ export default function ContentPost({
     textShadowRadius: 8,
   };
 
-  const doubleTap = Gesture.Tap()
-    .numberOfTaps(2)
-    .runOnJS(true)
-    .onEnd((event, success) => {
-      if (!success) return;
-
-      handleDoubleTapLike(event.x, event.y);
-    });
-
   function handleDoubleTapLike(x: number, y: number) {
     heartOverlayX.set(x);
     heartOverlayY.set(y);
@@ -170,8 +164,7 @@ export default function ContentPost({
   const bookmarkColor = isPlaceSaved ? "#F7D786" : "#FFFFFFCC";
 
   return (
-    <GestureDetector gesture={doubleTap}>
-      <View style={{ height }}>
+    <View style={{ height }}>
         <Animated.View
           pointerEvents="none"
           style={[
@@ -198,6 +191,9 @@ export default function ContentPost({
             uri={imageUrl}
             style={{ position: "absolute", inset: 0 }}
             resizeMode="cover"
+            onDoubleTap={handleDoubleTapLike}
+            onPinchStart={onPinchStart}
+            onPinchEnd={onPinchEnd}
           />
         ) : (
           <View className="absolute inset-0 items-center justify-center bg-gray-900">
@@ -211,6 +207,7 @@ export default function ContentPost({
         )}
 
         <LinearGradient
+          pointerEvents="none"
           colors={[
             "transparent",
             "rgba(0,0,0,0.1)",
@@ -396,7 +393,6 @@ export default function ContentPost({
             </Text>
           </TouchableOpacity>
         </View>
-      </View>
-    </GestureDetector>
+    </View>
   );
 }

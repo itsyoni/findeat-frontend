@@ -111,6 +111,7 @@ export default function ReviewPost({
   const actionColor = isDark ? "#E5E7EB" : "#212121";
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isPinchingMedia, setIsPinchingMedia] = useState(false);
   const review = post.reviewPost;
   const items = review?.items ?? [];
 
@@ -287,6 +288,7 @@ export default function ReviewPost({
       <FlatList
         horizontal
         pagingEnabled
+        scrollEnabled={!isPinchingMedia}
         data={slides}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
@@ -299,6 +301,8 @@ export default function ReviewPost({
                 uri={item.imageUrl}
                 style={{ width: "100%", height: "100%" }}
                 resizeMode="cover"
+                onPinchStart={() => setIsPinchingMedia(true)}
+                onPinchEnd={() => setIsPinchingMedia(false)}
               />
             ) : (
               <View className="h-full w-full items-center justify-center bg-gray-900">
@@ -308,6 +312,7 @@ export default function ReviewPost({
 
             {item.type === "COVER" && (
               <View
+                pointerEvents="none"
                 className="absolute inset-0 justify-end p-5"
                 style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
               >

@@ -1,5 +1,6 @@
 import type { ManagedRestaurant } from '@findeat/types'
-import { CheckIcon, PlusIcon } from '@phosphor-icons/react'
+import { CheckIcon } from '@phosphor-icons/react/dist/csr/Check'
+import { PlusIcon } from '@phosphor-icons/react/dist/csr/Plus'
 
 type OverviewPageProps = {
   restaurant: ManagedRestaurant

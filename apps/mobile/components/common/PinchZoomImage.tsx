@@ -17,6 +17,7 @@ import Animated, {
   useAnimatedRef,
   useAnimatedStyle,
   useSharedValue,
+  runOnJS,
   withSpring,
 } from "react-native-reanimated";
 
@@ -25,6 +26,9 @@ type Props = {
   style?: StyleProp<ViewStyle>;
   resizeMode?: ImageProps["resizeMode"];
   maxScale?: number;
+  onDoubleTap?: (x: number, y: number) => void;
+  onPinchStart?: () => void;
+  onPinchEnd?: () => void;
 };
 
 const resetSpring = {
@@ -38,6 +42,9 @@ export default function PinchZoomImage({
   style,
   resizeMode = "cover",
   maxScale = 4,
+  onDoubleTap,
+  onPinchStart,
+  onPinchEnd,
 }: Props) {
   const imageRef = useAnimatedRef<View>();
   const scale = useSharedValue(1);
@@ -64,6 +71,7 @@ export default function PinchZoomImage({
       translateX.value = 0;
       translateY.value = 0;
       overlayActive.value = 1;
+      if (onPinchStart) runOnJS(onPinchStart)();
     })
     .onUpdate((event) => {
       if (!overlayActive.value) return;
@@ -76,12 +84,25 @@ export default function PinchZoomImage({
         (height.value / 2 - event.focalY) * (nextScale - 1);
     })
     .onFinalize(() => {
+      if (onPinchEnd) runOnJS(onPinchEnd)();
       scale.value = withSpring(1, resetSpring, (finished) => {
         if (finished) overlayActive.value = 0;
       });
       translateX.value = withSpring(0, resetSpring);
       translateY.value = withSpring(0, resetSpring);
     });
+
+  const doubleTap = Gesture.Tap()
+    .enabled(!!onDoubleTap)
+    .numberOfTaps(2)
+    .runOnJS(true)
+    .onEnd((event, success) => {
+      if (success && onDoubleTap) onDoubleTap(event.x, event.y);
+    });
+
+  const mediaGesture = onDoubleTap
+    ? Gesture.Simultaneous(pinch, doubleTap)
+    : pinch;
 
   const sourceStyle = useAnimatedStyle(() => ({
     opacity: overlayActive.value ? 0 : 1,
@@ -121,7 +142,7 @@ export default function PinchZoomImage({
 
   return (
     <>
-      <GestureDetector gesture={pinch}>
+      <GestureDetector gesture={mediaGesture}>
         <Animated.View ref={imageRef} style={[style, sourceStyle]}>
           <Image
             source={{ uri }}

@@ -1,4 +1,5 @@
 import { Post } from "@findeat/types/post";
+import { useState } from "react";
 import { FlatList } from "react-native";
 import ContentPost from "./ContentPost";
 import EmptyPostsState from "../EmptyPostsState";
@@ -37,6 +38,8 @@ export default function ContentFeed({
   onOpenSharePost,
   onOpenPostOptions,
 }: Props) {
+  const [isPinchingMedia, setIsPinchingMedia] = useState(false);
+
   return (
     <FlatList
       data={posts}
@@ -50,6 +53,7 @@ export default function ContentFeed({
       windowSize={3}
       removeClippedSubviews
       pagingEnabled
+      scrollEnabled={!isPinchingMedia}
       showsVerticalScrollIndicator={false}
       decelerationRate="fast"
       initialScrollIndex={initialIndex}
@@ -71,6 +75,8 @@ export default function ContentFeed({
           onToggleWantToTry={onToggleWantToTry}
           onOpenSharePost={onOpenSharePost}
           onOpenPostOptions={onOpenPostOptions}
+          onPinchStart={() => setIsPinchingMedia(true)}
+          onPinchEnd={() => setIsPinchingMedia(false)}
         />
       )}
     />
