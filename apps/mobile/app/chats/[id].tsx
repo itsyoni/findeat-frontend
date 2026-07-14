@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
 import { Chat, Message } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon, PaperPlaneTiltIcon } from "phosphor-react-native";
+import { CaretLeftIcon, PaperPlaneTiltIcon, XIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -39,6 +39,7 @@ import Animated, {
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
+import MessageActionsBottomSheet from "@/components/chats/MessageActionsBottomSheet";
 
 type ChatMessage = Message & {
   renderKey?: string;
@@ -161,6 +162,8 @@ export default function ChatScreen() {
   const [animateNewMessages, setAnimateNewMessages] = useState(false);
   const [conversationId, setConversationId] = useState(id);
   const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesListRef = useRef<FlatList<ChatMessage>>(null);
@@ -392,6 +395,39 @@ export default function ChatScreen() {
     });
 
     socket.on(
+      "message_deleted",
+      (event: { messageId: string; deletedAt: string }) => {
+        setMessages((current) =>
+          current.map((message) =>
+            message.id === event.messageId
+              ? {
+                  ...message,
+                  content: null,
+                  imageUrl: null,
+                  post: null,
+                  restaurant: null,
+                  deletedAt: event.deletedAt,
+                }
+              : message.replyTo?.id === event.messageId
+                ? {
+                    ...message,
+                    replyTo: {
+                      ...message.replyTo,
+                      content: null,
+                      imageUrl: null,
+                      deletedAt: event.deletedAt,
+                    },
+                  }
+                : message,
+          ),
+        );
+        setReplyingTo((current) =>
+          current?.id === event.messageId ? null : current,
+        );
+      },
+    );
+
+    socket.on(
       "typing_changed",
       (event: {
         conversationId: string;
@@ -435,6 +471,7 @@ export default function ChatScreen() {
       typingUserTimers.clear();
       sentTypingRef.current = false;
       socket.off("receive_message");
+      socket.off("message_deleted");
       socket.off("typing_changed");
       socket.disconnect();
       if (socketRef.current === socket) socketRef.current = null;
@@ -467,12 +504,26 @@ export default function ChatScreen() {
         displayName: user.displayName,
         avatarUrl: user.avatarUrl,
       },
+      replyToId: replyingTo?.id,
+      replyTo: replyingTo
+        ? {
+            id: replyingTo.id,
+            type: replyingTo.type,
+            content: replyingTo.content,
+            imageUrl: replyingTo.imageUrl,
+            deletedAt: replyingTo.deletedAt,
+            sender: replyingTo.sender,
+            sentAsRestaurant: replyingTo.sentAsRestaurant,
+          }
+        : null,
     };
 
     stopTyping();
     scheduleScrollToEnd(hasPositionedAtBottomRef.current);
     setMessages((current) => [...current, optimisticMessage]);
     setContent("");
+    const replyToId = replyingTo?.id;
+    setReplyingTo(null);
     setComposerHeight(42);
 
     try {
@@ -513,6 +564,7 @@ export default function ChatScreen() {
           userId: user.id,
           type: "TEXT",
           content: trimmedContent,
+          replyToId,
         },
         (error: Error | null, message: Message) => {
           if (error || !message?.id) {
@@ -545,6 +597,74 @@ export default function ChatScreen() {
       console.error("send message failed", error);
     } finally {
       setSending(false);
+    }
+  }
+
+  async function deleteMessage(
+    message: Message,
+    scope: "me" | "everyone",
+  ) {
+    if (message.id.startsWith("pending-")) {
+      setMessages((current) => current.filter((item) => item.id !== message.id));
+      return;
+    }
+
+    const result = await api.chats.deleteMessage(
+      conversationId,
+      message.id,
+      scope,
+    );
+    if (scope === "me") {
+      setMessages((current) => current.filter((item) => item.id !== message.id));
+    } else {
+      setMessages((current) =>
+        current.map((item) =>
+          item.id === message.id
+            ? {
+                ...item,
+                content: null,
+                imageUrl: null,
+                post: null,
+                restaurant: null,
+                deletedAt: result.deletedAt ?? new Date().toISOString(),
+              }
+            : item.replyTo?.id === message.id
+              ? {
+                  ...item,
+                  replyTo: {
+                    ...item.replyTo,
+                    content: null,
+                    imageUrl: null,
+                    deletedAt: result.deletedAt ?? new Date().toISOString(),
+                  },
+                }
+              : item,
+        ),
+      );
+    }
+    setReplyingTo((current) => current?.id === message.id ? null : current);
+  }
+
+  function replyPreview(
+    message: Pick<Message, "deletedAt" | "content" | "type">,
+  ) {
+    if (message.deletedAt) return t("deletedMessage");
+    if (message.content) return message.content;
+    if (message.type === "IMAGE") return t("photoMessage");
+    if (message.type === "POST") return t("postMessage");
+    if (message.type === "RESTAURANT") return t("restaurantMessage");
+    return t("message");
+  }
+
+  function replyAuthor(message: Message) {
+    if (message.senderId === user?.id) return t("you");
+    return message.sentAsRestaurant?.name ?? message.sender.displayName ?? message.sender.username;
+  }
+
+  function scrollToMessage(messageId: string) {
+    const index = messages.findIndex((message) => message.id === messageId);
+    if (index >= 0) {
+      messagesListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
     }
   }
 
@@ -690,6 +810,12 @@ export default function ChatScreen() {
             data={messages}
             keyExtractor={(item) => item.renderKey ?? item.id}
             keyboardShouldPersistTaps="handled"
+            onScrollToIndexFailed={({ index }) => {
+              messagesListRef.current?.scrollToOffset({
+                offset: Math.max(0, index * 72),
+                animated: true,
+              });
+            }}
             onLayout={() => {
               if (!shouldScrollToEndRef.current) return;
               requestAnimationFrame(() => {
@@ -794,7 +920,11 @@ export default function ChatScreen() {
                       </View>
                     )}
 
-                    <View
+                    <Pressable
+                      onLongPress={() => {
+                        if (!item.deletedAt) setSelectedMessage(item);
+                      }}
+                      delayLongPress={260}
                       className={`max-w-[78%] rounded-[22px] border px-4 py-2.5 ${
                         isMine
                           ? `${nextMessage?.senderId !== item.senderId ? "rounded-br-md" : ""} border-[#FFD8CD] bg-brand-soft`
@@ -807,7 +937,27 @@ export default function ChatScreen() {
                         </Text>
                       )}
 
-                      {item.type === "POST" ? (
+                      {item.replyTo ? (
+                        <Pressable
+                          onPress={() => scrollToMessage(item.replyTo!.id)}
+                          className={`mb-2 min-w-[150px] overflow-hidden rounded-xl border-l-4 border-brand px-3 py-2 ${isMine ? "bg-white/55" : "bg-gray-100 dark:bg-black/30"}`}
+                        >
+                          <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                            {item.replyTo.sender.id === user?.id
+                              ? t("you")
+                              : item.replyTo.sentAsRestaurant?.name ?? item.replyTo.sender.displayName ?? item.replyTo.sender.username}
+                          </Text>
+                          <Text numberOfLines={2} className={`mt-0.5 text-xs ${isMine ? "text-black/60" : "text-gray-500 dark:text-gray-400"}`}>
+                            {replyPreview(item.replyTo)}
+                          </Text>
+                        </Pressable>
+                      ) : null}
+
+                      {item.deletedAt ? (
+                        <Text className={`italic ${isMine ? "text-black/55" : "text-gray-500 dark:text-gray-400"}`}>
+                          {t("deletedMessage")}
+                        </Text>
+                      ) : item.type === "POST" ? (
                         item.post ? (
                           <Pressable
                             className="overflow-hidden rounded-2xl bg-gray-50 dark:bg-gray-900"
@@ -886,7 +1036,7 @@ export default function ChatScreen() {
                       >
                         {formatMessageTime(item.createdAt)}
                       </Text>
-                    </View>
+                    </Pressable>
                   </Animated.View>
                 </View>
               );
@@ -906,7 +1056,24 @@ export default function ChatScreen() {
             </Animated.View>
           ) : null}
 
-          <View className="flex-row items-end border-t border-line bg-white px-3 py-2 dark:border-gray-900 dark:bg-[#0F0F10]">
+          <View className="border-t border-line bg-white px-3 py-2 dark:border-gray-900 dark:bg-[#0F0F10]">
+            {replyingTo ? (
+              <View className="mb-2 flex-row items-center overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#1B1B1D]">
+                <View className="h-full w-1 bg-brand" />
+                <View className="min-w-0 flex-1 px-3 py-2">
+                  <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                    {replyAuthor(replyingTo)}
+                  </Text>
+                  <Text numberOfLines={1} className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    {replyPreview(replyingTo)}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={() => setReplyingTo(null)} hitSlop={8} className="h-11 w-11 items-center justify-center">
+                  <XIcon size={20} color={isDark ? "#D1D5DB" : "#6B7280"} weight="bold" />
+                </TouchableOpacity>
+              </View>
+            ) : null}
+            <View className="flex-row items-end">
             <RNTextInput
               className="flex-1 rounded-3xl border border-line bg-soft px-4 text-ink dark:border-gray-800 dark:bg-[#1B1B1D] dark:text-white"
               placeholder={t("messagePlaceholder")}
@@ -969,10 +1136,18 @@ export default function ChatScreen() {
                 />
               )}
             </TouchableOpacity>
+            </View>
           </View>
           </>}
         </KeyboardAvoidingView>
       </SafeAreaView>
+      <MessageActionsBottomSheet
+        message={selectedMessage}
+        isMine={selectedMessage?.senderId === user?.id}
+        onClose={() => setSelectedMessage(null)}
+        onReply={(message) => setReplyingTo(message)}
+        onDelete={deleteMessage}
+      />
     </>
   );
 }

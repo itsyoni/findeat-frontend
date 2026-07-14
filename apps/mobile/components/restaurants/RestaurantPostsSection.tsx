@@ -1,6 +1,6 @@
 import { Restaurant } from '@findeat/types';
 import { router } from 'expo-router';
-import { ImagesSquareIcon } from 'phosphor-react-native';
+import { ImagesSquareIcon, StarIcon } from 'phosphor-react-native';
 import { ActivityIndicator, Image, Pressable, TouchableOpacity, View } from 'react-native';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import Text from '../common/AppText';
@@ -52,9 +52,13 @@ export default function RestaurantPostsSection({ posts, emptyText, loading, load
             </View>
           )}
           {post.type === 'REVIEW' && post.rating != null ? (
-            <View className="absolute right-2 top-2 rounded-full bg-black/65 px-2 py-1">
-              <Text className="text-xs font-bold text-white">⭐ {post.rating}</Text>
-            </View>
+            <>
+              <View className="absolute inset-0 bg-[#0000004D]" />
+              <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-[#00000099] px-3 py-1">
+                <StarIcon size={12} color="#F7D786" weight="fill" />
+                <Text className="text-xs font-bold text-white">{post.rating}</Text>
+              </View>
+            </>
           ) : null}
         </Pressable>
         ))}

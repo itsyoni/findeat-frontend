@@ -3,12 +3,11 @@ import Avatar from "@/components/common/Avatar";
 import { Post } from "@findeat/types/post";
 import { router } from "expo-router";
 import {
-  BookmarkSimpleIcon,
   ChatCircleIcon,
-  CheckIcon,
   DotsThreeOutlineIcon,
   HeartIcon,
   ShareFatIcon,
+  StarIcon,
 } from "phosphor-react-native";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -31,6 +30,9 @@ import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import { useTranslation } from "react-i18next";
 import PostVisibilityIcon from "@/components/posts/PostVisibilityIcon";
 import PinchZoomImage from "@/components/common/PinchZoomImage";
+import PlaceStatusBookmark, {
+  getPlaceStatusLabelKey,
+} from "@/components/restaurants/PlaceStatusBookmark";
 
 type Props = {
   post: Post;
@@ -51,12 +53,14 @@ type ReviewSlide =
       id: string;
       imageUrl?: string | null;
       text?: string | null;
+      textEditedAt?: string | null;
     }
   | {
       type: "DISH";
       id: string;
       imageUrl?: string | null;
       text?: string | null;
+      textEditedAt?: string | null;
       dishName: string;
       price?: number | null;
       rating?: number | null;
@@ -103,6 +107,7 @@ export default function ReviewPost({
 }: Props) {
   const { isDark } = useAppTheme();
   const { t } = useTranslation("restaurants");
+  const { t: tCommon } = useTranslation("common");
   const actionColor = isDark ? "#E5E7EB" : "#212121";
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -121,14 +126,16 @@ export default function ReviewPost({
       id: "cover",
       imageUrl: review?.coverImageUrl,
       text: review?.summary,
+      textEditedAt: review?.summaryEditedAt,
     },
     ...items.map((item) => ({
       type: "DISH" as const,
       id: item.id,
       menuItemId: item.menuItemId,
       isLinkedToMenu: !!item.menuItemId,
-      imageUrl: item.imageUrl,
+      imageUrl: item.imageUrl ?? item.menuItem?.imageUrl,
       text: item.text,
+      textEditedAt: item.textEditedAt,
       dishName: item.menuItem?.name ?? item.customDishName ?? "Dish",
       price: item.menuItem?.price ?? item.customPrice,
       rating: item.rating,
@@ -229,9 +236,11 @@ export default function ReviewPost({
     onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
   }
 
-  const isPlaceSaved = isWantToTry || isVisited || isFavorite;
-  const bookmarkColor = isPlaceSaved ? "#F7D786" : actionColor;
-
+  const bookmarkLabelKey = getPlaceStatusLabelKey(
+    isWantToTry,
+    isVisited,
+    isFavorite,
+  );
   function openAuthorProfile() {
     if (isRestaurantPost && post.authorRestaurant?.id) {
       router.push({
@@ -378,9 +387,12 @@ export default function ReviewPost({
                   className="absolute inset-0 justify-end p-5"
                   style={{ backgroundColor: "rgba(0,0,0,0.35)" }}
                 >
-                  <Text className="text-3xl font-bold text-white">
-                    ⭐ {review?.overallRating ?? "-"}/10
-                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <StarIcon size={30} color="#F7D786" weight="fill" />
+                    <Text className="text-3xl font-bold text-white">
+                      {review?.overallRating ?? "-"}/10
+                    </Text>
+                  </View>
 
                   <View className="mt-3 flex-row flex-wrap gap-2">
                     {review?.atmosphereRating != null && (
@@ -402,7 +414,7 @@ export default function ReviewPost({
                     {review?.valueRating != null && (
                       <View className="rounded-full bg-white/20 px-3 py-2">
                         <Text className="font-bold text-white">
-                          Value {review.valueRating}/10
+                          VFM {review.valueRating}/10
                         </Text>
                       </View>
                     )}
@@ -446,9 +458,12 @@ export default function ReviewPost({
                       )}
 
                       {item.rating != null && (
-                        <Text className="mt-1 font-bold text-white">
-                          ⭐ {item.rating}/10
-                        </Text>
+                        <View className="mt-1 flex-row items-center gap-1">
+                          <StarIcon size={15} color="#F7D786" weight="fill" />
+                          <Text className="font-bold text-white">
+                            {item.rating}/10
+                          </Text>
+                        </View>
                       )}
                     </View>
 
@@ -521,37 +536,31 @@ export default function ReviewPost({
           </View>
 
           <TouchableOpacity className="items-center" onPress={handleWantToTry}>
-            <View className="relative h-7 w-7">
-              <BookmarkSimpleIcon
-                weight="fill"
-                color={bookmarkColor}
-                size={28}
-              />
-              {isVisited && !isFavorite && (
-                <View className="absolute -right-1 -top-1 h-4 w-4 items-center justify-center rounded-full bg-green-500">
-                  <CheckIcon size={11} color="white" weight="bold" />
-                </View>
-              )}
-              {isFavorite && (
-                <HeartIcon
-                  size={15}
-                  color="#FF3040"
-                  weight="fill"
-                  style={{ position: "absolute", right: -5, top: -5 }}
-                />
-              )}
-            </View>
+            <PlaceStatusBookmark
+              wantToTry={isWantToTry}
+              visited={isVisited}
+              favorite={isFavorite}
+              size={28}
+              defaultColor={actionColor}
+            />
 
             <Text className="mt-1 text-center text-xs font-bold text-black dark:text-white">
-              {t(isPlaceSaved ? "savedPlace" : "savePlace")}
+              {t(bookmarkLabelKey)}
             </Text>
           </TouchableOpacity>
         </View>
 
         {!!activeSlide?.text && (
-          <Text className="mt-3 text-gray-700 dark:text-gray-300">
-            {activeSlide.text}
-          </Text>
+          <View className="mt-3">
+            <Text className="text-gray-700 dark:text-gray-300">
+              {activeSlide.text}
+            </Text>
+            {!!activeSlide.textEditedAt && (
+              <Text className="mt-0.5 text-xs text-gray-400">
+                {tCommon("edited")}
+              </Text>
+            )}
+          </View>
         )}
       </View>
     </View>

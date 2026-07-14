@@ -7,6 +7,7 @@ import EmptyPostsState from "../EmptyPostsState";
 type Props = {
   posts: Post[];
   height: number;
+  contentTopInset?: number;
   refreshing: boolean;
   onRefresh: () => void;
   onEndReached?: () => void;
@@ -27,6 +28,7 @@ type Props = {
 export default function ContentFeed({
   posts,
   height,
+  contentTopInset = 0,
   refreshing,
   onRefresh,
   onEndReached,
@@ -70,6 +72,7 @@ export default function ContentFeed({
         <ContentPost
           post={item}
           height={height}
+          contentTopInset={contentTopInset}
           onToggleLike={onToggleLike}
           onOpenComments={onOpenComments}
           onToggleWantToTry={onToggleWantToTry}

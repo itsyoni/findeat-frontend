@@ -7,6 +7,7 @@ import { ListDashesIcon } from "@phosphor-icons/react/dist/csr/ListDashes";
 import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { StarIcon } from "@phosphor-icons/react/dist/csr/Star";
 import { StorefrontIcon } from "@phosphor-icons/react/dist/csr/Storefront";
+import { HeadsetIcon } from "@phosphor-icons/react/dist/csr/Headset";
 import type {
   AdminUser,
   AppNotification,
@@ -35,6 +36,7 @@ import { MessagesPage } from "./MessagesPage";
 import { OverviewPage } from "./OverviewPage";
 import { ProfilePage } from "./ProfilePage";
 import { ReviewsPage } from "./ReviewsPage";
+import { OwnerSupportPage } from "./OwnerSupportPage";
 import "../App.css";
 
 export function DashboardPage({ onLogout }: { onLogout: () => void }) {
@@ -425,6 +427,12 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
           >
             <StorefrontIcon className="nav-icon" weight="duotone" /> Restaurant profile
           </button>
+          <button
+            className={section === "support" ? "active" : ""}
+            onClick={() => setSection("support")}
+          >
+            <HeadsetIcon className="nav-icon" weight="duotone" /> Help and support
+          </button>
           {isAdmin && (
             <button
               className={section === "admin" ? "active" : ""}
@@ -526,6 +534,9 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
             restaurant={restaurant}
             onSaved={load}
           />
+        )}
+        {section === "support" && (
+          <OwnerSupportPage key={restaurant.id} restaurant={restaurant} />
         )}
       </main>
     </div>

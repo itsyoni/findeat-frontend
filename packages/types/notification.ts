@@ -4,6 +4,7 @@ import type { UserRelationship } from './profile';
 export type NotificationType =
   | 'POST_LIKE'
   | 'POST_COMMENT'
+  | 'COMMENT_LIKE'
   | 'COMMENT_REPLY'
   | 'FOLLOW'
   | 'FOLLOW_BACK'

@@ -4,11 +4,22 @@ import type { UserSummary } from "./user";
 
 export type ChatType = "DIRECT" | "GROUP" | "RESTAURANT";
 
-export type SendMessagePayload =
+export type SendMessagePayload = (
   | { type: "TEXT"; content: string }
   | { type: "POST"; postId: string }
   | { type: "RESTAURANT"; restaurantId: string }
-  | { type: "IMAGE"; imageUrl: string };
+  | { type: "IMAGE"; imageUrl: string }
+) & { replyToId?: string };
+
+export type MessageReply = {
+  id: string;
+  type?: "TEXT" | "IMAGE" | "POST" | "RESTAURANT" | "POLL" | "SYSTEM";
+  content: string | null;
+  imageUrl?: string | null;
+  deletedAt?: string | null;
+  sender: UserSummary;
+  sentAsRestaurant?: Pick<Restaurant, "id" | "name" | "logoUrl"> | null;
+};
 
 export type Chat = {
   id: string;
@@ -50,10 +61,13 @@ export type Message = {
   restaurant?: Restaurant | null;
 
   createdAt: string;
+  deletedAt?: string | null;
   senderId: string;
   sender: UserSummary;
   sentAsRestaurantId?: string | null;
   sentAsRestaurant?: Pick<Restaurant, "id" | "name" | "logoUrl"> | null;
+  replyToId?: string | null;
+  replyTo?: MessageReply | null;
 };
 
 export type RestaurantConversation = {

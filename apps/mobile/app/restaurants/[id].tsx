@@ -11,7 +11,7 @@ import { updateRestaurantStatusInFeedCache } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
 import type { Restaurant, RestaurantPostSection } from "@findeat/types";
 import { getErrorMessage } from "@findeat/utils";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
 import {
@@ -265,6 +265,14 @@ export default function RestaurantScreen() {
     }
   }
 
+  function openCreateFlow(pathname: "/create/review" | "/create/content") {
+    if (!restaurant) return;
+    setOptionsOpen(false);
+    requestAnimationFrame(() => {
+      router.push({ pathname, params: { restaurantId: restaurant.id } });
+    });
+  }
+
   const featuredItems = useMemo(() => {
     if (!restaurant) return [];
 
@@ -419,6 +427,8 @@ export default function RestaurantScreen() {
         type="RESTAURANT"
         canClaim={restaurant.status !== "CLAIMED"}
         onClaim={() => void claimRestaurant()}
+        onCreateReview={() => openCreateFlow("/create/review")}
+        onCreateContent={() => openCreateFlow("/create/content")}
       />
     </>
   );

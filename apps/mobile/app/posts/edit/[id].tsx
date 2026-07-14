@@ -1,0 +1,344 @@
+import { AppButton, LoadingScreen, TextInput } from "@/components/common";
+import Text from "@/components/common/AppText";
+import { useAppTheme } from "@/contexts/ThemeContext";
+import { updatePostInFeedCache } from "@/hooks/useFeed";
+import { api } from "@/lib/api";
+import type { Post, ReviewItem } from "@findeat/types";
+import { useQueryClient } from "@tanstack/react-query";
+import { router, Stack, useLocalSearchParams } from "expo-router";
+import {
+  CaretLeftIcon,
+  ImageSquareIcon,
+  TrashIcon,
+} from "phosphor-react-native";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+function dishName(item: ReviewItem) {
+  return item.menuItem?.name ?? item.customDishName ?? "Dish";
+}
+
+export default function EditPostScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const { isDark } = useAppTheme();
+  const { t } = useTranslation("common");
+  const queryClient = useQueryClient();
+  const [post, setPost] = useState<Post | null>(null);
+  const [description, setDescription] = useState("");
+  const [summary, setSummary] = useState("");
+  const [itemTexts, setItemTexts] = useState<Record<string, string>>({});
+  const [removedItemIds, setRemovedItemIds] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void api.posts
+      .get(id)
+      .then((nextPost) => {
+        if (cancelled) return;
+        if (!nextPost.canDelete) {
+          router.back();
+          return;
+        }
+
+        setPost(nextPost);
+        setDescription(nextPost.contentPost?.description ?? "");
+        setSummary(nextPost.reviewPost?.summary ?? "");
+        setItemTexts(
+          Object.fromEntries(
+            (nextPost.reviewPost?.items ?? []).map((item) => [
+              item.id,
+              item.text ?? "",
+            ]),
+          ),
+        );
+      })
+      .catch((error) => {
+        console.error("Failed to open post editor", error);
+        Alert.alert(t("error"), t("editPostError"));
+        router.back();
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, t]);
+
+  const isDirty = useMemo(() => {
+    if (!post) return false;
+
+    if (post.type === "CONTENT") {
+      return description !== (post.contentPost?.description ?? "");
+    }
+
+    return (
+      summary !== (post.reviewPost?.summary ?? "") ||
+      removedItemIds.length > 0 ||
+      (post.reviewPost?.items ?? []).some(
+        (item) => itemTexts[item.id] !== (item.text ?? ""),
+      )
+    );
+  }, [description, itemTexts, post, removedItemIds.length, summary]);
+
+  async function saveChanges() {
+    if (!post || saving || !isDirty) return;
+
+    try {
+      setSaving(true);
+      const updatedPost =
+        post.type === "CONTENT"
+          ? await api.posts.updateContent(post.id, { description })
+          : await api.posts.updateReview(post.id, {
+              summary,
+              items: (post.reviewPost?.items ?? [])
+                .filter((item) => !removedItemIds.includes(item.id))
+                .map((item) => ({
+                  id: item.id,
+                  text: itemTexts[item.id] ?? "",
+                })),
+              removedItemIds,
+            });
+
+      updatePostInFeedCache(queryClient, (cachedPost) =>
+        cachedPost.id === updatedPost.id ? updatedPost : cachedPost,
+      );
+      void queryClient.invalidateQueries({ queryKey: ["restaurant-posts"] });
+      router.back();
+    } catch (error) {
+      console.error("Failed to update post", error);
+      Alert.alert(t("error"), t("editPostError"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  if (loading || !post) return <LoadingScreen variant="detail" />;
+
+  const isContent = post.type === "CONTENT";
+  const mediaUrl = isContent
+    ? post.contentPost?.imageUrl
+    : post.reviewPost?.coverImageUrl;
+  const reviewItems = post.reviewPost?.items ?? [];
+  const visibleItems = reviewItems.filter(
+    (item) => !removedItemIds.includes(item.id),
+  );
+  const removedItems = reviewItems.filter((item) =>
+    removedItemIds.includes(item.id),
+  );
+
+  return (
+    <SafeAreaView
+      edges={["top", "bottom"]}
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
+    >
+      <Stack.Screen options={{ headerShown: false }} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
+        <View className="flex-row items-center border-b border-line px-4 py-3 dark:border-gray-800">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="h-11 w-11 items-center justify-center"
+          >
+            <CaretLeftIcon
+              size={25}
+              color={isDark ? "#FFF" : "#171717"}
+              weight="bold"
+            />
+          </TouchableOpacity>
+          <Text className="flex-1 text-center text-xl font-bold text-black dark:text-white">
+            {t(isContent ? "editContentTitle" : "editReviewTitle")}
+          </Text>
+          <View className="w-11" />
+        </View>
+
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ padding: 20, paddingBottom: 44 }}
+        >
+          <Text className="leading-5 text-gray-500 dark:text-gray-400">
+            {t(isContent ? "editContentHint" : "editReviewHint")}
+          </Text>
+
+          <View className="mt-6 overflow-hidden rounded-3xl border border-line bg-white dark:border-gray-800 dark:bg-gray-900">
+            {mediaUrl ? (
+              <Image
+                source={{ uri: mediaUrl }}
+                className="h-52 w-full bg-gray-100 dark:bg-gray-800"
+                resizeMode="cover"
+              />
+            ) : (
+              <View className="h-28 items-center justify-center bg-gray-100 dark:bg-gray-800">
+                <ImageSquareIcon
+                  size={30}
+                  color={isDark ? "#9CA3AF" : "#747474"}
+                />
+              </View>
+            )}
+            <Text className="px-4 py-3 text-center text-sm font-semibold text-gray-500 dark:text-gray-400">
+              {t(isContent ? "mediaLocked" : "coverLocked")}
+            </Text>
+          </View>
+
+          {isContent ? (
+            <View className="mt-7">
+              <Text className="mb-3 text-lg font-bold text-black dark:text-white">
+                {t("caption")}
+              </Text>
+              <TextInput
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                placeholder={t("caption")}
+                className="bg-white dark:bg-gray-900"
+              />
+            </View>
+          ) : (
+            <>
+              <View className="mt-7">
+                <Text className="mb-3 text-lg font-bold text-black dark:text-white">
+                  {t("reviewText")}
+                </Text>
+                <TextInput
+                  value={summary}
+                  onChangeText={setSummary}
+                  multiline
+                  placeholder={t("reviewText")}
+                  className="bg-white dark:bg-gray-900"
+                />
+              </View>
+
+              <View className="mt-8 gap-4">
+                {visibleItems.map((item) => {
+                  const imageUrl = item.imageUrl ?? item.menuItem?.imageUrl;
+
+                  return (
+                    <View
+                      key={item.id}
+                      className="overflow-hidden rounded-3xl border border-line bg-white dark:border-gray-800 dark:bg-gray-900"
+                    >
+                      <View className="flex-row items-center gap-3 p-4">
+                        {imageUrl ? (
+                          <Image
+                            source={{ uri: imageUrl }}
+                            className="h-16 w-16 rounded-2xl bg-gray-100 dark:bg-gray-800"
+                            resizeMode="cover"
+                          />
+                        ) : (
+                          <View className="h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800">
+                            <ImageSquareIcon
+                              size={24}
+                              color={isDark ? "#9CA3AF" : "#747474"}
+                            />
+                          </View>
+                        )}
+                        <View className="min-w-0 flex-1">
+                          <Text
+                            numberOfLines={2}
+                            className="text-lg font-bold text-black dark:text-white"
+                          >
+                            {dishName(item)}
+                          </Text>
+                          {item.rating != null && (
+                            <Text className="mt-1 text-sm text-gray-500">
+                              {item.rating}/10
+                            </Text>
+                          )}
+                        </View>
+                        <TouchableOpacity
+                          onPress={() =>
+                            setRemovedItemIds((current) => [
+                              ...current,
+                              item.id,
+                            ])
+                          }
+                          className="h-10 w-10 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40"
+                        >
+                          <TrashIcon size={19} color="#EF4444" weight="fill" />
+                        </TouchableOpacity>
+                      </View>
+
+                      <View className="px-4 pb-4">
+                        <TextInput
+                          value={itemTexts[item.id] ?? ""}
+                          onChangeText={(text) =>
+                            setItemTexts((current) => ({
+                              ...current,
+                              [item.id]: text,
+                            }))
+                          }
+                          multiline
+                          placeholder={t("dishNote")}
+                          className="bg-gray-50 dark:bg-black"
+                        />
+                      </View>
+                    </View>
+                  );
+                })}
+              </View>
+
+              {removedItems.length > 0 && (
+                <View className="mt-7 rounded-3xl bg-red-50 p-4 dark:bg-red-950/30">
+                  <Text className="font-bold text-red-700 dark:text-red-300">
+                    {t("removedDishes")}
+                  </Text>
+                  <View className="mt-2 gap-2">
+                    {removedItems.map((item) => (
+                      <View
+                        key={item.id}
+                        className="flex-row items-center justify-between gap-3"
+                      >
+                        <Text
+                          numberOfLines={1}
+                          className="min-w-0 flex-1 text-red-700 dark:text-red-300"
+                        >
+                          {dishName(item)}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() =>
+                            setRemovedItemIds((current) =>
+                              current.filter((itemId) => itemId !== item.id),
+                            )
+                          }
+                        >
+                          <Text className="font-bold text-red-700 dark:text-red-300">
+                            {t("undo")}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </>
+          )}
+
+          <AppButton
+            title={t("saveChanges")}
+            onPress={() => void saveChanges()}
+            loading={saving}
+            disabled={!isDirty}
+            className="mt-8"
+          />
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
+  );
+}

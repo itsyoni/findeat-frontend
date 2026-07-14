@@ -88,9 +88,10 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
                   <>
                     <View className="absolute inset-0 bg-[#0000004D]" />
 
-                    <View className="absolute right-2 top-2 rounded-full bg-[#00000099] px-3 py-1">
+                    <View className="absolute right-2 top-2 flex-row items-center gap-1 rounded-full bg-[#00000099] px-3 py-1">
+                      <StarIcon size={12} color="#F7D786" weight="fill" />
                       <Text className="text-xs font-bold text-white">
-                        ⭐ {post.reviewPost?.overallRating}
+                        {post.reviewPost?.overallRating}
                       </Text>
                     </View>
                   </>

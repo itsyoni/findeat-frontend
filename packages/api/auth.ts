@@ -65,5 +65,12 @@ export function createAuthApi(api: AxiosInstance) {
       const { data } = await api.get<Profile>("/auth/me");
       return data;
     },
+
+    async deleteAccount(password: string, confirmation: string) {
+      const { data } = await api.delete<{ ok: true }>("/auth/account", {
+        data: { password, confirmation },
+      });
+      return data;
+    },
   };
 }

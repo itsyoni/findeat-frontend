@@ -16,6 +16,7 @@ export type ContentPost = {
   postId: string;
   title?: string | null;
   description?: string | null;
+  descriptionEditedAt?: string | null;
   imageUrl?: string | null;
   videoUrl?: string | null;
 };
@@ -40,6 +41,7 @@ export type ReviewItem = {
   imageUrl?: string | null;
   rating?: number | null;
   text?: string | null;
+  textEditedAt?: string | null;
   order: number;
 
   createdAt: string;
@@ -52,6 +54,7 @@ export type ReviewPost = {
   coverImageUrl?: string | null;
   title?: string | null;
   summary?: string | null;
+  summaryEditedAt?: string | null;
   visitDate?: string | null;
 
   overallRating?: number | null;

@@ -13,12 +13,13 @@ import {
 } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { removePostFromAppCache } from "@/hooks/useFeed";
 
 export default function PostScreen() {
+  const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const queryClient = useQueryClient();
 
@@ -269,6 +270,7 @@ export default function PostScreen() {
             <ContentFeed
               posts={posts}
               height={feedHeight}
+              contentTopInset={insets.top}
               refreshing={refreshing}
               onRefresh={onRefresh}
               onToggleLike={toggleLike}

@@ -67,6 +67,15 @@ export function createChatsApi(api: AxiosInstance) {
       return data;
     },
 
+    async deleteMessage(id: string, messageId: string, scope: "me" | "everyone") {
+      const { data } = await api.delete<{
+        messageId: string;
+        scope: "me" | "everyone";
+        deletedAt?: string;
+      }>(`/chats/${id}/messages/${messageId}`, { params: { scope } });
+      return data;
+    },
+
     async startDirectConversation(userId: string) {
       const { data } = await api.post<{ id: string }>(`/chats/start/${userId}`);
 

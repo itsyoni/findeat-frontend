@@ -18,16 +18,22 @@ import {
   isFriendRelationship,
 } from "@findeat/utils";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon, DotsThreeIcon } from "phosphor-react-native";
+import {
+  CaretLeftIcon,
+  DotsThreeIcon,
+  ProhibitIcon,
+} from "phosphor-react-native";
 import { useMemo, useState } from "react";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Alert, Image, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
   const { user: currentUser } = useAuth();
   const { t } = useTranslation(["common", "profile"]);
+  const queryClient = useQueryClient();
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
@@ -84,12 +90,65 @@ export default function UserProfileScreen() {
     }
   }
 
+  function confirmBlock() {
+    if (!user) return;
+    setOptionsOpen(false);
+
+    Alert.alert(
+      t("profile:blockUserTitle", { username: user.username }),
+      t("profile:blockUserDescription"),
+      [
+        { text: t("common:cancel"), style: "cancel" },
+        {
+          text: t("profile:block"),
+          style: "destructive",
+          onPress: () => {
+            void api.users
+              .block(user.id)
+              .then(() => {
+                void queryClient.invalidateQueries({ queryKey: ["feed"] });
+                router.back();
+              })
+              .catch((error) => {
+                console.error("Could not block user", error);
+                Alert.alert(t("common:error"), t("profile:blockUserError"));
+              });
+          },
+        },
+      ],
+    );
+  }
+
   if (currentUser?.id === id) {
     return <Redirect href="/(tabs)/profile" />;
   }
 
-  if (loading || !user) {
+  if (loading) {
     return <LoadingScreen variant="profile" />;
+  }
+
+  if (!user) {
+    return (
+      <SafeAreaView className="flex-1 bg-canvas dark:bg-black">
+        <TouchableOpacity
+          className="ml-4 mt-2 h-11 w-11 items-center justify-center"
+          onPress={() => router.back()}
+        >
+          <CaretLeftIcon size={24} color="#6B7280" weight="bold" />
+        </TouchableOpacity>
+        <View className="flex-1 items-center justify-center px-8 pb-20">
+          <View className="h-20 w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
+            <ProhibitIcon size={34} color="#6B7280" weight="bold" />
+          </View>
+          <Text className="mt-5 text-xl font-bold text-black dark:text-white">
+            {t("profile:userUnavailable")}
+          </Text>
+          <Text className="mt-2 text-center text-gray-500">
+            {t("profile:userUnavailableHint")}
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -255,6 +314,7 @@ export default function UserProfileScreen() {
         open={optionsOpen}
         onClose={() => setOptionsOpen(false)}
         type="USER"
+        onBlock={confirmBlock}
       />
       <FullScreenImageViewer
         uri={user.avatarUrl}

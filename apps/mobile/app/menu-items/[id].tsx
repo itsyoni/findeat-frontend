@@ -21,6 +21,7 @@ type DishDetails = Dish & {
   menu?: { id: string; title: string } | null;
   reviewItems?: {
     id: string;
+    imageUrl?: string | null;
     rating?: number | null;
     text?: string | null;
     reviewPost?: {
@@ -84,13 +85,15 @@ export default function MenuItemScreen() {
     };
   }, [dish?.reviewItems]);
 
-  const writtenReviews = useMemo(
-    () =>
-      dish?.reviewItems
-        ?.filter((review) => !!review.text?.trim())
-        .slice(0, 3) ?? [],
-    [dish?.reviewItems],
-  );
+  const dishReviews =
+    dish?.reviewItems
+      ?.filter((review) => {
+        const hasUserPhoto =
+          !!review.imageUrl && review.imageUrl !== dish.imageUrl;
+
+        return !!review.text?.trim() || hasUserPhoto;
+      })
+      .slice(0, 3) ?? [];
 
   const isNewDish = dish?.isNew === true;
 
@@ -251,14 +254,18 @@ export default function MenuItemScreen() {
             </Text>
           </View>
 
-          {writtenReviews.length > 0 && (
+          {dishReviews.length > 0 && (
             <View className="mt-8">
               <Text className="text-xl font-bold text-black dark:text-white">
                 {t("dishReviews")}
               </Text>
               <View className="mt-3 gap-3">
-                {writtenReviews.map((review) => {
+                {dishReviews.map((review) => {
                   const author = review.reviewPost?.post?.author;
+                  const userDishPhoto =
+                    review.imageUrl && review.imageUrl !== dish.imageUrl
+                      ? review.imageUrl
+                      : null;
 
                   return (
                     <View
@@ -287,9 +294,18 @@ export default function MenuItemScreen() {
                           </View>
                         )}
                       </View>
-                      <Text className="mt-3 leading-6 text-gray-600 dark:text-gray-300">
-                        {review.text}
-                      </Text>
+                      {userDishPhoto && (
+                        <Image
+                          source={{ uri: userDishPhoto }}
+                          className="mt-4 h-52 w-full rounded-2xl bg-gray-100 dark:bg-gray-800"
+                          resizeMode="cover"
+                        />
+                      )}
+                      {!!review.text?.trim() && (
+                        <Text className="mt-3 leading-6 text-gray-600 dark:text-gray-300">
+                          {review.text}
+                        </Text>
+                      )}
                     </View>
                   );
                 })}

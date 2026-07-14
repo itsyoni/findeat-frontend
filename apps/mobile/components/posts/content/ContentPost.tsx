@@ -4,9 +4,7 @@ import { Post } from "@findeat/types/post";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {
-  BookmarkSimpleIcon,
   ChatCircleIcon,
-  CheckIcon,
   HeartIcon,
   ShareFatIcon,
   DotsThreeOutlineIcon,
@@ -22,10 +20,14 @@ import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import { useTranslation } from "react-i18next";
 import PostVisibilityIcon from "@/components/posts/PostVisibilityIcon";
 import PinchZoomImage from "@/components/common/PinchZoomImage";
+import PlaceStatusBookmark, {
+  getPlaceStatusLabelKey,
+} from "@/components/restaurants/PlaceStatusBookmark";
 
 type Props = {
   post: Post;
   height: number;
+  contentTopInset?: number;
   onToggleLike: (postId: string, isLiked: boolean) => void;
   onOpenComments: (postId: string) => void;
   onOpenSharePost: (postId: string) => void;
@@ -42,6 +44,7 @@ type Props = {
 export default function ContentPost({
   post,
   height,
+  contentTopInset = 0,
   onToggleLike,
   onOpenComments,
   onToggleWantToTry,
@@ -51,6 +54,7 @@ export default function ContentPost({
   onPinchEnd,
 }: Props) {
   const { t } = useTranslation("restaurants");
+  const { t: tCommon } = useTranslation("common");
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
   const isVisited = !!userRestaurant?.visited;
@@ -160,9 +164,11 @@ export default function ContentPost({
     onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
   }
 
-  const isPlaceSaved = isWantToTry || isVisited || isFavorite;
-  const bookmarkColor = isPlaceSaved ? "#F7D786" : "#FFFFFFCC";
-
+  const bookmarkLabelKey = getPlaceStatusLabelKey(
+    isWantToTry,
+    isVisited,
+    isFavorite,
+  );
   return (
     <View style={{ height }}>
         <Animated.View
@@ -225,7 +231,8 @@ export default function ContentPost({
 
         {post.canDelete && (
           <TouchableOpacity
-            className="absolute right-4 top-4 z-10 p-1"
+            className="absolute right-4 z-10 p-1"
+            style={{ top: contentTopInset + 16 }}
             activeOpacity={0.8}
             onPress={() => onOpenPostOptions(post.id)}
           >
@@ -310,7 +317,14 @@ export default function ContentPost({
           )}
 
           {!!description && (
-            <Text className="text-base text-white">{description}</Text>
+            <View>
+              <Text className="text-base text-white">{description}</Text>
+              {!!content?.descriptionEditedAt && (
+                <Text className="mt-0.5 text-xs text-white/70">
+                  {tCommon("edited")}
+                </Text>
+              )}
+            </View>
           )}
         </View>
 
@@ -363,37 +377,21 @@ export default function ContentPost({
             </TouchableOpacity>
           )}
           <TouchableOpacity className="w-16 items-center" onPress={handleWantToTry}>
-            <View className="relative h-[35px] w-[35px]">
-              <BookmarkSimpleIcon
-                weight="fill"
-                color={bookmarkColor}
-                size={35}
-                style={iconShadow}
-              />
-              {isVisited && !isFavorite && (
-                <View
-                  className="absolute h-4 w-4 items-center justify-center rounded-full bg-green-500"
-                  style={{ right: -2, top: -3 }}
-                >
-                  <CheckIcon size={11} color="white" weight="bold" />
-                </View>
-              )}
-              {isFavorite && (
-                <HeartIcon
-                  size={16}
-                  color="#FF3040"
-                  weight="fill"
-                  style={{ position: "absolute", right: -2, top: -3 }}
-                />
-              )}
-            </View>
+            <PlaceStatusBookmark
+              wantToTry={isWantToTry}
+              visited={isVisited}
+              favorite={isFavorite}
+              size={35}
+              defaultColor="#FFFFFFCC"
+              style={iconShadow}
+            />
 
             <Text
               numberOfLines={1}
               style={textShadow}
               className="mt-1 w-16 text-center text-xs font-bold text-white"
             >
-              {t(isPlaceSaved ? "savedPlace" : "savePlace")}
+              {t(bookmarkLabelKey)}
             </Text>
           </TouchableOpacity>
         </View>

@@ -3,7 +3,7 @@ import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { Dish } from "@findeat/types";
 import { CreateReviewDraft, CreateReviewStep } from "@findeat/types/review";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert, View } from "react-native";
 import AddDishDetailsStep from "./steps/AddDishDetailsStep";
 import CoverStep from "./steps/CoverStep";
@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useFeed";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { LoadingScreen } from "@/components/common";
 
 const initialDraft: CreateReviewDraft = {
   visibility: "PUBLIC",
@@ -25,13 +26,47 @@ const initialDraft: CreateReviewDraft = {
   items: [],
 };
 
-export default function ReviewCreator() {
+export default function ReviewCreator({
+  initialRestaurantId,
+}: {
+  initialRestaurantId?: string;
+}) {
   const queryClient = useQueryClient();
   const { refreshUser } = useAuth();
   const [step, setStep] = useState<CreateReviewStep>("RESTAURANT");
   const [draft, setDraft] = useState<CreateReviewDraft>(initialDraft);
   const [loading, setLoading] = useState(false);
   const [selectedMenuDish, setSelectedMenuDish] = useState<Dish | null>(null);
+  const [initializingRestaurant, setInitializingRestaurant] = useState(
+    !!initialRestaurantId,
+  );
+
+  useEffect(() => {
+    if (!initialRestaurantId) return;
+    let cancelled = false;
+
+    void api.restaurants
+      .get(initialRestaurantId)
+      .then((restaurant) => {
+        if (cancelled) return;
+        setDraft((current) => ({
+          ...current,
+          restaurant: { source: "FINDEAT", restaurant },
+        }));
+        setStep("COVER");
+      })
+      .catch((error) => {
+        console.error("failed to preselect restaurant", error);
+        if (!cancelled) setStep("RESTAURANT");
+      })
+      .finally(() => {
+        if (!cancelled) setInitializingRestaurant(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialRestaurantId]);
 
   function updateDraft(update: Partial<CreateReviewDraft>) {
     setDraft((current) => ({
@@ -82,11 +117,6 @@ export default function ReviewCreator() {
       return;
     }
 
-    if (!draft.summary.trim()) {
-      Alert.alert("Missing summary", "Please write something about the meal");
-      return;
-    }
-
     const overallRating = calculateOverallRating();
 
     try {
@@ -106,13 +136,13 @@ export default function ReviewCreator() {
       const uploadedItems = await Promise.all(
         draft.items.map(async (item) => ({
           menuItemId: item.menuItemId,
-          customDishName: item.customDishName,
+          customDishName: item.customDishName?.trim() || undefined,
           customPrice: item.customPrice,
           imageUrl: item.imageUri
             ? await uploadImage(item.imageUri)
-            : item.fallbackImageUrl,
+            : undefined,
           rating: item.rating,
-          text: item.text,
+          text: item.text?.trim() || undefined,
           order: item.order,
         })),
       );
@@ -122,7 +152,7 @@ export default function ReviewCreator() {
         visibility: draft.visibility,
         coverImageUrl,
         overallRating,
-        summary: draft.summary.trim(),
+        summary: draft.summary.trim() || undefined,
         atmosphereRating: draft.atmosphereRating,
         serviceRating: draft.serviceRating,
         valueRating: draft.valueRating,
@@ -155,6 +185,10 @@ export default function ReviewCreator() {
     } finally {
       setLoading(false);
     }
+  }
+
+  if (initializingRestaurant) {
+    return <LoadingScreen variant="detail" />;
   }
 
   return (

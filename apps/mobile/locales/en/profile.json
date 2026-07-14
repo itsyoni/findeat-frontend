@@ -52,5 +52,13 @@
   "createPost": "Create a post",
   "createReview": "Write a review",
   "profileOptions": "Profile options",
-  "reportUser": "Report user"
+  "reportUser": "Report user",
+  "blockUser": "Block user",
+  "blockUserHint": "They won't be able to find, follow, or message you",
+  "blockUserTitle": "Block @{{username}}?",
+  "blockUserDescription": "You will unfollow each other. They won't be able to find your profile, see your posts, follow you, or send you direct messages.",
+  "block": "Block",
+  "blockUserError": "Could not block this user. Please try again.",
+  "userUnavailable": "Profile unavailable",
+  "userUnavailableHint": "This account may not exist or may be unavailable to you."
 }

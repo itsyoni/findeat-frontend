@@ -4,7 +4,7 @@ import SettingsSection from '@/components/settings/SettingsSection';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
-import { BellIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon } from 'phosphor-react-native';
+import { BellIcon, FileTextIcon, HeadsetIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,6 +33,10 @@ export default function SettingsScreen() {
           <SettingsRow icon={<BellIcon size={23} color={color} />} title={t('settings:notifications')} subtitle={t('settings:notificationsSubtitle')} onPress={() => router.push('/settings/notifications')} />
           <SettingsRow icon={<ShieldCheckIcon size={23} color={color} />} title={t('settings:privacy')} subtitle={t('settings:privacySubtitle')} onPress={() => router.push('/settings/privacy')} />
           <SettingsRow icon={<MoonIcon size={23} color={color} />} title={t('settings:appearanceLanguage')} subtitle={t('settings:appearanceLanguageSubtitle')} onPress={() => router.push('/settings/appearance')} />
+        </SettingsSection>
+        <SettingsSection title={t('settings:helpSupportSection')}>
+          <SettingsRow icon={<HeadsetIcon size={23} color={color} />} title={t('settings:helpSupport')} subtitle={t('settings:helpSupportSubtitle')} onPress={() => router.push('/settings/help-support')} />
+          <SettingsRow icon={<FileTextIcon size={23} color={color} />} title={t('settings:termsOfUse')} subtitle={t('settings:termsOfUseSubtitle')} onPress={() => router.push('/settings/terms-of-use')} />
         </SettingsSection>
         <SettingsSection title={t('settings:login')}>
           <SettingsRow destructive icon={<SignOutIcon size={23} color="#EF4444" />} title={t('common:logout')} onPress={confirmLogout} />

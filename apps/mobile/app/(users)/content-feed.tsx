@@ -12,13 +12,14 @@ import {
 import { CaretLeftIcon } from "phosphor-react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Dimensions, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { removePostFromAppCache } from "@/hooks/useFeed";
 
 const { height } = Dimensions.get("window");
 
 export default function UserContentFeedScreen() {
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { userId, postId } = useLocalSearchParams<{
     userId: string;
@@ -216,6 +217,7 @@ export default function UserContentFeedScreen() {
     <View className="flex-1 bg-black">
       <SafeAreaView
         edges={["top"]}
+        pointerEvents="box-none"
         style={{
           position: "absolute",
           top: 0,
@@ -235,6 +237,7 @@ export default function UserContentFeedScreen() {
       <ContentFeedList
         posts={posts}
         height={height}
+        contentTopInset={insets.top}
         refreshing={refreshing}
         onRefresh={onRefresh}
         onToggleLike={toggleLike}

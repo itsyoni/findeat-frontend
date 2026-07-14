@@ -50,5 +50,19 @@
   "createGroupError": "Could not create the group. Please try again.",
   "suggestedFriends": "Suggested friends",
   "suggestedFriendsHint": "Friends you message most appear first.",
-  "noSuggestedFriends": "Your friends will appear here. You can also search by name."
+  "noSuggestedFriends": "Your friends will appear here. You can also search by name.",
+  "message": "Message",
+  "messageOptions": "Message options",
+  "reply": "Reply",
+  "copy": "Copy",
+  "deleteMessage": "Delete message",
+  "deleteForMe": "Delete for me",
+  "deleteForEveryone": "Delete for everyone",
+  "deletedMessage": "This message was deleted",
+  "photoMessage": "Photo",
+  "postMessage": "Post",
+  "restaurantMessage": "Restaurant",
+  "cancel": "Cancel",
+  "replyingTo": "Replying to @{{username}}",
+  "likedByAuthor": "Liked by author"
 }

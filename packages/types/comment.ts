@@ -5,4 +5,13 @@ export type Comment = {
   content: string;
   createdAt: string;
   user: UserSummary;
+  parentId?: string | null;
+  parent?: {
+    id: string;
+    content: string;
+    user: UserSummary;
+  } | null;
+  likesCount: number;
+  isLiked: boolean;
+  likedByAuthor: boolean;
 };

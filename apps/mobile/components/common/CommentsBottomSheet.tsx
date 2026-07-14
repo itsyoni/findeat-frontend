@@ -8,7 +8,7 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Avatar from "./Avatar";
@@ -16,6 +16,7 @@ import Text from "./AppText";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import SkeletonList from "./feedback/SkeletonList";
+import { HeartIcon } from "phosphor-react-native";
 
 type Props = {
   postId: string | null;
@@ -25,7 +26,9 @@ type Props = {
 
 type CommentFooterProps = BottomSheetFooterProps & {
   bottomInset: number;
-  onAddComment: (content: string) => Promise<void>;
+  replyingTo: Comment | null;
+  onCancelReply: () => void;
+  onAddComment: (content: string, replyToId?: string) => Promise<void>;
 };
 
 function formatCommentTime(createdAt: string) {
@@ -68,6 +71,8 @@ function formatCommentTime(createdAt: string) {
 
 function CommentFooter({
   bottomInset,
+  replyingTo,
+  onCancelReply,
   onAddComment,
   ...footerProps
 }: CommentFooterProps) {
@@ -83,8 +88,9 @@ function CommentFooter({
 
     try {
       setSubmitting(true);
-      await onAddComment(trimmed);
+      await onAddComment(trimmed, replyingTo?.id);
       setContent("");
+      onCancelReply();
     } finally {
       setSubmitting(false);
     }
@@ -113,6 +119,22 @@ function CommentFooter({
             paddingBottom: bottomInset,
           }}
         >
+          {replyingTo ? (
+            <View className="mb-2 flex-row items-center overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
+              <View className="h-full w-1 bg-brand" />
+              <View className="min-w-0 flex-1 px-3 py-2">
+                <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                  {t("replyingTo", { username: replyingTo.user.username })}
+                </Text>
+                <Text numberOfLines={1} className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {replyingTo.content}
+                </Text>
+              </View>
+              <TouchableOpacity onPress={onCancelReply} hitSlop={8} className="h-10 w-10 items-center justify-center">
+                <Text className="text-xl text-gray-500 dark:text-gray-300">×</Text>
+              </TouchableOpacity>
+            </View>
+          ) : null}
           <View className="flex-row items-center gap-2">
             <BottomSheetTextInput
               className="flex-1 rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-black dark:border-gray-700 dark:bg-gray-800 dark:text-white"
@@ -151,17 +173,35 @@ export default function CommentsBottomSheet({
   onCommentAdded,
 }: Props) {
   const { t } = useTranslation("chat");
-  const { comments, loading, addComment } = useComments(postId);
+  const { comments, loading, addComment, toggleCommentLike } = useComments(postId);
   const insets = useSafeAreaInsets();
+  const [replyingTo, setReplyingTo] = useState<Comment | null>(null);
+
+  const threadedComments = useMemo(() => {
+    const roots = comments.filter((comment) => !comment.parentId);
+    const repliesByParent = new Map<string, Comment[]>();
+    comments.forEach((comment) => {
+      if (!comment.parentId) return;
+      const replies = repliesByParent.get(comment.parentId) ?? [];
+      replies.push(comment);
+      repliesByParent.set(comment.parentId, replies);
+    });
+    const arranged = roots.flatMap((root) => [
+      root,
+      ...(repliesByParent.get(root.id) ?? []),
+    ]);
+    const arrangedIds = new Set(arranged.map((comment) => comment.id));
+    return [...arranged, ...comments.filter((comment) => !arrangedIds.has(comment.id))];
+  }, [comments]);
 
   const listRef =
     useRef<React.ElementRef<typeof BottomSheetFlatList<Comment>>>(null);
 
   const handleAddComment = useCallback(
-    async (content: string): Promise<void> => {
+    async (content: string, replyToId?: string): Promise<void> => {
       if (!postId) return;
 
-      await addComment(content);
+      await addComment(content, replyToId);
       onCommentAdded?.(postId);
 
       requestAnimationFrame(() => {
@@ -178,29 +218,31 @@ export default function CommentsBottomSheet({
       <CommentFooter
         {...props}
         bottomInset={insets.bottom}
+        replyingTo={replyingTo}
+        onCancelReply={() => setReplyingTo(null)}
         onAddComment={handleAddComment}
       />
     ),
-    [handleAddComment, insets.bottom],
+    [handleAddComment, insets.bottom, replyingTo],
   );
 
   const renderComment = useCallback(
     ({ item }: { item: Comment }) => (
-      <TouchableOpacity
+      <View
         className="mb-5 flex-row gap-3"
-        onPress={() =>
-          router.push({
-            pathname: "/(users)/[id]",
-            params: {
-              id: item.user.id,
-            },
-          })
-        }
+        style={{ marginLeft: item.parentId ? 44 : 0 }}
       >
-        <Avatar uri={item.user.avatarUrl} size={40} />
+        <TouchableOpacity
+          onPress={() => router.push({ pathname: "/(users)/[id]", params: { id: item.user.id } })}
+        >
+          <Avatar uri={item.user.avatarUrl} size={item.parentId ? 34 : 40} />
+        </TouchableOpacity>
 
         <View className="min-w-0 flex-1">
-          <View className="flex-row items-center">
+          <TouchableOpacity
+            className="flex-row items-center"
+            onPress={() => router.push({ pathname: "/(users)/[id]", params: { id: item.user.id } })}
+          >
             <Text className="font-bold text-black dark:text-white">
               @{item.user.username}
             </Text>
@@ -208,27 +250,72 @@ export default function CommentsBottomSheet({
             <Text className="ml-2 text-xs text-gray-400">
               {formatCommentTime(item.createdAt)}
             </Text>
-          </View>
+          </TouchableOpacity>
+
+          {item.parent ? (
+            <Text className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+              {t("replyingTo", { username: item.parent.user.username })}
+            </Text>
+          ) : null}
 
           <Text className="mt-1 text-gray-700 dark:text-gray-300">
             {item.content}
           </Text>
+
+          <View className="mt-2 flex-row items-center gap-3">
+            <TouchableOpacity
+              onPress={() => setReplyingTo(item)}
+              hitSlop={8}
+            >
+              <Text className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                {t("reply")}
+              </Text>
+            </TouchableOpacity>
+            {item.likedByAuthor ? (
+              <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                {t("likedByAuthor")}
+              </Text>
+            ) : null}
+          </View>
         </View>
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => void toggleCommentLike(item).catch(console.error)}
+          hitSlop={8}
+          className="w-9 items-center pt-1"
+          accessibilityRole="button"
+          accessibilityLabel={item.isLiked ? "Unlike comment" : "Like comment"}
+        >
+          <HeartIcon
+            size={19}
+            color={item.isLiked ? "#EF4444" : "#9CA3AF"}
+            weight={item.isLiked ? "fill" : "regular"}
+          />
+          {item.likesCount > 0 ? (
+            <Text className="mt-1 text-[11px] font-bold text-gray-500 dark:text-gray-400">
+              {item.likesCount}
+            </Text>
+          ) : null}
+        </TouchableOpacity>
+      </View>
     ),
-    [],
+    [t, toggleCommentLike],
   );
+
+  const closeSheet = useCallback(() => {
+    setReplyingTo(null);
+    onClose();
+  }, [onClose]);
 
   return (
     <AppBottomSheet
       open={!!postId}
       snapPoints={["70%"]}
-      onClose={onClose}
+      onClose={closeSheet}
       footerComponent={renderFooter}
     >
       <BottomSheetFlatList
         ref={listRef}
-        data={comments}
+        data={threadedComments}
         keyExtractor={(item) => item.id}
         renderItem={renderComment}
         keyboardShouldPersistTaps="handled"
@@ -237,7 +324,7 @@ export default function CommentsBottomSheet({
         nestedScrollEnabled
         contentContainerStyle={{
           paddingHorizontal: 16,
-          paddingBottom: 100 + insets.bottom,
+          paddingBottom: 130 + insets.bottom,
           flexGrow: 1,
         }}
         ListHeaderComponent={

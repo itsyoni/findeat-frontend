@@ -14,13 +14,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { removePostFromAppCache } from "@/hooks/useFeed";
 
 const { height } = Dimensions.get("window");
 
 export default function ProfileContentFeedScreen() {
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { postId } = useLocalSearchParams<{ postId: string }>();
 
@@ -87,6 +88,7 @@ export default function ProfileContentFeedScreen() {
     <View className="flex-1 bg-black">
       <SafeAreaView
         edges={["top"]}
+        pointerEvents="box-none"
         style={{
           position: "absolute",
           top: 0,
@@ -106,6 +108,7 @@ export default function ProfileContentFeedScreen() {
       <ContentFeedList
         posts={posts}
         height={height}
+        contentTopInset={insets.top}
         refreshing={false}
         onRefresh={refresh}
         onToggleLike={toggleLike}

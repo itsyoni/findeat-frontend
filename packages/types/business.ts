@@ -15,6 +15,11 @@ export type BusinessDashboardSection =
   | "messages"
   | "notifications"
   | "profile"
+  | "support"
   | "admin";
 
-export type AdminDashboardSection = "claims" | "ownership" | "admins";
+export type AdminDashboardSection =
+  | "claims"
+  | "ownership"
+  | "support"
+  | "admins";

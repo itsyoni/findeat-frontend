@@ -95,6 +95,7 @@ function RootNavigator() {
         <Stack.Screen name="(users)" options={{ headerShown: false }} />
         <Stack.Screen name="(profile)" options={{ headerShown: false }} />
         <Stack.Screen name="(posts)/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="posts/edit/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="business/index" />
         <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />

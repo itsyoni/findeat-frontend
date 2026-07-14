@@ -3,7 +3,7 @@ import SettingsRow from '@/components/settings/SettingsRow';
 import SettingsSection from '@/components/settings/SettingsSection';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
-import { KeyIcon } from 'phosphor-react-native';
+import { KeyIcon, TrashIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -14,6 +14,9 @@ export default function SecuritySettingsScreen() {
     <SettingsHeader title={t('passwordSecurity')} />
     <SettingsSection title={t('loginSecurity')}>
       <SettingsRow icon={<KeyIcon size={22} color={isDark ? '#FFF' : '#111'} />} title={t('resetPassword')} subtitle={t('resetPasswordSubtitle')} onPress={() => router.push('/settings/reset-password')} />
+    </SettingsSection>
+    <SettingsSection title={t('accountManagement')}>
+      <SettingsRow destructive icon={<TrashIcon size={22} color="#EF4444" />} title={t('deleteAccount')} subtitle={t('deleteAccountSubtitle')} onPress={() => router.push('/settings/delete-account')} />
     </SettingsSection>
   </SafeAreaView>;
 }

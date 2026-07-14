@@ -24,7 +24,7 @@ export function createPostsApi(api: AxiosInstance) {
       restaurantId: string;
       visibility?: PostVisibility;
       coverImageUrl?: string;
-      summary: string;
+      summary?: string;
       overallRating?: number;
       atmosphereRating?: number;
       serviceRating?: number;
@@ -90,6 +90,23 @@ export function createPostsApi(api: AxiosInstance) {
       return data;
     },
 
+    async updateContent(id: string, payload: { description: string }) {
+      const { data } = await api.patch<Post>(`/posts/${id}/content`, payload);
+      return data;
+    },
+
+    async updateReview(
+      id: string,
+      payload: {
+        summary: string;
+        items: Array<{ id: string; text: string }>;
+        removedItemIds: string[];
+      },
+    ) {
+      const { data } = await api.patch<Post>(`/posts/${id}/review`, payload);
+      return data;
+    },
+
     async like(id: string) {
       const { data } = await api.post<{
         ok: boolean;
@@ -108,9 +125,10 @@ export function createPostsApi(api: AxiosInstance) {
       return data;
     },
 
-    async addComment(id: string, content: string) {
+    async addComment(id: string, content: string, replyToId?: string) {
       const { data } = await api.post<Comment>(`/posts/${id}/comments`, {
         content,
+        replyToId,
       });
 
       commentsCache.delete(id);
@@ -132,6 +150,26 @@ export function createPostsApi(api: AxiosInstance) {
         expiresAt: Date.now() + commentsCacheTtlMs,
       });
 
+      return data;
+    },
+
+    async likeComment(id: string, commentId: string) {
+      const { data } = await api.post<{
+        isLiked: boolean;
+        likesCount: number;
+        likedByAuthor: boolean;
+      }>(`/posts/${id}/comments/${commentId}/like`);
+      commentsCache.delete(id);
+      return data;
+    },
+
+    async unlikeComment(id: string, commentId: string) {
+      const { data } = await api.delete<{
+        isLiked: boolean;
+        likesCount: number;
+        likedByAuthor: boolean;
+      }>(`/posts/${id}/comments/${commentId}/like`);
+      commentsCache.delete(id);
       return data;
     },
 

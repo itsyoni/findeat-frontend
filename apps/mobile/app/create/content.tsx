@@ -11,7 +11,7 @@ import type { PostVisibility, SelectedRestaurant } from "@findeat/types";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImagePicker from "expo-image-picker";
-import { router, Stack } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
   ArrowCounterClockwiseIcon,
   CameraIcon,
@@ -22,7 +22,7 @@ import {
   StorefrontIcon,
   XIcon,
 } from "phosphor-react-native";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -41,6 +41,7 @@ import { useQueryClient } from "@tanstack/react-query";
 type Step = "CAMERA" | "DETAILS" | "RESTAURANT";
 
 export default function CreateContentScreen() {
+  const { restaurantId } = useLocalSearchParams<{ restaurantId?: string }>();
   const { t } = useTranslation("create");
   const { isDark } = useAppTheme();
   const queryClient = useQueryClient();
@@ -54,6 +55,24 @@ export default function CreateContentScreen() {
     useState<SelectedRestaurant | null>(null);
   const [capturing, setCapturing] = useState(false);
   const [publishing, setPublishing] = useState(false);
+
+  useEffect(() => {
+    if (!restaurantId) return;
+    let cancelled = false;
+
+    void api.restaurants
+      .get(restaurantId)
+      .then((restaurant) => {
+        if (!cancelled) {
+          setSelectedRestaurant({ source: "FINDEAT", restaurant });
+        }
+      })
+      .catch((error) => console.error("failed to preselect restaurant", error));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [restaurantId]);
 
   async function selectPhoto(uri: string) {
     try {

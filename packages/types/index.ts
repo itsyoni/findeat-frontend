@@ -12,4 +12,5 @@ export * from "./profile";
 export * from "./restaurant";
 export * from "./review";
 export * from "./search";
+export * from "./support";
 export * from "./user";

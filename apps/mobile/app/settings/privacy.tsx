@@ -1,14 +1,16 @@
 import Text from "@/components/common/AppText";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import SettingsSection from "@/components/settings/SettingsSection";
+import SettingsRow from "@/components/settings/SettingsRow";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
-import { EyeIcon } from "phosphor-react-native";
+import { EyeIcon, ProhibitIcon } from "phosphor-react-native";
 import { useState } from "react";
 import { ActivityIndicator, Switch, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { router } from "expo-router";
 
 export default function PrivacySettingsScreen() {
   const { t } = useTranslation("settings");
@@ -71,6 +73,15 @@ export default function PrivacySettingsScreen() {
         <Text className="px-5 pb-4 text-sm leading-5 text-gray-500">
           {t("activityStatusReciprocalHint")}
         </Text>
+      </SettingsSection>
+
+      <SettingsSection title={t("connectionsPrivacy")}>
+        <SettingsRow
+          icon={<ProhibitIcon size={22} color={color} weight="bold" />}
+          title={t("blockedAccounts")}
+          subtitle={t("blockedAccountsSubtitle")}
+          onPress={() => router.push("/settings/blocked-accounts")}
+        />
       </SettingsSection>
     </SafeAreaView>
   );

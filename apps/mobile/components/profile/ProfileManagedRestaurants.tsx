@@ -3,9 +3,9 @@ import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import { Profile } from "@findeat/types/profile";
-import { BottomSheetFlatList, BottomSheetView } from "@gorhom/bottom-sheet";
+import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { CaretRightIcon } from "phosphor-react-native";
+import { CaretRightIcon, StorefrontIcon } from "phosphor-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TouchableOpacity, View } from "react-native";
@@ -47,13 +47,14 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
     <TouchableOpacity
       accessibilityRole="button"
       accessibilityLabel={`${roleLabels[item.role]} ${item.restaurant.name}`}
-      className="mx-5 flex-row items-center border-b border-gray-100 py-3.5 dark:border-gray-800"
+      activeOpacity={0.72}
+      className="mx-4 mb-2 flex-row items-center rounded-2xl border border-gray-200 bg-gray-50 px-3.5 py-3 dark:border-gray-800 dark:bg-gray-900"
       onPress={() => openRestaurant(item)}
     >
       <Avatar
         uri={item.restaurant.logoUrl}
         username={item.restaurant.name}
-        size={46}
+        size={48}
         fallbackType="restaurant"
       />
 
@@ -67,10 +68,19 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
           </Text>
           <RestaurantBadge size={16} status={item.restaurant.status} />
         </View>
-        <Text className="mt-0.5 text-xs font-medium text-gray-500 dark:text-gray-400">
-          {roleLabels[item.role]}
-          {item.restaurant.city ? ` · ${item.restaurant.city}` : ""}
-        </Text>
+        <View className="mt-1 flex-row items-center">
+          <Text className="rounded-full bg-white px-2 py-1 text-[10px] font-bold text-gray-600 dark:bg-gray-800 dark:text-gray-300">
+            {roleLabels[item.role]}
+          </Text>
+          {item.restaurant.city ? (
+            <Text
+              className="ml-2 min-w-0 shrink text-xs text-gray-500 dark:text-gray-400"
+              numberOfLines={1}
+            >
+              {item.restaurant.city}
+            </Text>
+          ) : null}
+        </View>
       </View>
 
       <CaretRightIcon size={17} color="#9CA3AF" weight="bold" />
@@ -162,21 +172,27 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
       <AppBottomSheet
         open={sheetOpen}
         onClose={() => setSheetOpen(false)}
-        snapPoints={["58%"]}
+        snapPoints={[memberships.length > 4 ? "68%" : "54%"]}
       >
-        <BottomSheetView className="px-5 pb-2 pt-1">
-          <Text className="text-center text-xl font-bold text-black dark:text-white">
-            {t("managedRestaurantsTitle")}
-          </Text>
-          <Text className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
-            {summary}
-          </Text>
-        </BottomSheetView>
         <BottomSheetFlatList
           data={memberships}
           keyExtractor={(item: Membership) => item.restaurant.id}
           renderItem={renderMembership}
-          contentContainerStyle={{ paddingTop: 8, paddingBottom: 24 }}
+          style={{ flex: 1 }}
+          ListHeaderComponent={
+            <View className="items-center px-5 pb-5 pt-1">
+              <View className="h-12 w-12 items-center justify-center rounded-2xl bg-brand-soft dark:bg-orange-950/40">
+                <StorefrontIcon size={25} color="#FF5B35" weight="duotone" />
+              </View>
+              <Text className="mt-3 text-center text-xl font-bold text-black dark:text-white">
+                {t("managedRestaurantsTitle")}
+              </Text>
+              <Text className="mt-1 text-center text-sm text-gray-500 dark:text-gray-400">
+                {summary}
+              </Text>
+            </View>
+          }
+          contentContainerStyle={{ paddingBottom: 24 }}
           showsVerticalScrollIndicator={false}
         />
       </AppBottomSheet>

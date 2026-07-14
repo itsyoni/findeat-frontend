@@ -9,6 +9,7 @@ export function useComments(postId?: string | null) {
   const [submitting, setSubmitting] = useState(false);
 
   const requestIdRef = useRef(0);
+  const likingIdsRef = useRef(new Set<string>());
 
   const refresh = useCallback(async () => {
     if (!postId) return;
@@ -34,7 +35,7 @@ export function useComments(postId?: string | null) {
   }, [postId]);
 
   const addComment = useCallback(
-    async (content: string): Promise<void> => {
+    async (content: string, replyToId?: string): Promise<void> => {
       const trimmedContent = content.trim();
 
       if (!postId || !trimmedContent) return;
@@ -42,7 +43,11 @@ export function useComments(postId?: string | null) {
       try {
         setSubmitting(true);
 
-        const newComment = await api.posts.addComment(postId, trimmedContent);
+        const newComment = await api.posts.addComment(
+          postId,
+          trimmedContent,
+          replyToId,
+        );
 
         setComments((previousComments) => [...previousComments, newComment]);
 
@@ -88,6 +93,44 @@ export function useComments(postId?: string | null) {
     };
   }, [postId]);
 
+  const toggleCommentLike = useCallback(
+    async (comment: Comment) => {
+      if (!postId || likingIdsRef.current.has(comment.id)) return;
+      likingIdsRef.current.add(comment.id);
+      const nextIsLiked = !comment.isLiked;
+      setComments((current) =>
+        current.map((item) =>
+          item.id === comment.id
+            ? {
+                ...item,
+                isLiked: nextIsLiked,
+                likesCount: Math.max(0, item.likesCount + (nextIsLiked ? 1 : -1)),
+              }
+            : item,
+        ),
+      );
+
+      try {
+        const result = nextIsLiked
+          ? await api.posts.likeComment(postId, comment.id)
+          : await api.posts.unlikeComment(postId, comment.id);
+        setComments((current) =>
+          current.map((item) =>
+            item.id === comment.id ? { ...item, ...result } : item,
+          ),
+        );
+      } catch (error) {
+        setComments((current) =>
+          current.map((item) => item.id === comment.id ? comment : item),
+        );
+        throw error;
+      } finally {
+        likingIdsRef.current.delete(comment.id);
+      }
+    },
+    [postId],
+  );
+
   const visibleComments = postId && loadedPostId === postId ? comments : [];
 
   return {
@@ -96,5 +139,6 @@ export function useComments(postId?: string | null) {
     submitting,
     refresh,
     addComment,
+    toggleCommentLike,
   };
 }

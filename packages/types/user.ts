@@ -23,6 +23,13 @@ export type UserSummary = {
   showActivityStatus?: boolean;
 };
 
+export type BlockedUser = Pick<
+  UserSummary,
+  "id" | "username" | "displayName" | "avatarUrl"
+> & {
+  blockedAt: string;
+};
+
 export type UserRestaurant = {
   id: string;
   wantToTry: boolean;

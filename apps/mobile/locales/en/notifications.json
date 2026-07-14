@@ -14,6 +14,7 @@
     "POST_LIKE": "{{name}} liked your post",
     "POST_COMMENT": "{{name}} commented on your post",
     "COMMENT_REPLY": "{{name}} replied to your comment",
+    "COMMENT_LIKE": "{{name}} liked your comment",
     "FOLLOW": "{{name}} started following you",
     "FOLLOW_BACK": "{{name}} followed you back",
     "FRIEND": "You and {{name}} are now friends",

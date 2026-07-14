@@ -1,5 +1,6 @@
 import type {
   ConnectionItem,
+  BlockedUser,
   Language,
   Profile,
   UserRelationship,
@@ -96,6 +97,21 @@ export function createUsersApi(api: AxiosInstance) {
 
     async get(id: string) {
       const { data } = await api.get<Profile>(`/users/${id}`);
+      return data;
+    },
+
+    async block(id: string) {
+      const { data } = await api.post<{ ok: true }>(`/users/${id}/block`);
+      return data;
+    },
+
+    async unblock(id: string) {
+      const { data } = await api.delete<{ ok: true }>(`/users/${id}/block`);
+      return data;
+    },
+
+    async blockedUsers() {
+      const { data } = await api.get<BlockedUser[]>("/users/me/blocked");
       return data;
     },
 

@@ -2,7 +2,7 @@ import Text from "@/components/common/AppText";
 import { CreateReviewDraft } from "@findeat/types/review";
 import * as ImagePicker from "expo-image-picker";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
-import { ThemedSafeAreaView , TextInput } from "@/components/common";
+import { ThemedSafeAreaView, TextInput } from "@/components/common";
 import RatingPicker from "../components/RatingPicker";
 import { useTranslation } from "react-i18next";
 
@@ -31,8 +31,6 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
     }
   }
 
-  const canContinue = !!draft.summary.trim() && !!draft.overallRating;
-
   return (
     <ThemedSafeAreaView>
       <ScrollView
@@ -56,86 +54,116 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
             : t("reviewExperienceTitleFallback")}
         </Text>
 
-        <Text className="mt-2 text-gray-500">
-          Give the restaurant an overall score, then add as much detail as you want.
+        <Text className="mt-2 leading-5 text-gray-500 dark:text-gray-400">
+          {t("reviewEverythingOptional")}
         </Text>
 
-        <View className="mt-8">
+        <View className="mt-7">
+          <View className="mb-3 flex-row items-center justify-between">
+            <Text className="text-lg font-bold text-black dark:text-white">
+              {t("placePhoto")}
+            </Text>
+            <Text className="text-sm font-semibold text-gray-400">
+              {t("optional")}
+            </Text>
+          </View>
+          <Text className="mb-4 text-sm leading-5 text-gray-500 dark:text-gray-400">
+            {t("placePhotoHint")}
+          </Text>
+          <TouchableOpacity
+            className="items-center justify-center overflow-hidden rounded-3xl border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+            onPress={pickCoverImage}
+          >
+            {draft.coverImageUri ? (
+              <View className="w-full">
+                <Image
+                  source={{ uri: draft.coverImageUri }}
+                  className="h-52 w-full"
+                  resizeMode="cover"
+                />
+                <View className="absolute bottom-3 right-3 rounded-full bg-black/65 px-4 py-2">
+                  <Text className="text-sm font-bold text-white">
+                    {t("changePhoto")}
+                  </Text>
+                </View>
+              </View>
+            ) : (
+              <View className="items-center px-6 py-10">
+                <Text className="text-2xl">＋</Text>
+                <Text className="mt-2 font-bold text-black dark:text-white">
+                  {t("addPlacePhoto")}
+                </Text>
+                <Text className="mt-1 text-center text-sm text-gray-500">
+                  {t("chooseFromGallery")}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View className="mt-7 rounded-3xl bg-gray-50 p-5 dark:bg-gray-900">
+          <View className="mb-5 flex-row items-center justify-between">
+            <Text className="text-lg font-bold text-black dark:text-white">
+              {t("overallExperience")}
+            </Text>
+            <Text className="text-sm font-semibold text-gray-400">
+              {t("optional")}
+            </Text>
+          </View>
           <RatingPicker
-            label="Overall experience"
+            label={t("overallRating")}
             value={draft.overallRating}
             onChange={(overallRating) => onChange({ overallRating })}
           />
+
+          <Text className="mb-3 mt-7 font-bold text-black dark:text-white">
+            {t("reviewNote")}
+          </Text>
+          <TextInput
+            className="min-h-24 rounded-2xl border border-gray-200 bg-white px-4 py-4 text-base text-black dark:border-gray-700 dark:bg-black dark:text-white"
+            placeholder={t("reviewNotePlaceholder")}
+            value={draft.summary}
+            onChangeText={(summary) => onChange({ summary })}
+            multiline
+            textAlignVertical="top"
+          />
         </View>
-
-        <TextInput
-          className="mt-7 min-h-28 rounded-2xl bg-gray-100 px-4 py-4 text-base text-black dark:bg-gray-900 dark:text-white"
-          placeholder="What stood out? What should people know?"
-          value={draft.summary}
-          onChangeText={(summary) => onChange({ summary })}
-          multiline
-          textAlignVertical="top"
-        />
-
-        <TouchableOpacity
-          className="mt-5 items-center justify-center overflow-hidden rounded-2xl border border-dashed border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
-          onPress={pickCoverImage}
-        >
-          {draft.coverImageUri ? (
-            <Image
-              source={{ uri: draft.coverImageUri }}
-              className="h-52 w-full"
-              resizeMode="cover"
-            />
-          ) : (
-            <Text className="py-7 font-semibold text-gray-500">
-              + Add a meal photo (optional)
-            </Text>
-          )}
-        </TouchableOpacity>
 
         <View className="mt-8 rounded-3xl bg-gray-50 p-4 dark:bg-gray-900">
           <Text className="mb-1 text-lg font-bold text-black dark:text-white">
-            More detail
+            {t("moreDetail")}
           </Text>
           <Text className="mb-6 text-sm text-gray-500">
-            These ratings are optional.
+            {t("moreDetailHint")}
           </Text>
           <View className="gap-7">
-          <RatingPicker
-            label="Atmosphere"
-            value={draft.atmosphereRating}
-            onChange={(atmosphereRating) => onChange({ atmosphereRating })}
-          />
+            <RatingPicker
+              label={t("atmosphere")}
+              value={draft.atmosphereRating}
+              onChange={(atmosphereRating) => onChange({ atmosphereRating })}
+            />
 
-          <RatingPicker
-            label="Service"
-            value={draft.serviceRating}
-            onChange={(serviceRating) => onChange({ serviceRating })}
-          />
+            <RatingPicker
+              label={t("service")}
+              value={draft.serviceRating}
+              onChange={(serviceRating) => onChange({ serviceRating })}
+            />
 
-          <RatingPicker
-            label="Value"
-            value={draft.valueRating}
-            onChange={(valueRating) => onChange({ valueRating })}
-          />
+            <RatingPicker
+              label={t("value")}
+              value={draft.valueRating}
+              onChange={(valueRating) => onChange({ valueRating })}
+            />
 
           </View>
         </View>
 
         <TouchableOpacity
-          className={`mt-8 rounded-2xl py-4 ${
-            canContinue ? "bg-black dark:bg-white" : "bg-gray-200 dark:bg-gray-800"
-          }`}
-          disabled={!canContinue}
+          className="mt-8 rounded-2xl bg-black py-4 dark:bg-white"
           onPress={onNext}
         >
-          <Text
-            className={`text-center font-bold ${
-              canContinue ? "text-white dark:text-black" : "text-gray-400"
-            }`}
-          >
-            Continue
+          <Text className="text-center font-bold text-white dark:text-black">
+            {t("continue")}
           </Text>
         </TouchableOpacity>
       </ScrollView>

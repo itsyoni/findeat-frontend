@@ -6,6 +6,7 @@ import { SealCheckIcon } from "@phosphor-icons/react/dist/csr/SealCheck";
 import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { StorefrontIcon } from "@phosphor-icons/react/dist/csr/Storefront";
 import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
+import { HeadsetIcon } from "@phosphor-icons/react/dist/csr/Headset";
 import type {
   AdminDashboardSection,
   AdminUser,
@@ -14,6 +15,7 @@ import type {
 } from "@findeat/types";
 import { AccountAvatar } from "../components/AccountAvatar";
 import { RestaurantOwnershipManager } from "../components/RestaurantOwnershipManager";
+import { SupportTicketsPanel } from "../components/SupportTicketsPanel";
 import { UserIdentity } from "../components/UserIdentity";
 import { request } from "../lib/api";
 
@@ -185,6 +187,15 @@ export function AdminPage({
             <StorefrontIcon className="nav-icon" weight="duotone" /> Ownership
           </button>
           <button
+            className={section === "support" ? "active" : ""}
+            onClick={() => {
+              setSection("support");
+              setError("");
+            }}
+          >
+            <HeadsetIcon className="nav-icon" weight="duotone" /> Support
+          </button>
+          <button
             className={section === "admins" ? "active" : ""}
             onClick={() => {
               setSection("admins");
@@ -298,6 +309,8 @@ export function AdminPage({
             </>
           ) : section === "ownership" ? (
             <RestaurantOwnershipManager />
+          ) : section === "support" ? (
+            <SupportTicketsPanel />
           ) : (
             <>
               <div className="page-heading">
