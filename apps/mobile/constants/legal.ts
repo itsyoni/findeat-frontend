@@ -1,8 +1,4 @@
-export type LegalSection = {
-  title: string;
-  paragraphs?: string[];
-  bullets?: string[];
-};
+import type { LegalSection } from "@findeat/types";
 
 export const termsSections: LegalSection[] = [
   {
@@ -64,7 +60,7 @@ export const termsSections: LegalSection[] = [
 ];
 
 export const privacySections: LegalSection[] = [
-  { title: 'Information We Collect — Account Information', paragraphs: ['When creating an account we collect:'], bullets: ['Name.', 'Username.', 'Email address.', 'Password (encrypted).', 'Profile photo (optional).', 'Bio (optional).'] },
+  { title: 'Information We Collect — Account Information', paragraphs: ['When creating or completing a profile we may collect:'], bullets: ['Display name.', 'Username.', 'Email address.', 'Password (encrypted).', 'Profile photo and bio (optional).', 'Phone number, birthday, and pronouns (optional).', 'Food preferences, favorite cuisines, allergies, and dietary restrictions (optional).', 'Optional profile details are displayed to other users only according to the visibility choices you select.'] },
   { title: 'Content You Create', paragraphs: ['We collect:'], bullets: ['Reviews.', 'Photos.', 'Videos.', 'Comments.', 'Likes.', 'Saved restaurants.', 'Messages.', 'Polls.', 'Community interactions.'] },
   { title: 'Restaurant Data', paragraphs: ['If you manage a restaurant we may collect:'], bullets: ['Business information.', 'Menu items.', 'Contact information.', 'Photos.', 'Verification documents.'] },
   { title: 'Device Information', paragraphs: ['We may collect:'], bullets: ['Device type.', 'Operating system.', 'App version.', 'Crash logs.', 'Anonymous analytics.'] },
@@ -72,7 +68,7 @@ export const privacySections: LegalSection[] = [
   { title: 'How We Use Your Information', paragraphs: ['We use your information to:'], bullets: ['Operate the Service.', 'Personalize recommendations.', 'Display your profile.', 'Improve our products.', 'Prevent fraud.', 'Detect abuse.', 'Verify restaurant ownership.', 'Provide customer support.'] },
   { title: 'Communications', paragraphs: ['We may send:'], bullets: ['Verification emails.', 'Password reset emails.', 'Security notifications.', 'Product updates.', 'Push notifications.', 'Marketing emails may be disabled at any time.'] },
   { title: 'Sharing Information', paragraphs: ['We do not sell personal information.', 'We may share information with:'], bullets: ['Cloud hosting providers.', 'Analytics providers.', 'Email providers.', 'Payment providers (future).', 'Legal authorities when required by law.'] },
-  { title: 'Data Retention', paragraphs: ['We retain your information while your account remains active.', 'Some information may remain in backups for legal or security purposes.'] },
+  { title: 'Data Retention', paragraphs: ['We retain your information while your account remains active or deactivated so you can reactivate it.', 'Some information may remain in backups for legal or security purposes.'] },
   { title: 'Your Rights', paragraphs: ['Depending on your location you may have the right to:'], bullets: ['Access your information.', 'Correct inaccurate information.', 'Delete your account.', 'Export your data.', 'Withdraw consent.', 'Requests may be sent to privacy@findeat.space.'] },
   { title: 'Cookies', paragraphs: ['Our website may use cookies to:'], bullets: ['Keep you signed in.', 'Improve performance.', 'Remember preferences.', 'Measure usage.'] },
   { title: 'Security', paragraphs: ['We implement reasonable security measures to protect your information.', 'However, no online service is completely secure.'] },

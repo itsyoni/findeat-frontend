@@ -8,8 +8,7 @@ import {
   useState,
 } from "react";
 import { Appearance, useColorScheme } from "react-native";
-
-export type ThemePreference = "system" | "light" | "dark";
+import type { ThemePreference } from "@findeat/types";
 
 type ThemeContextValue = {
   preference: ThemePreference;

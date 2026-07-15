@@ -8,12 +8,19 @@
   "following": "Following",
   "friends": "Friends",
   "viewPost": "View post",
+  "openChat": "Open chat",
   "emptyTitle": "No notifications yet",
   "emptyBody": "Likes, comments, follows and messages will appear here.",
+  "aggregatedTypes": {
+    "POST_LIKE": "{{name}} and {{count}} more liked your post",
+    "COMMENT_LIKE": "{{name}} and {{count}} more liked your comment"
+  },
   "types": {
     "POST_LIKE": "{{name}} liked your post",
     "POST_COMMENT": "{{name}} commented on your post",
     "COMMENT_REPLY": "{{name}} replied to your comment",
+    "COMMENT_MENTION": "{{name}} mentioned you in a comment",
+    "MESSAGE_MENTION": "{{name}} mentioned you in a message",
     "COMMENT_LIKE": "{{name}} liked your comment",
     "FOLLOW": "{{name}} started following you",
     "FOLLOW_BACK": "{{name}} followed you back",

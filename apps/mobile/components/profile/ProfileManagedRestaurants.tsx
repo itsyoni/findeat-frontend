@@ -5,7 +5,8 @@ import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import { Profile } from "@findeat/types/profile";
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
-import { CaretRightIcon, StorefrontIcon } from "phosphor-react-native";
+import { StorefrontIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { TouchableOpacity, View } from "react-native";
@@ -83,7 +84,7 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
         </View>
       </View>
 
-      <CaretRightIcon size={17} color="#9CA3AF" weight="bold" />
+      <DirectionalIcon direction="forward" size={17} color="#9CA3AF" weight="bold" />
     </TouchableOpacity>
   );
 
@@ -118,7 +119,7 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
               <RestaurantBadge size={15} status={membership.restaurant.status} />
             </View>
           </View>
-          <CaretRightIcon size={16} color="#9CA3AF" weight="bold" />
+          <DirectionalIcon direction="forward" size={16} color="#9CA3AF" weight="bold" />
         </TouchableOpacity>
       </View>
     );
@@ -165,7 +166,7 @@ export default function ProfileManagedRestaurants({ memberships }: Props) {
           >
             {summary}
           </Text>
-          <CaretRightIcon size={15} color="#9CA3AF" weight="bold" />
+          <DirectionalIcon direction="forward" size={15} color="#9CA3AF" weight="bold" />
         </TouchableOpacity>
       </View>
 

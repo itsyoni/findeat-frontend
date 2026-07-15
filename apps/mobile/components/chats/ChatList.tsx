@@ -4,15 +4,37 @@ import { useTranslation } from "react-i18next";
 import { FlatList, View } from "react-native";
 import Text from "../common/AppText";
 import ChatRow from "./ChatRow";
+import { Skeleton, SkeletonPulse } from "../common";
 
 type Props = {
   chats: Chat[];
   refreshing: boolean;
   onRefresh: () => void;
+  loading?: boolean;
 };
 
-export default function ChatList({ chats, refreshing, onRefresh }: Props) {
+export default function ChatList({ chats, refreshing, onRefresh, loading = false }: Props) {
   const { t } = useTranslation("chat");
+
+  if (loading) {
+    return (
+      <SkeletonPulse style={{ paddingTop: 8 }}>
+        {Array.from({ length: 7 }, (_, index) => (
+          <View key={index} className="flex-row items-center px-4 py-3">
+            <Skeleton width={58} height={58} circle />
+            <View className="ml-3 flex-1 gap-2">
+              <Skeleton width="52%" height={15} radius={7} />
+              <Skeleton width="76%" height={12} radius={6} />
+            </View>
+            <View className="items-end gap-2">
+              <Skeleton width={34} height={9} radius={5} />
+              {index < 2 ? <Skeleton width={20} height={20} circle /> : null}
+            </View>
+          </View>
+        ))}
+      </SkeletonPulse>
+    );
+  }
 
   return (
     <FlatList

@@ -2,6 +2,7 @@ import { Post } from "@findeat/types/post";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import ReviewPost from "./ReviewPost";
 import ReviewFeedEmptyState from "./ReviewFeedEmptyState";
+import { Skeleton, SkeletonPulse } from "@/components/common";
 
 type Props = {
   posts: Post[];
@@ -19,6 +20,7 @@ type Props = {
     restaurantId: string,
     isWantToTry: boolean,
   ) => void;
+  loading?: boolean;
 };
 
 export default function ReviewFeed({
@@ -33,7 +35,26 @@ export default function ReviewFeed({
   onToggleWantToTry,
   onOpenSharePost,
   onOpenPostOptions,
+  loading = false,
 }: Props) {
+  if (loading) {
+    return (
+      <SkeletonPulse style={{ flex: 1, paddingTop: contentTopInset + 12 }}>
+        <View className="mb-4 bg-white dark:bg-black">
+          <View className="flex-row items-center gap-3 px-4 py-3">
+            <Skeleton width={44} height={44} circle />
+            <View className="flex-1 gap-2"><Skeleton width="45%" height={14} radius={7} /><Skeleton width="32%" height={10} radius={5} /></View>
+            <Skeleton width={28} height={28} circle />
+          </View>
+          <Skeleton height={280} radius={0} />
+          <View className="flex-row justify-around px-4 py-4">
+            {[0, 1, 2, 3].map((item) => <View key={item} className="items-center gap-2"><Skeleton width={44} height={30} radius={10} /><Skeleton width={38} height={9} radius={5} /></View>)}
+          </View>
+          <View className="gap-2 px-4 pb-5"><Skeleton width="76%" height={13} radius={6} /><Skeleton width="55%" height={13} radius={6} /></View>
+        </View>
+      </SkeletonPulse>
+    );
+  }
   return (
     <FlatList
       className="bg-canvas dark:bg-black"

@@ -1,5 +1,5 @@
 import NotificationRow from '@/components/notifications/NotificationRow';
-import { LoadingScreen } from '@/components/common';
+import { SkeletonList } from '@/components/common';
 import { notificationHref } from '@/components/notifications/notificationHelpers';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import {
@@ -15,7 +15,8 @@ import type {
 } from '@findeat/types';
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
-import { ArrowLeftIcon, BellIcon } from 'phosphor-react-native';
+import { BellIcon } from 'phosphor-react-native';
+import DirectionalIcon from '@/components/common/icons/DirectionalIcon';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, FlatList, Text, TouchableOpacity, View } from 'react-native';
@@ -139,7 +140,23 @@ export default function NotificationsScreen() {
         isPost: true,
         preview: item.postPreview,
         run: () =>
-          router.push({ pathname: '/(posts)/[id]', params: { id: item.postId! } }),
+          router.push({
+            pathname: '/(posts)/[id]',
+            params: {
+              id: item.postId!,
+              ...(item.commentId ? { commentId: item.commentId } : {}),
+            },
+          }),
+      };
+    }
+
+    if (item.type === 'MESSAGE_MENTION' && item.conversationId) {
+      return {
+        label: t('openChat'),
+        active: false,
+        isPost: false,
+        preview: undefined,
+        run: () => router.push(`/chats/${item.conversationId}`),
       };
     }
 
@@ -150,13 +167,13 @@ export default function NotificationsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#000' : '#FBFAF8' }}>
       <View className="h-14 flex-row items-center border-b border-line bg-surface px-4 dark:border-gray-800 dark:bg-black">
         <TouchableOpacity onPress={() => router.back()} hitSlop={12} className="p-2">
-          <ArrowLeftIcon size={24} color={isDark ? '#FFF' : '#171717'} />
+          <DirectionalIcon direction="back" variant="arrow" size={24} color={isDark ? '#FFF' : '#171717'} />
         </TouchableOpacity>
         <Text className="ml-2 flex-1 text-xl font-bold text-black dark:text-white">{t('title')}</Text>
       </View>
 
       {notifications.isPending ? (
-        <LoadingScreen variant="list" contained />
+        <SkeletonList variant="notifications" count={7} />
       ) : (
         <FlatList
           data={items}

@@ -4,12 +4,12 @@ import { useAppTheme } from "@/contexts/ThemeContext";
 import type { Restaurant } from "@findeat/types";
 import {
   BookmarkSimpleIcon,
-  CaretRightIcon,
   CheckCircleIcon,
   HeartIcon,
   MapTrifoldIcon,
   StarIcon,
 } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useTranslation } from "react-i18next";
 import { Image, TouchableOpacity, View } from "react-native";
 import RestaurantBadge from "./RestaurantBadge";
@@ -125,7 +125,8 @@ export default function MapRestaurantListCard({
               </Text>
               <RestaurantBadge status={restaurant.status} />
             </View>
-            <CaretRightIcon
+            <DirectionalIcon
+              direction="forward"
               size={18}
               color={isDark ? "#9CA3AF" : "#6B7280"}
               weight="bold"

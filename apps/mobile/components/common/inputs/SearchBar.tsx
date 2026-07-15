@@ -1,6 +1,6 @@
 import { MagnifyingGlassIcon } from "phosphor-react-native";
 import React from "react";
-import { TouchableOpacity, View } from "react-native";
+import { I18nManager, TouchableOpacity, View } from "react-native";
 import TextInput from "./AppTextInput";
 
 type SearchBarProps = {
@@ -30,7 +30,7 @@ export default function SearchBar({
     return /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(firstStrongChar);
   }
 
-  const isRtl = startsWithRtl(value);
+  const isRtl = value.trim() ? startsWithRtl(value) : I18nManager.isRTL;
 
   const input = (
     <TextInput

@@ -1,11 +1,14 @@
 import type { UserSummary } from './user';
 import type { UserRelationship } from './profile';
+import type { PostType } from './post';
 
 export type NotificationType =
   | 'POST_LIKE'
   | 'POST_COMMENT'
   | 'COMMENT_LIKE'
   | 'COMMENT_REPLY'
+  | 'COMMENT_MENTION'
+  | 'MESSAGE_MENTION'
   | 'FOLLOW'
   | 'FOLLOW_BACK'
   | 'FRIEND'
@@ -29,11 +32,12 @@ export type AppNotification = {
   type: NotificationType;
   title?: string | null;
   body?: string | null;
+  aggregationCount?: number;
   postId?: string | null;
   postPreview?: {
     imageUrl?: string | null;
     text?: string | null;
-    type?: 'CONTENT' | 'REVIEW';
+    type?: PostType;
     rating?: number | null;
   } | null;
   commentId?: string | null;

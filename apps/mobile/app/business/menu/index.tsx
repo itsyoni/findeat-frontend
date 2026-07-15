@@ -1,4 +1,4 @@
-import { AppButton, LoadingScreen , ThemedSafeAreaView } from "@/components/common";
+import { AppButton, Skeleton, SkeletonPulse, ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { Menu } from "@findeat/types";
@@ -28,7 +28,16 @@ export default function BusinessMenuScreen() {
   );
 
   if (loading) {
-    return <LoadingScreen variant="menu" />;
+    return (
+      <ThemedSafeAreaView>
+        <SkeletonPulse style={{ paddingHorizontal: 20, paddingTop: 16 }}>
+          <Skeleton width="58%" height={30} radius={10} />
+          <Skeleton width="78%" height={13} radius={6} style={{ marginTop: 10 }} />
+          <Skeleton height={48} radius={14} style={{ marginTop: 18 }} />
+          {[0, 1, 2].map((item) => <View key={item} className="mt-4 gap-3 rounded-2xl bg-[#F5F4F5] p-4 dark:bg-gray-900"><Skeleton width="52%" height={20} radius={8} /><Skeleton width="82%" height={12} radius={6} /><Skeleton width="24%" height={11} radius={5} /><Skeleton height={46} radius={13} /><Skeleton height={46} radius={13} /></View>)}
+        </SkeletonPulse>
+      </ThemedSafeAreaView>
+    );
   }
 
   return (

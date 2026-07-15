@@ -1,16 +1,17 @@
-import { AppButton, LoadingScreen, TextInput } from "@/components/common";
+import { AppButton, Skeleton, SkeletonPulse, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { useToast } from "@/contexts/ToastContext";
 import { updatePostInFeedCache } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
 import type { Post, ReviewItem } from "@findeat/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
-  CaretLeftIcon,
   ImageSquareIcon,
   TrashIcon,
 } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -32,6 +33,7 @@ export default function EditPostScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { isDark } = useAppTheme();
   const { t } = useTranslation("common");
+  const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [post, setPost] = useState<Post | null>(null);
   const [description, setDescription] = useState("");
@@ -119,6 +121,7 @@ export default function EditPostScreen() {
       );
       void queryClient.invalidateQueries({ queryKey: ["restaurant-posts"] });
       router.back();
+      showToast(t("postUpdated"));
     } catch (error) {
       console.error("Failed to update post", error);
       Alert.alert(t("error"), t("editPostError"));
@@ -127,7 +130,17 @@ export default function EditPostScreen() {
     }
   }
 
-  if (loading || !post) return <LoadingScreen variant="detail" />;
+  if (loading || !post) {
+    return (
+      <SafeAreaView edges={["top", "bottom"]} style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <SkeletonPulse>
+          <View className="flex-row items-center border-b border-line px-4 py-3 dark:border-gray-800"><Skeleton width={44} height={44} circle /><Skeleton width="40%" height={20} radius={8} style={{ marginHorizontal: "auto" }} /><View className="w-11" /></View>
+          <View className="gap-5 p-5"><Skeleton width="86%" height={13} radius={6} /><View className="overflow-hidden rounded-3xl"><Skeleton height={208} radius={0} /><Skeleton height={42} radius={0} /></View><Skeleton width="25%" height={12} radius={6} /><Skeleton height={110} radius={16} /><Skeleton height={48} radius={14} /></View>
+        </SkeletonPulse>
+      </SafeAreaView>
+    );
+  }
 
   const isContent = post.type === "CONTENT";
   const mediaUrl = isContent
@@ -156,7 +169,8 @@ export default function EditPostScreen() {
             onPress={() => router.back()}
             className="h-11 w-11 items-center justify-center"
           >
-            <CaretLeftIcon
+            <DirectionalIcon
+              direction="back"
               size={25}
               color={isDark ? "#FFF" : "#171717"}
               weight="bold"

@@ -9,6 +9,8 @@ import { createRestaurantsApi } from "./restaurants";
 import { createUsersApi } from "./users";
 import { createNotificationsApi } from "./notifications";
 import { createSupportApi } from "./support";
+import { createProductUpdatesApi } from "./product-updates";
+import { createReportsApi } from "./reports";
 
 type GetToken = () => string | null | Promise<string | null>;
 
@@ -31,6 +33,8 @@ export function createApiFromClient(client: AxiosInstance) {
     notifications: createNotificationsApi(client),
     admin: createAdminApi(client),
     support: createSupportApi(client),
+    productUpdates: createProductUpdatesApi(client),
+    reports: createReportsApi(client),
   };
 }
 

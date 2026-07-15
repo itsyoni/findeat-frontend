@@ -15,6 +15,8 @@ import { ThemeProvider, useAppTheme } from "@/contexts/ThemeContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { PortalHost } from "@gorhom/portal";
 import { LoadingScreen } from "@/components/common";
+import WhatsNewModal from "@/components/updates/WhatsNewModal";
+import { ToastProvider } from "@/contexts/ToastContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -49,18 +51,20 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
-        <BottomSheetModalProvider>
-          <SafeAreaProvider>
-            <QueryClientProvider client={queryClient}>
-              <AuthProvider>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <ToastProvider>
                 <NotificationProvider>
-                  <RootNavigator />
+                  <BottomSheetModalProvider>
+                    <RootNavigator />
+                    <PortalHost name="pinch-zoom" />
+                  </BottomSheetModalProvider>
                 </NotificationProvider>
-              </AuthProvider>
-            </QueryClientProvider>
-          </SafeAreaProvider>
-          <PortalHost name="pinch-zoom" />
-        </BottomSheetModalProvider>
+              </ToastProvider>
+            </AuthProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
   );
@@ -96,6 +100,8 @@ function RootNavigator() {
         <Stack.Screen name="(profile)" options={{ headerShown: false }} />
         <Stack.Screen name="(posts)/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="posts/edit/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="create/content" options={{ headerShown: false }} />
+        <Stack.Screen name="create/review" options={{ headerShown: false }} />
         <Stack.Screen name="business/index" />
         <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings" options={{ headerShown: false }} />
@@ -113,6 +119,7 @@ function RootNavigator() {
       </Stack>
 
       <StatusBar style={isDark ? "light" : "dark"} />
+      {user ? <WhatsNewModal /> : null}
     </>
   );
 }

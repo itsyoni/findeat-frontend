@@ -1,4 +1,4 @@
-import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
+import { CommentsBottomSheet } from "@/components/common";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
@@ -143,6 +143,7 @@ export default function UserReviewsFeedScreen() {
     } catch (error) {
       console.error("Failed to delete post", error);
       Alert.alert("Error", "Could not delete post");
+      return false;
     }
   }
 
@@ -197,7 +198,11 @@ export default function UserReviewsFeedScreen() {
   const loading = !userId || loadedUserId !== userId;
 
   if (loading) {
-    return <LoadingScreen variant="feed" />;
+    return (
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}>
+        <ReviewFeed posts={[]} loading refreshing={false} onRefresh={onRefresh} onToggleLike={toggleLike} onOpenComments={setSelectedPostId} onToggleWantToTry={toggleWantToTry} onOpenSharePost={setSharePostId} onOpenPostOptions={setOptionsPostId} />
+      </SafeAreaView>
+    );
   }
 
   return (

@@ -1,12 +1,12 @@
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
-import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
+import { CommentsBottomSheet } from "@/components/common";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useCallback, useMemo, useState } from "react";
 import {
   Alert,
@@ -77,11 +77,19 @@ export default function ProfileContentFeedScreen() {
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not delete post");
+      return false;
     }
   }
 
   if (loading || !profile) {
-    return <LoadingScreen variant="feed" backgroundColor="bg-black" />;
+    return (
+      <View className="flex-1 bg-black">
+        <SafeAreaView edges={["top"]} pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 50 }}>
+          <View className="ml-4 mt-2 h-11 w-11 rounded-full bg-black/50" />
+        </SafeAreaView>
+        <ContentFeedList posts={[]} loading height={height} contentTopInset={insets.top} refreshing={false} onRefresh={refresh} onToggleLike={toggleLike} onOpenComments={openComments} onToggleWantToTry={toggleWantToTry} onDeletePost={deletePost} onOpenSharePost={setSharePostId} onOpenPostOptions={setOptionsPostId} />
+      </View>
+    );
   }
 
   return (
@@ -101,7 +109,7 @@ export default function ProfileContentFeedScreen() {
           className="ml-4 mt-2 h-11 w-11 items-center justify-center rounded-full bg-black/50"
           onPress={() => router.back()}
         >
-          <CaretLeftIcon size={24} color="white" />
+          <DirectionalIcon direction="back" size={24} color="white" />
         </TouchableOpacity>
       </SafeAreaView>
 

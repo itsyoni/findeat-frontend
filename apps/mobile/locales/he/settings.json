@@ -1,5 +1,7 @@
 {
   "language": "שפה",
+  "languageChangeError": "לא ניתן לשנות את שפת האפליקציה. נסה שוב.",
+  "appVersion": "FindEat גרסה {{version}}",
   "chooseLanguage": "בחירת שפה",
   "english": "English",
   "hebrew": "עברית",
@@ -78,6 +80,20 @@
     "CLOSED": "סגורה"
   },
   "accountManagement": "ניהול חשבון",
+  "deactivateAccount": "השבתת חשבון",
+  "deactivateAccountSubtitle": "הסתרה זמנית של החשבון ויציאה להפסקה",
+  "takeABreak": "הפסקה מ-FindEat",
+  "deactivateAccountBody": "החשבון שלך יוסתר עד שתבחר/י להפעיל אותו מחדש. שום דבר לא יימחק לצמיתות.",
+  "whileDeactivated": "בזמן שהחשבון מושבת",
+  "deactivateHidden": "הפרופיל, הפוסטים, הביקורות והתגובות שלך לא יהיו גלויים לאחרים.",
+  "deactivateKeepsData": "פרטי החשבון והתוכן שלך יישמרו בבטחה.",
+  "deactivateReturn": "כדי לחזור, מתחברים עם אותו אימייל וסיסמה ובוחרים להפעיל מחדש את החשבון.",
+  "deactivateAccountAction": "השבתת החשבון",
+  "deactivatingAccount": "החשבון מושבת…",
+  "deactivateAccountError": "לא ניתן להשבית את החשבון. יש לבדוק את הסיסמה ולנסות שוב.",
+  "preferDeactivationTitle": "אולי עדיף לקחת הפסקה?",
+  "preferDeactivationBody": "השבתה מסתירה את הפרופיל והתוכן בלי למחוק דבר. אפשר לחזור בכל זמן.",
+  "deactivateInstead": "השבתה במקום מחיקה",
   "deleteAccount": "מחיקת חשבון",
   "deleteAccountSubtitle": "מחיקה קבועה של חשבון FindEat",
   "deleteAccountWarningTitle": "לא ניתן לבטל את הפעולה",
@@ -96,5 +112,47 @@
   "deleteAccountFinalNotice": "הודעות ותגובות יעברו אנונימיזציה כדי ששיחות של משתמשים אחרים יישארו מובנות.",
   "deleteAccountError": "לא ניתן למחוק את החשבון. יש לבדוק את הסיסמה ולנסות שוב.",
   "termsOfUse": "תנאי שימוש",
-  "termsOfUseSubtitle": "תנאים, מדיניות פרטיות ומידע משפטי"
+  "termsOfUseSubtitle": "תנאים, מדיניות פרטיות ומידע משפטי",
+  "whatsNew": "מה חדש ב-FindEat",
+  "whatsNewSubtitle": "הפיצ׳רים והשיפורים האחרונים",
+  "whatsNewPopups": "הצגת מה חדש באופן אוטומטי",
+  "whatsNewPopupsSubtitle": "הצגת חלון קופץ כשמתפרסמים פיצ׳רים ושיפורים חדשים ב-FindEat. תמיד ניתן לצפות בהם בעמוד הזה.",
+  "whatsNewPopupPreferenceError": "לא ניתן לעדכן את ההעדפה. נסו שוב.",
+  "gotIt": "הבנתי",
+  "nextUpdate": "הבא",
+  "noProductUpdates": "אין עדכונים חדשים",
+  "noProductUpdatesSubtitle": "פיצ׳רים ושיפורים חדשים של FindEat יופיעו כאן.",
+  "appPermissions": "הרשאות אפליקציה",
+  "appPermissionsSubtitle": "מצלמה, תמונות, מיקום והתראות",
+  "appPermissionsIntro": "אפשר לבחור לאילו נתונים ושירותים FindEat יכולה לגשת במכשיר הזה. לאחר בחירה, חלק מההרשאות ניתנות לשינוי רק בהגדרות המכשיר.",
+  "devicePermissions": "הרשאות המכשיר",
+  "permissionsSystemHint": "ההרשאות מנוהלות על ידי המכשיר. FindEat לא יכולה להפעיל הרשאה שנדחתה לצמיתות או לכבות הרשאה בשם המשתמש.",
+  "openDeviceSettings": "פתיחת הגדרות המכשיר",
+  "allowPermission": "אישור",
+  "managePermission": "ניהול",
+  "pleaseWait": "נא להמתין…",
+  "permissionStatus": {
+    "allowed": "מאושר",
+    "limited": "גישה מוגבלת",
+    "denied": "לא מאושר",
+    "notRequested": "טרם התבקש"
+  },
+  "permission": {
+    "camera": {
+      "title": "מצלמה",
+      "subtitle": "צילום תמונות לפוסטים, ביקורות ולפרופיל."
+    },
+    "photos": {
+      "title": "תמונות וגלריה",
+      "subtitle": "בחירת תמונות לפוסטים, ביקורות, מנות ולפרופיל."
+    },
+    "location": {
+      "title": "מיקום",
+      "subtitle": "מציאת מסעדות קרובות, חישוב מרחק ומיקום המפה."
+    },
+    "notifications": {
+      "title": "התראות",
+      "subtitle": "קבלת עדכונים על הודעות, לייקים, תגובות, עוקבים ותביעות בעלות."
+    }
+  }
 }

@@ -8,11 +8,11 @@ import { getSuggestedFriends, searchFriends } from "@/services/search";
 import type { SearchResultItem } from "@findeat/types/search";
 import { router, Stack } from "expo-router";
 import {
-  CaretLeftIcon,
   CheckCircleIcon,
   CheckIcon,
   UsersThreeIcon,
 } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -153,7 +153,7 @@ export default function CreateGroupScreen() {
               onPress={goBack}
               className="h-11 w-11 items-center justify-center rounded-full"
             >
-              <CaretLeftIcon size={25} color={iconColor} weight="bold" />
+              <DirectionalIcon direction="back" size={25} color={iconColor} weight="bold" />
             </TouchableOpacity>
 
             <View className="ml-2 flex-1">

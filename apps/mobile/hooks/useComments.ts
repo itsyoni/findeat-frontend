@@ -10,6 +10,7 @@ export function useComments(postId?: string | null) {
 
   const requestIdRef = useRef(0);
   const likingIdsRef = useRef(new Set<string>());
+  const pinningRef = useRef(false);
 
   const refresh = useCallback(async () => {
     if (!postId) return;
@@ -131,6 +132,52 @@ export function useComments(postId?: string | null) {
     [postId],
   );
 
+  const deleteComment = useCallback(
+    async (comment: Comment) => {
+      if (!postId) return null;
+      const result = await api.posts.deleteComment(postId, comment.id);
+      setComments((current) =>
+        current.filter(
+          (item) => item.id !== comment.id && item.parentId !== comment.id,
+        ),
+      );
+      return result;
+    },
+    [postId],
+  );
+
+  const togglePinnedComment = useCallback(
+    async (comment: Comment) => {
+      if (!postId || !comment.canPin || pinningRef.current) return;
+      pinningRef.current = true;
+      const wasPinned = comment.isPinned;
+      setComments((current) =>
+        current.map((item) => ({
+          ...item,
+          isPinned: wasPinned ? false : item.id === comment.id,
+        })),
+      );
+      try {
+        if (wasPinned) {
+          await api.posts.unpinComment(postId, comment.id);
+        } else {
+          await api.posts.pinComment(postId, comment.id);
+        }
+      } catch (error) {
+        setComments((current) =>
+          current.map((item) =>
+            item.id === comment.id ? comment : item,
+          ),
+        );
+        await refresh();
+        throw error;
+      } finally {
+        pinningRef.current = false;
+      }
+    },
+    [postId, refresh],
+  );
+
   const visibleComments = postId && loadedPostId === postId ? comments : [];
 
   return {
@@ -140,5 +187,7 @@ export function useComments(postId?: string | null) {
     refresh,
     addComment,
     toggleCommentLike,
+    deleteComment,
+    togglePinnedComment,
   };
 }

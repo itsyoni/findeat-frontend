@@ -8,12 +8,19 @@
   "following": "עוקב",
   "friends": "חברים",
   "viewPost": "צפה בפוסט",
+  "openChat": "פתיחת הצ׳אט",
   "emptyTitle": "אין התראות עדיין",
   "emptyBody": "לייקים, תגובות, עוקבים והודעות יופיעו כאן.",
+  "aggregatedTypes": {
+    "POST_LIKE": "{{name}} ועוד {{count}} אהבו את הפוסט שלך",
+    "COMMENT_LIKE": "{{name}} ועוד {{count}} אהבו את התגובה שלך"
+  },
   "types": {
     "POST_LIKE": "{{name}} אהב/ה את הפוסט שלך",
     "POST_COMMENT": "{{name}} הגיב/ה לפוסט שלך",
     "COMMENT_REPLY": "{{name}} השיב/ה לתגובה שלך",
+    "COMMENT_MENTION": "{{name}} הזכיר/ה אותך בתגובה",
+    "MESSAGE_MENTION": "{{name}} הזכיר/ה אותך בהודעה",
     "COMMENT_LIKE": "{{name}} אהב/ה את התגובה שלך",
     "FOLLOW": "{{name}} התחיל/ה לעקוב אחריך",
     "FOLLOW_BACK": "{{name}} החזיר/ה לך עוקב",

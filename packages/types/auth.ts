@@ -1,21 +1,41 @@
-import type { User } from "./user";
+import type { Profile } from "./profile";
 
-export type AuthContextType = {
-  user: User | null;
-  token: string | null;
-  isLoading: boolean;
+export type LoginInput = {
+  email: string;
+  password: string;
+};
 
-  login: (email: string, password: string) => Promise<void>;
+export type SignupInput = {
+  email: string;
+  username: string;
+  password: string;
+};
 
-  signup: (
-    email: string,
-    username: string,
-    password: string,
-    displayName: string,
-  ) => Promise<{ email: string; emailVerificationRequired: true }>;
+export type SignupResult = {
+  email: string;
+  emailVerificationRequired: true;
+};
 
-  verifyEmail: (email: string, code: string) => Promise<void>;
+export type AuthSession = {
+  user: Profile;
+  accessToken: string;
+};
 
-  logout: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+export type AccountAvailabilityQuery = {
+  username?: string;
+  email?: string;
+};
+
+export type AccountAvailability = {
+  usernameAvailable: boolean | null;
+  emailAvailable: boolean | null;
+};
+
+export type LoginFormData = LoginInput;
+
+export type SignupFormData = {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
 };

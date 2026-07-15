@@ -2,7 +2,8 @@ import Avatar from '@/components/common/Avatar';
 import FullScreenImageViewer from '@/components/common/FullScreenImageViewer';
 import { Restaurant } from '@findeat/types';
 import { router } from 'expo-router';
-import { ArrowLeftIcon, CaretRightIcon, ChatCircleIcon, DotsThreeIcon, MapPinIcon } from 'phosphor-react-native';
+import { ChatCircleIcon, DotsThreeIcon, MapPinIcon } from 'phosphor-react-native';
+import DirectionalIcon from '@/components/common/icons/DirectionalIcon';
 import { useTranslation } from 'react-i18next';
 import { Image, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,16 +12,42 @@ import RestaurantFollowButton from './RestaurantFollowButton';
 import RestaurantStats from './RestaurantStats';
 import RestaurantBadge from './RestaurantBadge';
 import { useState } from 'react';
+import { Skeleton, SkeletonPulse } from '../common';
 
 type Props = {
-  restaurant: Restaurant;
+  restaurant?: Restaurant | null;
+  loading?: boolean;
   onToggleFollow: () => void;
   onOpenOptions: () => void;
 };
 
-export default function RestaurantHeader({ restaurant, onToggleFollow, onOpenOptions }: Props) {
+export default function RestaurantHeader({ restaurant, loading = false, onToggleFollow, onOpenOptions }: Props) {
   const { t } = useTranslation('restaurants');
   const [logoOpen, setLogoOpen] = useState(false);
+
+  if (loading || !restaurant) {
+    return (
+      <SkeletonPulse>
+        <View className="bg-white dark:bg-black">
+          <View className="relative">
+            <Skeleton height={240} radius={0} />
+            <SafeAreaView edges={["top"]} style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
+              <View className="flex-row justify-between px-4 pt-2"><Skeleton width={44} height={44} circle /><Skeleton width={44} height={44} circle /></View>
+            </SafeAreaView>
+          </View>
+          <View className="-mt-7 items-center rounded-t-[30px] bg-white pb-5 dark:bg-black">
+            <Skeleton width={116} height={116} circle style={{ marginTop: -56 }} />
+            <Skeleton width="54%" height={23} radius={9} style={{ marginTop: 12 }} />
+            <Skeleton width="64%" height={34} radius={17} style={{ marginTop: 12 }} />
+            <View className="mt-5 w-full flex-row justify-around px-5">
+              {[0, 1, 2].map((item) => <View key={item} className="items-center gap-2"><Skeleton width={38} height={19} radius={7} /><Skeleton width={58} height={11} radius={6} /></View>)}
+            </View>
+            <View className="mt-5 w-full flex-row gap-3 px-5"><Skeleton width="48%" height={46} radius={12} /><Skeleton width="48%" height={46} radius={12} /></View>
+          </View>
+        </View>
+      </SkeletonPulse>
+    );
+  }
   const location = [restaurant.address, restaurant.city].filter(Boolean).join(', ');
   const reviewPosts = restaurant.posts.filter((post) => post.type === 'REVIEW');
   const ratings = reviewPosts
@@ -40,7 +67,7 @@ export default function RestaurantHeader({ restaurant, onToggleFollow, onOpenOpt
         <SafeAreaView edges={["top"]} pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
           <View className="flex-row items-center justify-between px-4 pt-2">
             <TouchableOpacity onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-full bg-black/45">
-              <ArrowLeftIcon size={24} color="white" />
+              <DirectionalIcon direction="back" variant="arrow" size={24} color="white" />
             </TouchableOpacity>
             <TouchableOpacity onPress={onOpenOptions} className="h-11 w-11 items-center justify-center rounded-full bg-black/45">
               <DotsThreeIcon size={25} color="white" weight="bold" />
@@ -77,7 +104,7 @@ export default function RestaurantHeader({ restaurant, onToggleFollow, onOpenOpt
           >
             <MapPinIcon size={16} color="#3B82F6" weight="fill" />
             <Text className="ml-1.5 max-w-72 text-center font-medium text-blue-600 dark:text-blue-400">{location}</Text>
-            <CaretRightIcon size={14} color="#3B82F6" weight="bold" />
+            <DirectionalIcon direction="forward" size={14} color="#3B82F6" weight="bold" />
           </TouchableOpacity>
         ) : null}
         {restaurant.bio ? <Text className="mt-4 px-8 text-center leading-6 text-gray-700 dark:text-gray-300">{restaurant.bio}</Text> : null}

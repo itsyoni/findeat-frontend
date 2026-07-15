@@ -6,11 +6,11 @@ import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
 import type { SelectedRestaurant } from "@findeat/types";
 import {
-  CaretLeftIcon,
   CheckCircleIcon,
   MagnifyingGlassIcon,
   StorefrontIcon,
 } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -93,7 +93,8 @@ export default function FullPageRestaurantPicker({
           onPress={onBack}
           className="h-11 w-11 items-center justify-center rounded-full"
         >
-          <CaretLeftIcon
+          <DirectionalIcon
+            direction="back"
             size={25}
             color={isDark ? "#FFF" : "#171717"}
             weight="bold"

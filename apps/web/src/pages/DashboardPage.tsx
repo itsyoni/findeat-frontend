@@ -110,7 +110,10 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
       if (!notification.restaurantId) return;
       void loadRestaurantNotifications(notification.restaurantId);
 
-      if (notification.type === "MESSAGE") {
+      if (
+        notification.type === "MESSAGE" ||
+        notification.type === "MESSAGE_MENTION"
+      ) {
         void loadRestaurantConversations(notification.restaurantId);
       } else if (notification.type === "RESTAURANT_REVIEW") {
         void loadRestaurantReviews(notification.restaurantId).then(setReviews);

@@ -33,6 +33,8 @@ import PinchZoomImage from "@/components/common/PinchZoomImage";
 import PlaceStatusBookmark, {
   getPlaceStatusLabelKey,
 } from "@/components/restaurants/PlaceStatusBookmark";
+import PostDate from "@/components/posts/PostDate";
+import { isRtlText } from "@/lib/textDirection";
 
 type Props = {
   post: Post;
@@ -107,7 +109,8 @@ export default function ReviewPost({
 }: Props) {
   const { isDark } = useAppTheme();
   const { t } = useTranslation("restaurants");
-  const { t: tCommon } = useTranslation("common");
+  const { t: tCommon, i18n } = useTranslation("common");
+  const isRtl = i18n.language.startsWith("he");
   const actionColor = isDark ? "#E5E7EB" : "#212121";
   const { width } = useWindowDimensions();
   const [activeIndex, setActiveIndex] = useState(0);
@@ -143,6 +146,7 @@ export default function ReviewPost({
   ];
 
   const activeSlide = slides[activeIndex];
+  const activeTextIsRtl = isRtlText(activeSlide?.text, isRtl);
   const indicatorSlides = I18nManager.isRTL ? [...slides].reverse() : slides;
   const onViewableItemsChanged = useCallback(
     ({ viewableItems }: { viewableItems: ViewToken<ReviewSlide>[] }) => {
@@ -151,7 +155,7 @@ export default function ReviewPost({
       )?.index;
       if (typeof nextIndex === "number") setActiveIndex(nextIndex);
     },
-    [],
+    [setActiveIndex],
   );
 
   const isRestaurantPost = !!post.authorRestaurantId && !!post.authorRestaurant;
@@ -315,15 +319,13 @@ export default function ReviewPost({
           </View>
         </View>
 
-        {post.canDelete && (
-          <TouchableOpacity
-            className="ml-3 p-2"
-            activeOpacity={0.8}
-            onPress={() => onOpenPostOptions(post.id)}
-          >
-            <DotsThreeOutlineIcon size={28} color="#6B7280" weight="fill" />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          className="ml-3 p-2"
+          activeOpacity={0.8}
+          onPress={() => onOpenPostOptions(post.id)}
+        >
+          <DotsThreeOutlineIcon size={28} color="#6B7280" weight="fill" />
+        </TouchableOpacity>
       </View>
 
       <View className="relative">
@@ -550,18 +552,40 @@ export default function ReviewPost({
           </TouchableOpacity>
         </View>
 
-        {!!activeSlide?.text && (
-          <View className="mt-3">
-            <Text className="text-gray-700 dark:text-gray-300">
-              {activeSlide.text}
-            </Text>
-            {!!activeSlide.textEditedAt && (
-              <Text className="mt-0.5 text-xs text-gray-400">
-                {tCommon("edited")}
+        <View className="mt-3">
+          {!!activeSlide?.text && (
+            <>
+              <Text
+                className="text-gray-700 dark:text-gray-300"
+                style={{
+                alignSelf: "stretch",
+                width: "100%",
+                textAlign: "auto",
+                writingDirection: activeTextIsRtl ? "rtl" : "ltr",
+                }}
+                >
+                {activeSlide.text}
               </Text>
-            )}
-          </View>
-        )}
+              {!!activeSlide.textEditedAt && (
+                <Text
+                  className="mt-0.5 text-xs text-gray-400"
+                  style={{
+                    alignSelf: "stretch",
+                    width: "100%",
+                    textAlign: "auto",
+                    writingDirection: activeTextIsRtl ? "rtl" : "ltr",
+                  }}
+                >
+                  {tCommon("edited")}
+                </Text>
+              )}
+            </>
+          )}
+          <PostDate
+            createdAt={post.createdAt}
+            hasContentAbove={!!activeSlide?.text}
+          />
+        </View>
       </View>
     </View>
   );

@@ -51,6 +51,21 @@ export function createUsersApi(api: AxiosInstance) {
       password?: string;
       language?: Language;
       showActivityStatus?: boolean;
+      showWhatsNewPopups?: boolean;
+      phoneNumber?: string | null;
+      birthday?: string | null;
+      pronouns?: string | null;
+      allergies?: string[];
+      foodPreferences?: string[];
+      dietaryRestrictions?: string[];
+      favoriteCuisines?: string[];
+      showPhoneNumber?: boolean;
+      showBirthday?: boolean;
+      showPronouns?: boolean;
+      showAllergies?: boolean;
+      showFoodPreferences?: boolean;
+      showDietaryRestrictions?: boolean;
+      showFavoriteCuisines?: boolean;
     }) {
       const { data } = await api.patch<Profile>("/users/me", payload);
       return data;

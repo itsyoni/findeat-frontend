@@ -8,9 +8,12 @@ function notificationCopy(notification: AppNotification) {
   switch (notification.type) {
     case 'RESTAURANT_FOLLOW': return `${actor} followed your restaurant`
     case 'RESTAURANT_REVIEW': return `${actor} published a new review`
-    case 'POST_LIKE': return `${actor} liked an official post`
+    case 'POST_LIKE': return (notification.aggregationCount ?? 1) > 1
+      ? `${actor} and ${(notification.aggregationCount ?? 1) - 1} more liked an official post`
+      : `${actor} liked an official post`
     case 'POST_COMMENT': return `${actor} commented on an official post`
     case 'MESSAGE': return `${actor} started a new conversation`
+    case 'MESSAGE_MENTION': return `${actor} mentioned you in a message`
     default: return notification.title || 'Restaurant update'
   }
 }
@@ -46,7 +49,7 @@ export function NotificationsPopover({ restaurant, notifications, loading, onNav
   }, [onClose])
 
   function openNotification(notification: AppNotification) {
-    if (notification.type === 'MESSAGE') onNavigate('messages')
+    if (notification.type === 'MESSAGE' || notification.type === 'MESSAGE_MENTION') onNavigate('messages')
     if (notification.type === 'RESTAURANT_REVIEW') onNavigate('reviews')
     onClose()
   }
@@ -74,7 +77,7 @@ export function NotificationsPopover({ restaurant, notifications, loading, onNav
     {clearError && <p className="notifications-clear-error">{clearError}</p>}
     {loading ? <div className="notifications-popover-state">Loading notifications…</div> : notifications.length === 0 ? <div className="notifications-popover-state"><BellSlashIcon size={30} weight="duotone" aria-hidden="true" /><strong>No updates yet</strong><p>Followers, reviews, post activity, and messages will appear here.</p></div> : <div className="restaurant-notification-list">
       {notifications.map((notification) => {
-        const canOpen = notification.type === 'MESSAGE' || notification.type === 'RESTAURANT_REVIEW'
+        const canOpen = notification.type === 'MESSAGE' || notification.type === 'MESSAGE_MENTION' || notification.type === 'RESTAURANT_REVIEW'
         return <button className={`restaurant-notification-row ${notification.readAt ? '' : 'unread'}`} key={notification.id} type="button" disabled={!canOpen} onClick={() => openNotification(notification)}>
           <div className="notification-avatar">{notification.actor?.avatarUrl ? <img src={notification.actor.avatarUrl} alt="" /> : <span>{(notification.actor?.displayName || notification.actor?.username || restaurant.name).charAt(0).toUpperCase()}</span>}</div>
           <div className="notification-copy"><strong>{notificationCopy(notification)}</strong>{notification.body && <p>{notification.body}</p>}<small>{new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(notification.createdAt))}</small></div>

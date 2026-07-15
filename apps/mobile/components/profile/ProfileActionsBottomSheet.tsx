@@ -20,6 +20,7 @@ type Props = {
   onCreateReview?: () => void;
   onCreateContent?: () => void;
   onBlock?: () => void;
+  onReport?: () => void;
 };
 
 export default function ProfileActionsBottomSheet({
@@ -31,6 +32,7 @@ export default function ProfileActionsBottomSheet({
   onCreateReview,
   onCreateContent,
   onBlock,
+  onReport,
 }: Props) {
   const { t } = useTranslation(["profile", "restaurants", "common"]);
   const isRestaurant = type === "RESTAURANT";
@@ -86,7 +88,10 @@ export default function ProfileActionsBottomSheet({
           </View>
         )}
 
-        <TouchableOpacity className={`${isRestaurant ? "mt-3" : "mt-5"} flex-row items-center rounded-2xl bg-gray-100 px-4 py-4 dark:bg-gray-800`}>
+        <TouchableOpacity
+          onPress={onReport}
+          className={`${isRestaurant ? "mt-3" : "mt-5"} flex-row items-center rounded-2xl bg-gray-100 px-4 py-4 dark:bg-gray-800`}
+        >
           <View className="h-10 w-10 items-center justify-center rounded-full bg-white dark:bg-gray-900">
             <FlagIcon size={21} color="#EF4444" weight="fill" />
           </View>

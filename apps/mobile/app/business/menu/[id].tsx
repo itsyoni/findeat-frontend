@@ -6,7 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
-import { ThemedSafeAreaView , AppButton, LoadingScreen, TextInput } from "@/components/common";
+import { ThemedSafeAreaView, AppButton, Skeleton, SkeletonPulse, TextInput } from "@/components/common";
 
 export default function ManageMenuScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -91,7 +91,23 @@ export default function ManageMenuScreen() {
   );
 
   if (loading) {
-    return <LoadingScreen variant="menu" />;
+    return (
+      <ThemedSafeAreaView>
+        <SkeletonPulse style={{ padding: 20 }}>
+          <Skeleton width="52%" height={30} radius={10} />
+          <Skeleton width="76%" height={13} radius={6} style={{ marginTop: 10 }} />
+          <View className="mt-6 gap-3 rounded-2xl bg-[#F5F4F5] p-4 dark:bg-gray-900">
+            <Skeleton width="30%" height={20} radius={8} />
+            <Skeleton height={130} radius={16} />
+            <Skeleton height={52} radius={14} />
+            <Skeleton height={52} radius={14} />
+            <Skeleton height={92} radius={14} />
+            <Skeleton height={48} radius={14} />
+          </View>
+          {[0, 1, 2].map((item) => <View key={item} className="mt-4 flex-row items-center gap-3"><Skeleton width={82} height={72} radius={14} /><View className="flex-1 gap-2"><Skeleton width="62%" height={16} radius={7} /><Skeleton width="88%" height={12} radius={6} /><Skeleton width="30%" height={12} radius={6} /></View></View>)}
+        </SkeletonPulse>
+      </ThemedSafeAreaView>
+    );
   }
 
   if (!menu) {

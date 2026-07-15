@@ -12,7 +12,7 @@ import Animated, {
 
 type Props = {
   count?: number;
-  variant?: "rows" | "comments" | "grid" | "menu";
+  variant?: "rows" | "comments" | "grid" | "menu" | "notifications";
 };
 
 export default function SkeletonList({ count = 5, variant = "rows" }: Props) {
@@ -63,6 +63,9 @@ export default function SkeletonList({ count = 5, variant = "rows" }: Props) {
               <View style={[styles.commentLine, { backgroundColor: color }]} />
             ) : null}
           </View>
+          {variant === "notifications" ? (
+            <View style={[styles.postPreview, { backgroundColor: color }]} />
+          ) : null}
         </View>
       ))}
     </Animated.View>
@@ -78,6 +81,7 @@ const styles = StyleSheet.create({
   title: { width: "64%", height: 14, borderRadius: 7 },
   subtitle: { width: "42%", height: 11, borderRadius: 6 },
   commentLine: { width: "88%", height: 11, borderRadius: 6 },
+  postPreview: { width: 48, height: 58, borderRadius: 9 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 2 },
   gridItem: { width: "33%", aspectRatio: 1 },
 });

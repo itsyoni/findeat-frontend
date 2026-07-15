@@ -1,11 +1,12 @@
 import Text from '@/components/common/AppText';
+import { Skeleton, SkeletonPulse } from '@/components/common';
 import AppButton from '@/components/common/buttons/AppButton';
 import SettingsHeader from '@/components/settings/SettingsHeader';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { api } from '@/lib/api';
 import type { SupportTicket, SupportTicketCategory, SupportTicketStatus } from '@findeat/types';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, RefreshControl, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 
@@ -135,7 +136,7 @@ export default function HelpSupportScreen() {
           </View>
 
           <Text weight="bold" style={{ color: colors.text, fontSize: 20, marginTop: 28, marginBottom: 12 }}>{t('mySupportRequests')}</Text>
-          {loading ? <ActivityIndicator color={colors.text} style={{ marginTop: 18 }} /> : tickets.length === 0 ? (
+          {loading ? <SkeletonPulse>{[0, 1].map((item) => <View key={item} style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 18, padding: 16, marginBottom: 12 }}><View className="flex-row items-center justify-between"><View className="flex-1 gap-2"><Skeleton width="58%" height={16} radius={7} /><Skeleton width="42%" height={11} radius={5} /></View><Skeleton width={72} height={28} radius={14} /></View><Skeleton width="100%" height={12} radius={6} style={{ marginTop: 16 }} /><Skeleton width="82%" height={12} radius={6} style={{ marginTop: 8 }} /></View>)}</SkeletonPulse> : tickets.length === 0 ? (
             <View style={{ backgroundColor: colors.surface, borderRadius: 18, padding: 24, alignItems: 'center' }}>
               <Text weight="bold" style={{ color: colors.text }}>{t('noSupportRequests')}</Text>
               <Text style={{ color: colors.muted, marginTop: 5, textAlign: 'center' }}>{t('noSupportRequestsSubtitle')}</Text>

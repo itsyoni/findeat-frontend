@@ -1,4 +1,3 @@
-import { LoadingScreen } from "@/components/common";
 import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
@@ -26,13 +25,9 @@ export default function ProfileScreen() {
     }, [refresh]),
   );
 
-  if (loading || !profile) {
-    return <LoadingScreen variant="profile" />;
-  }
-
   return (
     <View className="flex-1 bg-canvas dark:bg-black">
-      <PersonalProfileHeader profile={profile} />
+      <PersonalProfileHeader profile={profile} loading={loading} />
 
       <Tabs
         activeTab={activeFeed}
@@ -46,6 +41,7 @@ export default function ProfileScreen() {
       <View style={{ flex: 1 }}>
         <ProfilePostGrid
           posts={posts}
+          loading={loading}
           type={activeFeed}
           onCreatePost={() =>
             router.push(activeFeed === "CONTENT" ? "/create/content" : "/create/review")

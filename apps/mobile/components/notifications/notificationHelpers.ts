@@ -4,12 +4,25 @@ import type { TFunction } from 'i18next';
 
 export function notificationText(item: AppNotification, t: TFunction) {
   const name = item.actor?.displayName || item.actor?.username || t('someone');
+  if (
+    (item.type === 'POST_LIKE' || item.type === 'COMMENT_LIKE') &&
+    (item.aggregationCount ?? 1) > 1
+  ) {
+    return t(`aggregatedTypes.${item.type}`, {
+      name,
+      count: (item.aggregationCount ?? 1) - 1,
+    });
+  }
   return t(`types.${item.type}`, { name, defaultValue: item.title || t('new') });
 }
 
 export function notificationHref(item: AppNotification): Href | null {
   if (item.conversationId) return `/chats/${item.conversationId}`;
-  if (item.postId) return { pathname: '/(posts)/[id]', params: { id: item.postId } };
+  if (item.postId)
+    return {
+      pathname: '/(posts)/[id]',
+      params: { id: item.postId, ...(item.commentId ? { commentId: item.commentId } : {}) },
+    };
   if (item.restaurantId) return `/restaurants/${item.restaurantId}`;
   if (item.actorId) return { pathname: '/(users)/[id]', params: { id: item.actorId } };
   return null;

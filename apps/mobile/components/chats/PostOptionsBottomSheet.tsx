@@ -1,22 +1,28 @@
 import AppBottomSheet from "@/components/common/AppBottomSheet";
 import Text from "@/components/common/AppText";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { api } from "@/lib/api";
+import ReportForm from "@/components/moderation/ReportForm";
+import type { Post } from "@findeat/types";
 import { BottomSheetView } from "@gorhom/bottom-sheet";
 import {
-  CaretRightIcon,
   NotePencilIcon,
   TrashIcon,
   WarningCircleIcon,
+  FlagIcon,
+  UserMinusIcon,
 } from "phosphor-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { router } from "expo-router";
+import { useToast } from "@/contexts/ToastContext";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 
 type Props = {
   postId: string | null;
   onClose: () => void;
-  onDelete: (postId: string) => void | Promise<void>;
+  onDelete: (postId: string) => boolean | void | Promise<boolean | void>;
 };
 
 export default function PostOptionsBottomSheet({
@@ -26,12 +32,44 @@ export default function PostOptionsBottomSheet({
 }: Props) {
   const { t } = useTranslation("common");
   const { isDark } = useAppTheme();
+  const { showToast } = useToast();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [reporting, setReporting] = useState(false);
+  const [askingToBlock, setAskingToBlock] = useState(false);
+  const [blocking, setBlocking] = useState(false);
+  const [blockError, setBlockError] = useState("");
+  const [post, setPost] = useState<Post | null>(null);
+  const [failedPostId, setFailedPostId] = useState<string | null>(null);
+  const activePost = post?.id === postId ? post : null;
+  const loadingPost = !!postId && !activePost && failedPostId !== postId;
+
+  useEffect(() => {
+    if (!postId) return;
+    let cancelled = false;
+    void api.posts
+      .get(postId)
+      .then((nextPost) => {
+        if (!cancelled) {
+          setPost(nextPost);
+          setFailedPostId(null);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setFailedPostId(postId);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [postId]);
 
   function closeSheet() {
     setConfirmingDelete(false);
     setDeleting(false);
+    setReporting(false);
+    setAskingToBlock(false);
+    setBlocking(false);
+    setBlockError("");
     onClose();
   }
 
@@ -40,8 +78,12 @@ export default function PostOptionsBottomSheet({
 
     try {
       setDeleting(true);
-      await onDelete(postId);
+      const removed = await onDelete(postId);
+      if (removed === false) return;
       closeSheet();
+      showToast(t("postRemoved"));
+    } catch {
+      showToast(t("postRemoveError"), { kind: "error" });
     } finally {
       setDeleting(false);
     }
@@ -54,14 +96,103 @@ export default function PostOptionsBottomSheet({
     router.push({ pathname: "/posts/edit/[id]", params: { id } });
   }
 
+  function finishReport() {
+    if (activePost?.authorId && activePost.author && !activePost.canDelete) {
+      setReporting(false);
+      setAskingToBlock(true);
+      return;
+    }
+    closeSheet();
+  }
+
+  async function blockPostAuthor() {
+    if (!activePost?.authorId || blocking) return;
+    try {
+      setBlocking(true);
+      setBlockError("");
+      await api.users.block(activePost.authorId);
+      closeSheet();
+    } catch {
+      setBlockError(t("blockAfterReportError"));
+      setBlocking(false);
+    }
+  }
+
   return (
     <AppBottomSheet
       open={!!postId}
-      snapPoints={["40%"]}
+      snapPoints={[
+        reporting
+          ? "68%"
+          : askingToBlock
+            ? "48%"
+            : activePost?.canDelete
+              ? "40%"
+              : "34%",
+      ]}
       onClose={closeSheet}
     >
       <BottomSheetView className="flex-1 px-4 pb-5 pt-1">
-        {confirmingDelete ? (
+        {reporting && postId ? (
+          <ReportForm
+            targetType="POST"
+            targetId={postId}
+            onCancel={() => setReporting(false)}
+            onDone={finishReport}
+            doneLabel={
+              activePost?.authorId && activePost.author
+                ? t("continue")
+                : undefined
+            }
+          />
+        ) : askingToBlock && activePost?.author ? (
+          <View className="flex-1 items-center px-2">
+            <View className="h-16 w-16 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40">
+              <View className="h-11 w-11 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/70">
+                <UserMinusIcon size={27} color="#EF4444" weight="fill" />
+              </View>
+            </View>
+            <Text className="mt-4 text-center text-2xl font-bold text-black dark:text-white">
+              {t("blockAfterReportTitle", {
+                username: activePost.author.username,
+              })}
+            </Text>
+            <Text className="mt-2 max-w-sm px-3 text-center text-sm leading-5 text-gray-500 dark:text-gray-400">
+              {t("blockAfterReportDescription")}
+            </Text>
+
+            {blockError ? (
+              <Text className="mt-3 text-center text-sm text-red-500">
+                {blockError}
+              </Text>
+            ) : null}
+
+            <View className="mt-auto w-full flex-row gap-3">
+              <TouchableOpacity
+                disabled={blocking}
+                onPress={closeSheet}
+                className="flex-1 items-center rounded-2xl border border-gray-200 bg-white py-4 dark:border-gray-700 dark:bg-gray-900"
+              >
+                <Text className="font-bold text-black dark:text-white">
+                  {t("notNow")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                disabled={blocking}
+                onPress={() => void blockPostAuthor()}
+                className="flex-1 items-center rounded-2xl bg-red-500 py-4"
+              >
+                {blocking ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="font-bold text-white">
+                    {t("blockUser")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        ) : confirmingDelete ? (
           <View className="flex-1 items-center px-2">
             <View className="h-16 w-16 items-center justify-center rounded-full bg-red-50 dark:bg-red-950/40">
               <View className="h-11 w-11 items-center justify-center rounded-full bg-red-100 dark:bg-red-950/70">
@@ -103,6 +234,10 @@ export default function PostOptionsBottomSheet({
               </TouchableOpacity>
             </View>
           </View>
+        ) : loadingPost ? (
+          <View className="flex-1 items-center justify-center">
+            <ActivityIndicator color={isDark ? "white" : "black"} />
+          </View>
         ) : (
           <View className="flex-1">
             <View className="items-center px-4 pb-4">
@@ -110,11 +245,13 @@ export default function PostOptionsBottomSheet({
                 {t("postOptions")}
               </Text>
               <Text className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {t("managePost")}
+                {t(activePost?.canDelete ? "managePost" : "reportPostHint")}
               </Text>
             </View>
 
-            <TouchableOpacity
+            {activePost?.canDelete ? (
+              <>
+              <TouchableOpacity
               activeOpacity={0.72}
               accessibilityRole="button"
               className="mb-3 flex-row items-center rounded-2xl border border-gray-200 bg-white px-4 py-3.5 dark:border-gray-700 dark:bg-gray-900"
@@ -131,7 +268,8 @@ export default function PostOptionsBottomSheet({
                   {t("editPostHint")}
                 </Text>
               </View>
-              <CaretRightIcon
+              <DirectionalIcon
+                direction="forward"
                 size={18}
                 color={isDark ? "#6B7280" : "#9CA3AF"}
                 weight="bold"
@@ -155,12 +293,35 @@ export default function PostOptionsBottomSheet({
                   {t("deletePostHint")}
                 </Text>
               </View>
-              <CaretRightIcon
+              <DirectionalIcon
+                direction="forward"
                 size={18}
                 color={isDark ? "#6B7280" : "#9CA3AF"}
                 weight="bold"
               />
             </TouchableOpacity>
+              </>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={0.72}
+                accessibilityRole="button"
+                className="flex-row items-center rounded-2xl border border-red-100 bg-red-50 px-4 py-3.5 dark:border-red-950 dark:bg-red-950/30"
+                onPress={() => setReporting(true)}
+              >
+                <View className="h-11 w-11 items-center justify-center rounded-full bg-white dark:bg-red-950/60">
+                  <FlagIcon size={21} color="#EF4444" weight="fill" />
+                </View>
+                <View className="ml-3 flex-1">
+                  <Text className="text-base font-bold text-red-500">
+                    {t("reportPost")}
+                  </Text>
+                  <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    {t("reportPostHint")}
+                  </Text>
+                </View>
+                <DirectionalIcon direction="forward" size={18} color="#EF4444" weight="bold" />
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               onPress={closeSheet}

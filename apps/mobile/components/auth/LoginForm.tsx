@@ -1,6 +1,7 @@
 import Text from "@/components/common/AppText";
 import { useAuth } from "@/contexts/AuthContext";
-import { LoginFormData, loginSchema } from "@/lib/validation/auth";
+import { loginSchema } from "@/lib/validation/auth";
+import type { LoginFormData } from "@findeat/types";
 import { getErrorMessage } from "@findeat/utils";
 import { EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useState } from "react";
@@ -9,6 +10,7 @@ import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 import { TextInput } from "../common";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import AuthFormHeader from "./AuthFormHeader";
 
 type Props = {
   onSignup: () => void;
@@ -19,7 +21,7 @@ type Props = {
 
 export default function LoginForm({ onSignup, onForgotPassword, onVerificationRequired }: Props) {
   const { t } = useTranslation("auth");
-  const { login } = useAuth();
+  const { login, reactivate } = useAuth();
   const { isDark } = useAppTheme();
   const iconColor = isDark ? "#E5E7EB" : "#212121";
 
@@ -43,8 +45,25 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
         return;
       }
 
-      if (getErrorMessage(error, '') === 'EMAIL_NOT_VERIFIED') {
+      const message = getErrorMessage(error, '');
+
+      if (message === 'EMAIL_NOT_VERIFIED') {
         onVerificationRequired(email.trim());
+        return;
+      }
+
+      if (message === 'ACCOUNT_DEACTIVATED') {
+        Alert.alert(
+          t('accountDeactivatedTitle'),
+          t('accountDeactivatedBody'),
+          [
+            { text: t('common:cancel'), style: 'cancel' },
+            {
+              text: t('reactivateAccount'),
+              onPress: () => void handleReactivation(),
+            },
+          ],
+        );
         return;
       }
 
@@ -57,20 +76,28 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
     }
   }
 
+  async function handleReactivation() {
+    setLoading(true);
+    try {
+      await reactivate(email.trim(), password);
+    } catch (error) {
+      Alert.alert(
+        t('common:error'),
+        getErrorMessage(error, t('reactivationFailed')),
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <View>
-      <Text weight="bold" className="text-center text-2xl text-[#212121] dark:text-white">
-        {t("welcomeBack")}
-      </Text>
-
-      <Text className="mb-6 mt-1 text-center text-gray-500">
-        {t("loginSubtitle")}
-      </Text>
+      <AuthFormHeader title={t("welcomeBack")} subtitle={t("loginSubtitle")} />
 
       <View className="gap-4">
         <TextInput
           useBottomSheetInput
-          placeholder={t("email")}
+          placeholder={t("emailPlaceholder")}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -84,7 +111,7 @@ export default function LoginForm({ onSignup, onForgotPassword, onVerificationRe
 
         <TextInput
           useBottomSheetInput
-          placeholder={t("password")}
+          placeholder={t("passwordPlaceholder")}
           value={password}
           onChangeText={setPassword}
           isPassword

@@ -1,8 +1,8 @@
 import Text from '@/components/common/AppText';
 import { useAppTheme } from '@/contexts/ThemeContext';
-import { CaretRightIcon } from 'phosphor-react-native';
 import type { ReactNode } from 'react';
 import { TouchableOpacity, View } from 'react-native';
+import DirectionalIcon from '@/components/common/icons/DirectionalIcon';
 
 type Props = {
   icon: ReactNode;
@@ -23,7 +23,7 @@ export default function SettingsRow({ icon, title, subtitle, value, onPress, des
         {subtitle ? <Text className="mt-0.5 text-sm text-gray-500" numberOfLines={2}>{subtitle}</Text> : null}
       </View>
       {value ? <Text className="mr-2 text-sm text-gray-500">{value}</Text> : null}
-      {!destructive ? <CaretRightIcon size={18} color={isDark ? '#666' : '#A09D97'} /> : null}
+      {!destructive ? <DirectionalIcon direction="forward" size={18} color={isDark ? '#666' : '#A09D97'} /> : null}
     </TouchableOpacity>
   );
 }

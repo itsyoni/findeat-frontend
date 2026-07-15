@@ -1,4 +1,4 @@
-import { EmptyState, LoadingScreen } from "@/components/common";
+import { EmptyState, Skeleton, SkeletonPulse } from "@/components/common";
 import AppBottomSheet from "@/components/common/AppBottomSheet";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
@@ -16,7 +16,7 @@ import {
   RestaurantMapFilter,
   RestaurantMapSort,
 } from "@findeat/types";
-import { MapType } from "@findeat/types/map";
+import type { MapViewMode } from "@findeat/types";
 import * as Location from "expo-location";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -72,7 +72,7 @@ export default function MapScreen() {
   const { user } = useAuth();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<MapType>("MAP");
+  const [viewMode, setViewMode] = useState<MapViewMode>("MAP");
   const [isSearching, setIsSearching] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [mapFilter, setMapFilter] = useState<RestaurantMapFilter>(
@@ -95,6 +95,7 @@ export default function MapScreen() {
 
   const [userLocation, setUserLocation] =
     useState<Location.LocationObject | null>(null);
+  const userLocationRef = useRef<Location.LocationObject | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -187,8 +188,8 @@ export default function MapScreen() {
 
   const loadRestaurants = useCallback(async (coordinates?: { latitude: number; longitude: number }) => {
     try {
-      const latitude = coordinates?.latitude ?? userLocation?.coords.latitude ?? 32.0853;
-      const longitude = coordinates?.longitude ?? userLocation?.coords.longitude ?? 34.7818;
+      const latitude = coordinates?.latitude ?? userLocationRef.current?.coords.latitude ?? 32.0853;
+      const longitude = coordinates?.longitude ?? userLocationRef.current?.coords.longitude ?? 34.7818;
       const nextRestaurants = await api.restaurants.discoverForMap({
         latitude,
         longitude,
@@ -249,7 +250,7 @@ export default function MapScreen() {
     } finally {
       setLoading(false);
     }
-  }, [mapFilter, mapSort, radiusKm, restaurantId, userLocation]);
+  }, [mapFilter, mapSort, radiusKm, restaurantId]);
 
   const dismissRestaurantPreview = useCallback(() => {
     setSelectedRestaurant(null);
@@ -268,7 +269,7 @@ export default function MapScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
-      if (status !== "granted") return;
+      if (status !== "granted") return null;
 
       const location =
         (await Location.getLastKnownPositionAsync()) ??
@@ -276,17 +277,14 @@ export default function MapScreen() {
           accuracy: Location.Accuracy.Balanced,
         }));
 
-      if (!location) return;
+      if (!location) return null;
 
+      userLocationRef.current = location;
       setUserLocation(location);
-
-      cameraRef.current?.setCamera({
-        centerCoordinate: [location.coords.longitude, location.coords.latitude],
-        zoomLevel: 14,
-        animationDuration: 600,
-      });
+      return location;
     } catch (error) {
       console.error("Could not get current location:", error);
+      return null;
     }
   }, []);
 
@@ -294,12 +292,27 @@ export default function MapScreen() {
     useCallback(() => {
       if (!filtersHydrated) return undefined;
 
-      if (!userLocation) {
-        void loadUserLocation();
-      }
-      void loadRestaurants();
-      return dismissRestaurantPreview;
-    }, [dismissRestaurantPreview, filtersHydrated, loadRestaurants, loadUserLocation, userLocation]),
+      let active = true;
+      void (async () => {
+        const location =
+          userLocationRef.current ?? (await loadUserLocation());
+        if (!active) return;
+
+        await loadRestaurants(
+          location
+            ? {
+                latitude: location.coords.latitude,
+                longitude: location.coords.longitude,
+              }
+            : undefined,
+        );
+      })();
+
+      return () => {
+        active = false;
+        dismissRestaurantPreview();
+      };
+    }, [dismissRestaurantPreview, filtersHydrated, loadRestaurants, loadUserLocation]),
   );
 
   function selectRestaurant(restaurant: Restaurant) {
@@ -392,10 +405,6 @@ export default function MapScreen() {
     );
   }
 
-  if (loading) {
-    return <LoadingScreen variant="map" />;
-  }
-
   const selectedReviews =
     selectedRestaurant?.posts?.filter((post) => post.type === "REVIEW") ?? [];
   const selectedRatings = selectedReviews
@@ -440,7 +449,7 @@ export default function MapScreen() {
           <SearchBar
             editable={false}
             placeholder={t("common:search")}
-            onPress={() => setIsSearching(true)}
+            onPress={() => { if (!loading) setIsSearching(true); }}
             rightAccessory={
               <TouchableOpacity
                 onPress={() => setFiltersOpen(true)}
@@ -464,7 +473,17 @@ export default function MapScreen() {
             ]}
           />
 
-          {viewMode === "MAP" ? (
+          {loading ? (
+            <SkeletonPulse style={{ flex: 1 }}>
+              <View className="flex-1 bg-[#E8E4DD] dark:bg-[#171719]">
+                <Skeleton width={48} height={48} circle style={{ position: "absolute", left: "18%", top: "20%" }} />
+                <Skeleton width={48} height={48} circle style={{ position: "absolute", right: "18%", top: "33%" }} />
+                <Skeleton width={48} height={48} circle style={{ position: "absolute", left: "42%", top: "51%" }} />
+                <Skeleton width={48} height={48} circle style={{ position: "absolute", left: "15%", bottom: "18%" }} />
+                <Skeleton width={48} height={48} circle style={{ position: "absolute", right: "12%", bottom: "12%" }} />
+              </View>
+            </SkeletonPulse>
+          ) : viewMode === "MAP" ? (
             <View style={{ flex: 1 }}>
               <Mapbox.MapView
                 style={{ flex: 1 }}
@@ -479,6 +498,7 @@ export default function MapScreen() {
                 <Mapbox.Camera
                   ref={cameraRef}
                   zoomLevel={13}
+                  animationDuration={0}
                   centerCoordinate={[
                     userLocation?.coords.longitude ?? 34.7818,
                     userLocation?.coords.latitude ?? 32.0853,

@@ -1,10 +1,11 @@
-import { LoadingScreen } from "@/components/common";
+import { Skeleton, SkeletonList, SkeletonPulse } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Tabs from "@/components/common/Tabs";
 import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
 import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSection";
 import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSection";
 import ProfileActionsBottomSheet from "@/components/profile/ProfileActionsBottomSheet";
+import ReportBottomSheet from "@/components/moderation/ReportBottomSheet";
 import { useRestaurant } from "@/hooks/useRestaurant";
 import { useRestaurantPosts } from "@/hooks/useRestaurantPosts";
 import { updateRestaurantStatusInFeedCache } from "@/hooks/useFeed";
@@ -31,6 +32,7 @@ export default function RestaurantScreen() {
   const { restaurant, setRestaurant, loading } = useRestaurant(id);
   const [activeTab, setActiveTab] = useState<RestaurantTab>("OFFICIAL");
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const postSection: RestaurantPostSection =
     activeTab === "MENU" ? "OFFICIAL" : activeTab;
   const sectionPosts = useRestaurantPosts(
@@ -282,7 +284,18 @@ export default function RestaurantScreen() {
   }, [restaurant]);
 
   if (loading) {
-    return <LoadingScreen variant="profile" />;
+    return (
+      <ScrollView className="flex-1 bg-canvas dark:bg-black">
+        <RestaurantHeader restaurant={null} loading onToggleFollow={() => undefined} onOpenOptions={() => undefined} />
+        <SkeletonPulse>
+          <View className="flex-row gap-3 bg-surface px-5 pb-5 pt-2 dark:bg-black">
+            {[0, 1, 2].map((item) => <Skeleton key={item} width="31%" height={62} radius={12} />)}
+          </View>
+        </SkeletonPulse>
+        <Tabs activeTab="OFFICIAL" onChange={() => undefined} tabs={[{ label: t("restaurants:official"), value: "OFFICIAL" }, { label: t("restaurants:community"), value: "COMMUNITY" }, { label: t("common:reviews"), value: "REVIEWS" }, { label: t("restaurants:menu"), value: "MENU" }]} />
+        <SkeletonList variant="grid" count={9} />
+      </ScrollView>
+    );
   }
 
   if (!restaurant) {
@@ -429,6 +442,16 @@ export default function RestaurantScreen() {
         onClaim={() => void claimRestaurant()}
         onCreateReview={() => openCreateFlow("/create/review")}
         onCreateContent={() => openCreateFlow("/create/content")}
+        onReport={() => {
+          setOptionsOpen(false);
+          setTimeout(() => setReportOpen(true), 250);
+        }}
+      />
+      <ReportBottomSheet
+        open={reportOpen}
+        targetType="RESTAURANT"
+        targetId={restaurant.id}
+        onClose={() => setReportOpen(false)}
       />
     </>
   );

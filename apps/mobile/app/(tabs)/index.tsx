@@ -1,4 +1,4 @@
-import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
+import { CommentsBottomSheet } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
@@ -146,6 +146,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not delete post");
+      return false;
     }
   }
 
@@ -186,9 +187,7 @@ export default function HomeScreen() {
     });
   }
 
-  if (authLoading || feed.isPending) {
-    return <LoadingScreen variant="feed" />;
-  }
+  const pageLoading = authLoading || feed.isPending;
 
   return (
     <SafeAreaView
@@ -220,7 +219,7 @@ export default function HomeScreen() {
           <SearchBar
             editable={false}
             placeholder={t("search")}
-            onPress={() => setIsSearching(true)}
+            onPress={() => { if (!pageLoading) setIsSearching(true); }}
             rightAccessory={
               <TouchableOpacity
                 className="relative h-full aspect-square items-center justify-center rounded-2xl bg-ink dark:bg-white"
@@ -267,6 +266,7 @@ export default function HomeScreen() {
                     }
                   }}
                   loadingMore={feed.isFetchingNextPage}
+                  loading={pageLoading}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}
@@ -285,6 +285,7 @@ export default function HomeScreen() {
                     }
                   }}
                   loadingMore={feed.isFetchingNextPage}
+                  loading={pageLoading}
                   onToggleLike={toggleLike}
                   onOpenComments={openComments}
                   onToggleWantToTry={toggleWantToTry}

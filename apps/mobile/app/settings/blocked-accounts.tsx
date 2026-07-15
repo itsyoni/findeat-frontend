@@ -1,4 +1,4 @@
-import { Avatar, LoadingScreen } from "@/components/common";
+import { Avatar, SkeletonList } from "@/components/common";
 import Text from "@/components/common/AppText";
 import SettingsHeader from "@/components/settings/SettingsHeader";
 import { useAppTheme } from "@/contexts/ThemeContext";
@@ -50,14 +50,12 @@ export default function BlockedAccountsScreen() {
     }
   }
 
-  if (loading) return <LoadingScreen variant="list" />;
-
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
     >
       <SettingsHeader title={t("blockedAccounts")} />
-      {users.length === 0 ? (
+      {loading ? <SkeletonList count={7} /> : users.length === 0 ? (
         <View className="flex-1 items-center justify-center px-8 pb-20">
           <View className="h-20 w-20 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
             <ProhibitIcon

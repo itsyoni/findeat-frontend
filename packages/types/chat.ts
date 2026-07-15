@@ -3,6 +3,7 @@ import type { Restaurant } from "./restaurant";
 import type { UserSummary } from "./user";
 
 export type ChatType = "DIRECT" | "GROUP" | "RESTAURANT";
+export type MessageType = "TEXT" | "IMAGE" | "POST" | "RESTAURANT" | "POLL" | "SYSTEM";
 
 export type SendMessagePayload = (
   | { type: "TEXT"; content: string }
@@ -11,9 +12,9 @@ export type SendMessagePayload = (
   | { type: "IMAGE"; imageUrl: string }
 ) & { replyToId?: string };
 
-export type MessageReply = {
+type MessageReply = {
   id: string;
-  type?: "TEXT" | "IMAGE" | "POST" | "RESTAURANT" | "POLL" | "SYSTEM";
+  type?: MessageType;
   content: string | null;
   imageUrl?: string | null;
   deletedAt?: string | null;
@@ -50,7 +51,7 @@ export type Chat = {
 
 export type Message = {
   id: string;
-  type?: "TEXT" | "IMAGE" | "POST" | "RESTAURANT" | "POLL" | "SYSTEM";
+  type?: MessageType;
   content: string | null;
   imageUrl?: string | null;
 
@@ -68,6 +69,8 @@ export type Message = {
   sentAsRestaurant?: Pick<Restaurant, "id" | "name" | "logoUrl"> | null;
   replyToId?: string | null;
   replyTo?: MessageReply | null;
+  mentions?: { user: UserSummary }[];
+  readReceipts?: { userId: string; readAt: string }[];
 };
 
 export type RestaurantConversation = {
@@ -80,7 +83,7 @@ export type RestaurantConversation = {
 
 export type RestaurantMessage = {
   id: string;
-  type: "TEXT" | "IMAGE" | "POST" | "RESTAURANT" | "POLL" | "SYSTEM";
+  type: MessageType;
   content?: string | null;
   imageUrl?: string | null;
   createdAt: string;

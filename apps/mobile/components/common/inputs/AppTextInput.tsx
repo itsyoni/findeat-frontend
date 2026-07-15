@@ -4,6 +4,7 @@ import { ReactNode, useState } from "react";
 import {
   TextInput as RNTextInput,
   TextInputProps,
+  I18nManager,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -46,7 +47,7 @@ export default function TextInput({
 }: Props) {
   const { isDark } = useAppTheme();
   const [hidden, setHidden] = useState(isPassword);
-  const isRtl = startsWithRtl(value);
+  const isRtl = value?.trim() ? startsWithRtl(value) : I18nManager.isRTL;
   const Input = useBottomSheetInput ? BottomSheetTextInput : RNTextInput;
   const isMultiline = !!props.multiline;
 

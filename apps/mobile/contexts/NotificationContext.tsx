@@ -65,9 +65,10 @@ function mergeNotification(
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: false,
-    shouldSetBadge: false,
+    shouldSetBadge: true,
     shouldShowBanner: false,
-    shouldShowList: false,
+    shouldShowList: true,
+    priority: Notifications.AndroidNotificationPriority.HIGH,
   }),
 });
 
@@ -75,12 +76,16 @@ function openPushData(data?: Record<string, unknown>) {
   if (!data) return;
   const conversationId = stringPushValue(data.conversationId);
   const postId = stringPushValue(data.postId);
+  const commentId = stringPushValue(data.commentId);
   const restaurantId = stringPushValue(data.restaurantId);
   const actorId = stringPushValue(data.actorId);
 
   if (conversationId) router.push(`/chats/${conversationId}`);
   else if (postId)
-    router.push({ pathname: "/(posts)/[id]", params: { id: postId } });
+    router.push({
+      pathname: "/(posts)/[id]",
+      params: { id: postId, ...(commentId ? { commentId } : {}) },
+    });
   else if (restaurantId) router.push(`/restaurants/${restaurantId}`);
   else if (actorId)
     router.push({ pathname: "/(users)/[id]", params: { id: actorId } });
@@ -152,6 +157,15 @@ export function NotificationProvider({
         queryKey: notificationUnreadQueryKey,
       });
 
+      if (
+        item.type === "MESSAGE_MENTION" &&
+        item.conversationId &&
+        pathnameRef.current === `/chats/${item.conversationId}`
+      ) {
+        setPopup(null);
+        return;
+      }
+
       if (notificationsScreenOpen.current) {
         setPopup(null);
         return;
@@ -181,11 +195,33 @@ export function NotificationProvider({
       registrationInFlight = true;
 
       try {
+        if (Platform.OS === "android") {
+          await Notifications.setNotificationChannelAsync("findeat-alerts", {
+            name: "FindEat alerts",
+            description: "Messages and activity from FindEat",
+            importance: Notifications.AndroidImportance.MAX,
+            lockscreenVisibility:
+              Notifications.AndroidNotificationVisibility.PUBLIC,
+            sound: "default",
+            enableVibrate: true,
+            vibrationPattern: [0, 250, 180, 250],
+            enableLights: true,
+            lightColor: "#FFB326",
+            showBadge: true,
+          });
+        }
+
         const current = await Notifications.getPermissionsAsync();
         const permission =
           current.status === "granted"
             ? current
-            : await Notifications.requestPermissionsAsync();
+            : await Notifications.requestPermissionsAsync({
+                ios: {
+                  allowAlert: true,
+                  allowBadge: true,
+                  allowSound: true,
+                },
+              });
         if (permission.status !== "granted" || cancelled) return;
 
         const projectId = Constants.expoConfig?.extra?.eas?.projectId;

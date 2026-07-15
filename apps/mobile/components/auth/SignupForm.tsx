@@ -1,19 +1,20 @@
 import Text from "@/components/common/AppText";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { SignupFormData, signupSchema } from "@/lib/validation/auth";
+import { signupSchema } from "@/lib/validation/auth";
+import type { SignupFormData } from "@findeat/types";
 import { getErrorMessage } from "@findeat/utils";
-import { AtIcon, EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
+import { EnvelopeSimpleIcon, LockIcon, UserIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Alert, Platform, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 import { TextInput } from "../common";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import AuthFormHeader from "./AuthFormHeader";
 
 type Props = {
   onLogin: () => void;
-  onRestaurantSignup: () => void;
   onVerificationRequired: (email: string) => void;
 };
 
@@ -23,8 +24,6 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
   const { isDark } = useAppTheme();
   const iconColor = isDark ? "#E5E7EB" : "#212121";
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,8 +47,6 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
   async function handleSignup() {
     try {
       const data: SignupFormData = signupSchema.parse({
-        firstName,
-        lastName,
         username,
         email,
         password,
@@ -68,12 +65,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
 
       setLoading(true);
 
-      const result = await signup(
-        data.email,
-        data.username,
-        data.password,
-        `${data.firstName} ${data.lastName}`.trim(),
-      );
+      const result = await signup(data.email, data.username, data.password);
       onVerificationRequired(result.email);
     } catch (error) {
       if (error instanceof ZodError) {
@@ -120,45 +112,22 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
 
   return (
     <View>
-      <Text weight="bold" className="text-center text-2xl text-[#212121] dark:text-white">
-        {t("auth:createAccount")}
-      </Text>
-
-      <Text className="mb-6 mt-1 text-center text-gray-500">
-        {t("auth:signupSubtitle")}
-      </Text>
+      <AuthFormHeader
+        title={t("auth:createAccount")}
+        subtitle={t("auth:signupSubtitle")}
+      />
 
       <View className="gap-4">
-        <View className="flex-row gap-3">
-          <TextInput
-            useBottomSheetInput
-            placeholder={t("auth:firstName")}
-            value={firstName}
-            onChangeText={setFirstName}
-            autoCapitalize="words"
-            className="flex-1 border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
-          />
-
-          <TextInput
-            useBottomSheetInput
-            placeholder={t("auth:lastName")}
-            value={lastName}
-            onChangeText={setLastName}
-            autoCapitalize="words"
-            className="flex-1 border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
-          />
-        </View>
-
         <TextInput
           useBottomSheetInput
-          placeholder={t("auth:username")}
+          placeholder={t("auth:usernamePlaceholder")}
           value={username}
           onChangeText={(text) => {
             setUsername(text.replace(/[^a-zA-Z0-9_]/g, ""));
           }}
           autoCapitalize="none"
           className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800"
-          leftIcon={<AtIcon size={20} color={iconColor} />}
+          leftIcon={<UserIcon size={20} color={iconColor} />}
         />
 
         {availability.usernameAvailable === false && (
@@ -169,7 +138,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
 
         <TextInput
           useBottomSheetInput
-          placeholder={t("auth:email")}
+          placeholder={t("auth:emailPlaceholder")}
           value={email}
           onChangeText={setEmail}
           autoCapitalize="none"
@@ -186,7 +155,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
 
         <TextInput
           useBottomSheetInput
-          placeholder={t("auth:password")}
+          placeholder={t("auth:passwordPlaceholder")}
           value={password}
           onChangeText={setPassword}
           isPassword
@@ -197,7 +166,7 @@ export default function SignupForm({ onLogin, onVerificationRequired }: Props) {
 
         <TextInput
           useBottomSheetInput
-          placeholder={t("auth:confirmPassword")}
+          placeholder={t("auth:confirmPasswordPlaceholder")}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           isPassword

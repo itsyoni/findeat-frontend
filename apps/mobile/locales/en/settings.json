@@ -1,6 +1,8 @@
 {
   "language": "Language",
   "chooseLanguage": "Choose language",
+  "languageChangeError": "Could not change the app language. Please try again.",
+  "appVersion": "FindEat version {{version}}",
   "english": "English",
   "hebrew": "עברית",
   "theme": "Appearance",
@@ -78,6 +80,20 @@
     "CLOSED": "Closed"
   },
   "accountManagement": "Account management",
+  "deactivateAccount": "Deactivate account",
+  "deactivateAccountSubtitle": "Temporarily hide your account and take a break",
+  "takeABreak": "Take a break from FindEat",
+  "deactivateAccountBody": "Your account will be hidden until you choose to reactivate it. Nothing will be permanently deleted.",
+  "whileDeactivated": "While your account is deactivated",
+  "deactivateHidden": "Your profile, posts, reviews, and comments will not be visible to other people.",
+  "deactivateKeepsData": "Your account information and content will remain safely stored.",
+  "deactivateReturn": "To come back, log in with the same email and password and choose Reactivate account.",
+  "deactivateAccountAction": "Deactivate account",
+  "deactivatingAccount": "Deactivating account…",
+  "deactivateAccountError": "Could not deactivate your account. Please check your password and try again.",
+  "preferDeactivationTitle": "Would you rather take a break?",
+  "preferDeactivationBody": "Deactivation hides your profile and content without deleting anything. You can return whenever you want.",
+  "deactivateInstead": "Deactivate instead",
   "deleteAccount": "Delete account",
   "deleteAccountSubtitle": "Permanently delete your FindEat account",
   "deleteAccountWarningTitle": "This cannot be undone",
@@ -96,5 +112,47 @@
   "deleteAccountFinalNotice": "Your messages and comments will be anonymized so other conversations remain understandable.",
   "deleteAccountError": "Could not delete your account. Please check your password and try again.",
   "termsOfUse": "Terms of Use",
-  "termsOfUseSubtitle": "Terms, privacy policy, and legal information"
+  "termsOfUseSubtitle": "Terms, privacy policy, and legal information",
+  "whatsNew": "What's new",
+  "whatsNewSubtitle": "Latest FindEat features and improvements",
+  "whatsNewPopups": "Show What's New automatically",
+  "whatsNewPopupsSubtitle": "Show a popup when new FindEat features and improvements are released. You can always view them on this page.",
+  "whatsNewPopupPreferenceError": "Could not update this preference. Please try again.",
+  "gotIt": "Got it",
+  "nextUpdate": "Next",
+  "noProductUpdates": "Nothing new yet",
+  "noProductUpdatesSubtitle": "New FindEat features and improvements will appear here.",
+  "appPermissions": "App permissions",
+  "appPermissionsSubtitle": "Camera, photos, location, and notifications",
+  "appPermissionsIntro": "Choose what FindEat can access on this phone. Some permissions can only be changed in your device settings after you make a choice.",
+  "devicePermissions": "Phone permissions",
+  "permissionsSystemHint": "Your phone controls these permissions. FindEat cannot enable a permission you have permanently denied or disable a permission on your behalf.",
+  "openDeviceSettings": "Open device settings",
+  "allowPermission": "Allow",
+  "managePermission": "Manage",
+  "pleaseWait": "Please wait…",
+  "permissionStatus": {
+    "allowed": "Allowed",
+    "limited": "Limited access",
+    "denied": "Not allowed",
+    "notRequested": "Not requested"
+  },
+  "permission": {
+    "camera": {
+      "title": "Camera",
+      "subtitle": "Take photos for posts, reviews, and your profile."
+    },
+    "photos": {
+      "title": "Photos and gallery",
+      "subtitle": "Choose photos for posts, reviews, dishes, and your profile."
+    },
+    "location": {
+      "title": "Location",
+      "subtitle": "Find nearby restaurants, calculate distance, and center the map."
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Receive updates about messages, likes, comments, follows, and claims."
+    }
+  }
 }

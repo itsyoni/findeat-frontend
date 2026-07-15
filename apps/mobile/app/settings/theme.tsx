@@ -1,6 +1,7 @@
 import Text from '@/components/common/AppText';
 import SettingsHeader from '@/components/settings/SettingsHeader';
-import { ThemePreference, useAppTheme } from '@/contexts/ThemeContext';
+import { useAppTheme } from '@/contexts/ThemeContext';
+import type { ThemePreference } from '@findeat/types';
 import { CheckIcon, DeviceMobileIcon, MoonIcon, SunIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { TouchableOpacity, View } from 'react-native';

@@ -5,8 +5,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api, API_URL } from "@/lib/api";
 import { Chat, Message } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon, PaperPlaneTiltIcon, XIcon } from "phosphor-react-native";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ChecksIcon,
+  PaperPlaneTiltIcon,
+  XIcon,
+} from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -40,9 +45,21 @@ import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import MessageActionsBottomSheet from "@/components/chats/MessageActionsBottomSheet";
+import MentionSuggestions from "@/components/common/MentionSuggestions";
+import MentionText from "@/components/common/MentionText";
+import SeenByBottomSheet, {
+  type SeenByViewer,
+} from "@/components/chats/SeenByBottomSheet";
 
 type ChatMessage = Message & {
   renderKey?: string;
+};
+
+type MessagesReadEvent = {
+  conversationId: string;
+  userId: string;
+  messageIds: string[];
+  readAt: string;
 };
 
 function isSameDay(left?: string, right?: string) {
@@ -164,6 +181,7 @@ export default function ChatScreen() {
   const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [seenByMessageId, setSeenByMessageId] = useState<string | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesListRef = useRef<FlatList<ChatMessage>>(null);
@@ -178,6 +196,23 @@ export default function ChatScreen() {
   const shouldScrollToEndRef = useRef(false);
   const scrollToEndAnimatedRef = useRef(false);
   const hasPositionedAtBottomRef = useRef(false);
+  const readReceiptBufferRef = useRef(
+    new Map<string, { userId: string; readAt: string }[]>(),
+  );
+
+  function withBufferedReadReceipts(message: Message): Message {
+    const bufferedReceipts = readReceiptBufferRef.current.get(message.id);
+    if (!bufferedReceipts?.length) return message;
+
+    readReceiptBufferRef.current.delete(message.id);
+    const receiptsByUserId = new Map(
+      (message.readReceipts ?? []).map((receipt) => [receipt.userId, receipt]),
+    );
+    bufferedReceipts.forEach((receipt) =>
+      receiptsByUserId.set(receipt.userId, receipt),
+    );
+    return { ...message, readReceipts: [...receiptsByUserId.values()] };
+  }
 
   const scheduleScrollToEnd = useCallback((animated: boolean) => {
     shouldScrollToEndRef.current = true;
@@ -189,6 +224,47 @@ export default function ChatScreen() {
   }, []);
 
   const otherUser = chat?.participants.find((p) => p.userId !== user?.id)?.user;
+  const mentionCandidates = chat?.participants.map((participant) => participant.user);
+
+  const latestSentMessageId = useMemo(
+    () => {
+      const latestOwnMessage = [...messages]
+        .reverse()
+        .find((message) => message.senderId === user?.id);
+      return latestOwnMessage?.id.startsWith("pending-")
+        ? undefined
+        : latestOwnMessage?.id;
+    },
+    [messages, user?.id],
+  );
+
+  function seenByViewers(message?: Message | null): SeenByViewer[] {
+    if (!message || !chat || !user?.id) return [];
+    const participantsById = new Map(
+      chat.participants.map((participant) => [
+        participant.userId,
+        participant.user,
+      ]),
+    );
+
+    return (message.readReceipts ?? [])
+      .filter((receipt) => receipt.userId !== user.id)
+      .map((receipt) => {
+        const receiptUser = participantsById.get(receipt.userId);
+        return receiptUser
+          ? { user: receiptUser, readAt: receipt.readAt }
+          : null;
+      })
+      .filter((viewer): viewer is SeenByViewer => !!viewer)
+      .sort(
+        (left, right) =>
+          new Date(left.readAt).getTime() - new Date(right.readAt).getTime(),
+      );
+  }
+
+  const selectedSeenByViewers = seenByViewers(
+    messages.find((message) => message.id === seenByMessageId),
+  );
 
   const isGroupChat = chat?.type === "GROUP";
   const isRestaurantChat =
@@ -292,7 +368,7 @@ export default function ChatScreen() {
     }
     shouldScrollToEndRef.current = true;
     scrollToEndAnimatedRef.current = false;
-    setMessages(messages);
+    setMessages(messages.map(withBufferedReadReceipts));
 
     requestAnimationFrame(() => setAnimateNewMessages(true));
   }, [conversationId, isNewChat]);
@@ -392,6 +468,37 @@ export default function ChatScreen() {
 
         return [...current, message];
       });
+
+      if (message.senderId !== user.id) {
+        socket.emit("mark_read", { conversationId });
+      }
+    });
+
+    socket.on("messages_read", (event: MessagesReadEvent) => {
+      if (
+        event.conversationId !== conversationId ||
+        event.userId === user.id
+      ) {
+        return;
+      }
+
+      const readMessageIds = new Set(event.messageIds);
+      event.messageIds.forEach((messageId) => {
+        const bufferedReceipts =
+          readReceiptBufferRef.current.get(messageId) ?? [];
+        readReceiptBufferRef.current.set(messageId, [
+          ...bufferedReceipts.filter(
+            (receipt) => receipt.userId !== event.userId,
+          ),
+          { userId: event.userId, readAt: event.readAt },
+        ]);
+      });
+      setMessages((current) =>
+        current.map((message) => {
+          if (!readMessageIds.has(message.id)) return message;
+          return withBufferedReadReceipts(message);
+        }),
+      );
     });
 
     socket.on(
@@ -471,6 +578,7 @@ export default function ChatScreen() {
       typingUserTimers.clear();
       sentTypingRef.current = false;
       socket.off("receive_message");
+      socket.off("messages_read");
       socket.off("message_deleted");
       socket.off("typing_changed");
       socket.disconnect();
@@ -575,18 +683,19 @@ export default function ChatScreen() {
             return;
           }
 
+          const confirmedMessage = withBufferedReadReceipts(message);
           setMessages((current) =>
             current.some((item) => item.id === optimisticId)
               ? current
-                  .filter((item) => item.id !== message.id)
+                  .filter((item) => item.id !== confirmedMessage.id)
                   .map((item) =>
                     item.id === optimisticId
-                      ? { ...message, renderKey: item.renderKey }
+                      ? { ...confirmedMessage, renderKey: item.renderKey }
                       : item,
                   )
-              : current.some((item) => item.id === message.id)
+              : current.some((item) => item.id === confirmedMessage.id)
                 ? current
-                : [...current, message],
+                : [...current, confirmedMessage],
           );
         },
       );
@@ -666,6 +775,37 @@ export default function ChatScreen() {
     if (index >= 0) {
       messagesListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
     }
+  }
+
+  function receiptLabel(message: Message) {
+    const viewers = seenByViewers(message);
+    if (viewers.length === 0) return null;
+
+    if (!isGroupChat) {
+      return t("seenWithTime", {
+        time: formatMessageTime(viewers[viewers.length - 1].readAt),
+      });
+    }
+
+    const expectedViewerCount =
+      chat?.participants.filter((participant) => participant.userId !== user?.id)
+        .length ?? 0;
+    if (expectedViewerCount > 0 && viewers.length >= expectedViewerCount) {
+      return t("seenByAll");
+    }
+
+    const names = viewers.map(
+      ({ user: viewer }) => viewer.displayName ?? viewer.username,
+    );
+    if (names.length === 1) return t("seenByOne", { name: names[0] });
+    if (names.length === 2) {
+      return t("seenByTwo", { first: names[0], second: names[1] });
+    }
+    return t("seenByMany", {
+      first: names[0],
+      second: names[1],
+      count: names.length - 2,
+    });
   }
 
   function getStatusText() {
@@ -748,7 +888,8 @@ export default function ChatScreen() {
                   hitSlop={8}
                   className="h-11 w-11 items-center justify-center"
                 >
-                  <CaretLeftIcon
+                  <DirectionalIcon
+                    direction="back"
                     size={28}
                     color={isDark ? "white" : "black"}
                     weight="bold"
@@ -881,6 +1022,10 @@ export default function ChatScreen() {
 
               const nextMessageIsDifferentSender =
                 !!nextMessage && nextMessage.senderId !== item.senderId;
+              const seenLabel =
+                isMine && item.id === latestSentMessageId
+                  ? receiptLabel(item)
+                  : null;
 
               return (
                 <View>
@@ -1016,15 +1161,15 @@ export default function ChatScreen() {
                           </View>
                         )
                       ) : (
-                        <Text
+                        <MentionText
                           className={
                             isMine
                               ? "text-black"
                               : "text-black dark:text-white"
                           }
-                        >
-                          {item.content}
-                        </Text>
+                          content={item.content ?? ""}
+                          mentions={item.mentions}
+                        />
                       )}
 
                       <Text
@@ -1038,6 +1183,25 @@ export default function ChatScreen() {
                       </Text>
                     </Pressable>
                   </Animated.View>
+                  {seenLabel ? (
+                    <TouchableOpacity
+                      disabled={!isGroupChat}
+                      onPress={() => setSeenByMessageId(item.id)}
+                      className="mb-1 mr-1 flex-row items-center self-end py-0.5"
+                    >
+                      <ChecksIcon
+                        size={14}
+                        color="#10B981"
+                        weight="bold"
+                      />
+                      <Text
+                        numberOfLines={1}
+                        className="ml-1 max-w-[280px] text-[11px] font-medium text-emerald-600 dark:text-emerald-400"
+                      >
+                        {seenLabel}
+                      </Text>
+                    </TouchableOpacity>
+                  ) : null}
                 </View>
               );
             }}
@@ -1073,6 +1237,11 @@ export default function ChatScreen() {
                 </TouchableOpacity>
               </View>
             ) : null}
+            <MentionSuggestions
+              value={content}
+              onChange={handleContentChange}
+              candidates={mentionCandidates}
+            />
             <View className="flex-row items-end">
             <RNTextInput
               className="flex-1 rounded-3xl border border-line bg-soft px-4 text-ink dark:border-gray-800 dark:bg-[#1B1B1D] dark:text-white"
@@ -1147,6 +1316,11 @@ export default function ChatScreen() {
         onClose={() => setSelectedMessage(null)}
         onReply={(message) => setReplyingTo(message)}
         onDelete={deleteMessage}
+      />
+      <SeenByBottomSheet
+        open={!!seenByMessageId}
+        viewers={selectedSeenByViewers}
+        onClose={() => setSeenByMessageId(null)}
       />
     </>
   );

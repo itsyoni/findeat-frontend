@@ -1,40 +1,16 @@
-import { LoadingScreen } from "@/components/common";
+import { Skeleton, SkeletonPulse } from "@/components/common";
 import Avatar from "@/components/common/Avatar";
 import Text from "@/components/common/AppText";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
-import { Dish } from "@findeat/types";
+import type { DishDetails } from "@findeat/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon, ForkKnifeIcon, StarIcon } from "phosphor-react-native";
+import { ForkKnifeIcon, StarIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-type DishDetails = Dish & {
-  restaurant?: {
-    id: string;
-    name: string;
-    logoUrl?: string | null;
-    city?: string | null;
-  };
-  menu?: { id: string; title: string } | null;
-  reviewItems?: {
-    id: string;
-    imageUrl?: string | null;
-    rating?: number | null;
-    text?: string | null;
-    reviewPost?: {
-      post?: {
-        author?: {
-          id: string;
-          username: string;
-          avatarUrl?: string | null;
-        };
-      };
-    };
-  }[];
-};
 
 export default function MenuItemScreen() {
   const { isDark } = useAppTheme();
@@ -50,7 +26,7 @@ export default function MenuItemScreen() {
       .getDish(id)
       .then((nextDish) => {
         if (!cancelled) {
-          const details = nextDish as DishDetails;
+          const details = nextDish;
           const createdAt = details.createdAt
             ? new Date(details.createdAt).getTime()
             : null;
@@ -97,7 +73,24 @@ export default function MenuItemScreen() {
 
   const isNewDish = dish?.isNew === true;
 
-  if (loading) return <LoadingScreen variant="detail" />;
+  if (loading) {
+    return (
+      <View className="flex-1 bg-white dark:bg-black">
+        <Stack.Screen options={{ headerShown: false }} />
+        <SkeletonPulse>
+          <Skeleton height={384} radius={0} />
+          <View className="-mt-8 min-h-[430px] gap-5 rounded-t-[34px] bg-white px-5 pb-16 pt-8 dark:bg-black">
+            <View className="flex-row justify-between"><Skeleton width="62%" height={30} radius={10} /><Skeleton width={78} height={42} radius={21} /></View>
+            <View className="flex-row gap-2"><Skeleton width={84} height={30} radius={15} /><Skeleton width={70} height={30} radius={15} /></View>
+            <Skeleton height={82} radius={24} />
+            <Skeleton height={132} radius={24} />
+            <Skeleton width="42%" height={21} radius={8} />
+            <Skeleton height={110} radius={20} />
+          </View>
+        </SkeletonPulse>
+      </View>
+    );
+  }
 
   if (!dish) {
     return (
@@ -325,7 +318,7 @@ export default function MenuItemScreen() {
             onPress={() => router.back()}
             className="h-11 w-11 items-center justify-center rounded-full bg-black/45"
           >
-            <CaretLeftIcon size={24} color="white" weight="bold" />
+            <DirectionalIcon direction="back" size={24} color="white" weight="bold" />
           </TouchableOpacity>
         </View>
       </SafeAreaView>

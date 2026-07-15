@@ -14,4 +14,9 @@ export type Comment = {
   likesCount: number;
   isLiked: boolean;
   likedByAuthor: boolean;
+  canDelete: boolean;
+  canModerate: boolean;
+  isPinned: boolean;
+  canPin: boolean;
+  mentions?: { user: UserSummary }[];
 };

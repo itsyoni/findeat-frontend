@@ -1,13 +1,17 @@
-import { AppButton, IconButton, LoadingScreen } from "@/components/common";
+import { AppButton, IconButton, Skeleton, SkeletonPulse } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import FormInput from "@/components/forms/FormInput";
+import ProfileDetailsEditor, {
+  EMPTY_PROFILE_DETAILS,
+  type ProfileDetailsDraft,
+} from "@/components/profile/ProfileDetailsEditor";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import ImageCropPicker from "react-native-image-crop-picker";
 import { router } from "expo-router";
-import { CaretLeftIcon } from "phosphor-react-native";
+import { DirectionalBackIcon } from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -28,6 +32,9 @@ export default function EditProfileScreen() {
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [details, setDetails] = useState<ProfileDetailsDraft>(EMPTY_PROFILE_DETAILS);
+  const [originalDetails, setOriginalDetails] =
+    useState<ProfileDetailsDraft>(EMPTY_PROFILE_DETAILS);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [newCoverUri, setNewCoverUri] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,6 +58,7 @@ export default function EditProfileScreen() {
     username !== original.username ||
     displayName !== original.displayName ||
     bio !== (original.bio ?? "") ||
+    JSON.stringify(details) !== JSON.stringify(originalDetails) ||
     newAvatarUri !== null ||
     newCoverUri !== null;
 
@@ -62,6 +70,22 @@ export default function EditProfileScreen() {
       .then((data) => {
         if (cancelled) return;
 
+        const nextDetails: ProfileDetailsDraft = {
+          phoneNumber: data.phoneNumber ?? "",
+          birthday: formatBirthdayForInput(data.birthday),
+          pronouns: data.pronouns ?? "",
+          allergies: data.allergies?.join(", ") ?? "",
+          foodPreferences: data.foodPreferences ?? [],
+          dietaryRestrictions: data.dietaryRestrictions ?? [],
+          favoriteCuisines: data.favoriteCuisines?.join(", ") ?? "",
+          showPhoneNumber: data.showPhoneNumber ?? false,
+          showBirthday: data.showBirthday ?? false,
+          showPronouns: data.showPronouns ?? true,
+          showAllergies: data.showAllergies ?? false,
+          showFoodPreferences: data.showFoodPreferences ?? true,
+          showDietaryRestrictions: data.showDietaryRestrictions ?? false,
+          showFavoriteCuisines: data.showFavoriteCuisines ?? true,
+        };
         setOriginal({
           username: data.username ?? "",
           displayName: data.displayName ?? "",
@@ -72,6 +96,8 @@ export default function EditProfileScreen() {
         setBio(data.bio ?? "");
         setDisplayName(data.displayName ?? "");
         setCoverUrl(data.coverUrl ?? null);
+        setDetails(nextDetails);
+        setOriginalDetails(nextDetails);
       })
       .catch(console.error)
       .finally(() => {
@@ -84,7 +110,21 @@ export default function EditProfileScreen() {
   }, []);
 
   if (initialLoading) {
-    return <LoadingScreen variant="profile" />;
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}>
+        <SkeletonPulse>
+          <View className="flex-row items-center px-5 pt-4"><Skeleton width={42} height={42} circle /><Skeleton width="38%" height={24} radius={9} style={{ marginLeft: 10 }} /></View>
+          <View className="px-5 pb-10">
+            <Skeleton height={192} radius={24} style={{ marginTop: 24 }} />
+            <View className="mt-8 items-center"><Skeleton width={96} height={96} circle /><Skeleton width={150} height={13} radius={6} style={{ marginTop: 12 }} /></View>
+            <Skeleton width="28%" height={21} radius={8} style={{ marginTop: 32, marginBottom: 14 }} />
+            {[0, 1].map((item) => <View key={item} className="mb-5 gap-2"><Skeleton width="26%" height={11} radius={5} /><Skeleton height={52} radius={14} /></View>)}
+            <View className="mb-5 gap-2"><Skeleton width="16%" height={11} radius={5} /><Skeleton height={104} radius={14} /></View>
+            <Skeleton height={48} radius={14} />
+          </View>
+        </SkeletonPulse>
+      </SafeAreaView>
+    );
   }
 
   async function saveProfile() {
@@ -104,6 +144,14 @@ export default function EditProfileScreen() {
       return;
     }
 
+    let birthday: string | null;
+    try {
+      birthday = parseBirthdayInput(details.birthday);
+    } catch {
+      Alert.alert(t("profile:invalidBirthday"), t("profile:invalidBirthdayHint"));
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -120,6 +168,20 @@ export default function EditProfileScreen() {
         bio: bio.trim() || null,
         avatarUrl: finalAvatarUrl ?? undefined,
         coverUrl: finalCoverUrl,
+        phoneNumber: details.phoneNumber.trim() || null,
+        birthday,
+        pronouns: details.pronouns.trim() || null,
+        allergies: commaList(details.allergies),
+        foodPreferences: details.foodPreferences,
+        dietaryRestrictions: details.dietaryRestrictions,
+        favoriteCuisines: commaList(details.favoriteCuisines),
+        showPhoneNumber: details.showPhoneNumber,
+        showBirthday: details.showBirthday,
+        showPronouns: details.showPronouns,
+        showAllergies: details.showAllergies,
+        showFoodPreferences: details.showFoodPreferences,
+        showDietaryRestrictions: details.showDietaryRestrictions,
+        showFavoriteCuisines: details.showFavoriteCuisines,
       });
 
       await refreshUser();
@@ -261,7 +323,7 @@ export default function EditProfileScreen() {
         >
         <View className="flex-row items-center px-5 pt-4">
           <IconButton
-            icon={CaretLeftIcon}
+            icon={DirectionalBackIcon}
             variant="ghost"
             onPress={handleBack}
           />
@@ -325,6 +387,9 @@ export default function EditProfileScreen() {
             multiline
           />
 
+          <SectionTitle title={t("profile:foodProfile")} />
+          <ProfileDetailsEditor value={details} onChange={setDetails} />
+
           <AppButton
             title={loading ? t("common:saving") : t("common:save")}
             onPress={saveProfile}
@@ -336,6 +401,34 @@ export default function EditProfileScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
+}
+
+function commaList(value: string) {
+  return [...new Set(value.split(",").map((item) => item.trim()).filter(Boolean))];
+}
+
+function formatBirthdayForInput(value?: string | null) {
+  if (!value) return "";
+  const [year, month, day] = value.slice(0, 10).split("-");
+  return `${day}/${month}/${year}`;
+}
+
+function parseBirthdayInput(value: string) {
+  const normalized = value.trim();
+  if (!normalized) return null;
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(normalized);
+  if (!match) throw new Error("Invalid birthday");
+  const [, day, month, year] = match;
+  const isoDate = `${year}-${month}-${day}`;
+  const date = new Date(`${isoDate}T00:00:00.000Z`);
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== isoDate ||
+    date > new Date()
+  ) {
+    throw new Error("Invalid birthday");
+  }
+  return isoDate;
 }
 
 function SectionTitle({ title }: { title: string }) {

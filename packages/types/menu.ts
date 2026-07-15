@@ -1,3 +1,5 @@
+import type { UserSummary } from "./user";
+
 export type Dish = {
   id: string;
   name: string;
@@ -11,6 +13,29 @@ export type Dish = {
   reviewsCount?: number;
   averageRating?: number | null;
   isNew?: boolean;
+};
+
+type DishReview = {
+  id: string;
+  imageUrl?: string | null;
+  rating?: number | null;
+  text?: string | null;
+  reviewPost?: {
+    post?: {
+      author?: UserSummary;
+    };
+  };
+};
+
+export type DishDetails = Dish & {
+  restaurant?: {
+    id: string;
+    name: string;
+    logoUrl?: string | null;
+    city?: string | null;
+  };
+  menu?: Pick<Menu, "id" | "title"> | null;
+  reviewItems?: DishReview[];
 };
 
 export type Menu = {

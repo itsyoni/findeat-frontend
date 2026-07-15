@@ -12,7 +12,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export type LoadingScreenVariant =
+type LoadingScreenVariant =
   | "feed"
   | "profile"
   | "list"

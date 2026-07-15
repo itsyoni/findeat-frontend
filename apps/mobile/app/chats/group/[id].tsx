@@ -1,10 +1,11 @@
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
-import { LoadingScreen, ThemedSafeAreaView } from "@/components/common";
+import { Skeleton, SkeletonList, SkeletonPulse, ThemedSafeAreaView } from "@/components/common";
 import { api } from "@/lib/api";
 import { Chat } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
+import { UserPlusIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useState } from "react";
 import {
   FlatList,
@@ -38,7 +39,22 @@ export default function GroupDetailsScreen() {
   }, [id]);
 
   if (loading || !chat) {
-    return <LoadingScreen variant="list" />;
+    return (
+      <>
+        <Stack.Screen options={{ title: "", headerBackVisible: false }} />
+        <ThemedSafeAreaView>
+          <SkeletonPulse>
+            <View className="items-center border-b border-gray-100 px-6 py-8 dark:border-gray-800">
+              <Skeleton width={96} height={96} circle />
+              <Skeleton width="48%" height={28} radius={10} style={{ marginTop: 16 }} />
+              <Skeleton width="24%" height={12} radius={6} style={{ marginTop: 10 }} />
+              <Skeleton width={150} height={46} radius={16} style={{ marginTop: 24 }} />
+            </View>
+          </SkeletonPulse>
+          <SkeletonList count={7} />
+        </ThemedSafeAreaView>
+      </>
+    );
   }
 
   return (
@@ -52,7 +68,7 @@ export default function GroupDetailsScreen() {
               className="flex-row items-center pr-3"
               onPress={() => router.back()}
             >
-              <CaretLeftIcon size={24} color="black" />
+              <DirectionalIcon direction="back" size={24} color="black" />
               <Text className="text-lg text-black">Back</Text>
             </Pressable>
           ),

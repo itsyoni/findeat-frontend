@@ -1,4 +1,4 @@
-import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
+import { CommentsBottomSheet } from "@/components/common";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 import ContentFeedList from "@/components/posts/content/ContentFeed";
@@ -9,7 +9,7 @@ import {
   useFocusEffect,
   useLocalSearchParams,
 } from "expo-router";
-import { CaretLeftIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Alert, Dimensions, TouchableOpacity, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -156,6 +156,7 @@ export default function UserContentFeedScreen() {
     } catch (error) {
       console.error("Failed to delete post", error);
       Alert.alert("Error", "Could not delete post");
+      return false;
     }
   }
 
@@ -210,7 +211,12 @@ export default function UserContentFeedScreen() {
   const loading = !userId || loadedUserId !== userId;
 
   if (loading) {
-    return <LoadingScreen variant="feed" />;
+    return (
+      <View className="flex-1 bg-black">
+        <SafeAreaView edges={["top"]} pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 50 }}><View className="ml-4 mt-2 h-11 w-11 rounded-full bg-black/50" /></SafeAreaView>
+        <ContentFeedList posts={[]} loading height={height} contentTopInset={insets.top} refreshing={false} onRefresh={onRefresh} onToggleLike={toggleLike} onOpenComments={setSelectedPostId} onToggleWantToTry={toggleWantToTry} onDeletePost={deletePost} onOpenSharePost={setSharePostId} onOpenPostOptions={setOptionsPostId} />
+      </View>
+    );
   }
 
   return (
@@ -230,7 +236,7 @@ export default function UserContentFeedScreen() {
           className="ml-4 mt-2 h-11 w-11 items-center justify-center rounded-full bg-black/50"
           onPress={() => router.back()}
         >
-          <CaretLeftIcon size={24} color="white" />
+          <DirectionalIcon direction="back" size={24} color="white" />
         </TouchableOpacity>
       </SafeAreaView>
 

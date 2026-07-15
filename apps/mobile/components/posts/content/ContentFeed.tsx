@@ -1,8 +1,9 @@
 import { Post } from "@findeat/types/post";
 import { useState } from "react";
-import { FlatList } from "react-native";
+import { FlatList, View } from "react-native";
 import ContentPost from "./ContentPost";
 import EmptyPostsState from "../EmptyPostsState";
+import { Skeleton, SkeletonPulse } from "@/components/common";
 
 type Props = {
   posts: Post[];
@@ -23,6 +24,7 @@ type Props = {
     isWantToTry: boolean,
   ) => void;
   initialIndex?: number;
+  loading?: boolean;
 };
 
 export default function ContentFeed({
@@ -39,8 +41,35 @@ export default function ContentFeed({
   initialIndex = 0,
   onOpenSharePost,
   onOpenPostOptions,
+  loading = false,
 }: Props) {
   const [isPinchingMedia, setIsPinchingMedia] = useState(false);
+
+  if (loading) {
+    return (
+      <SkeletonPulse style={{ height }}>
+        <View className="flex-row items-center gap-3 px-4 py-3">
+          <Skeleton width={44} height={44} circle />
+          <View className="flex-1 gap-2">
+            <Skeleton width="42%" height={14} radius={7} />
+            <Skeleton width="30%" height={10} radius={5} />
+          </View>
+          <Skeleton width={28} height={28} circle />
+        </View>
+        <Skeleton height={Math.max(320, height - contentTopInset - 210)} radius={0} />
+        <View className="flex-row gap-5 px-4 py-4">
+          <Skeleton width={28} height={28} circle />
+          <Skeleton width={28} height={28} circle />
+          <Skeleton width={28} height={28} circle />
+          <Skeleton width={28} height={28} circle style={{ marginLeft: "auto" }} />
+        </View>
+        <View className="gap-2 px-4">
+          <Skeleton width="72%" height={12} radius={6} />
+          <Skeleton width="48%" height={12} radius={6} />
+        </View>
+      </SkeletonPulse>
+    );
+  }
 
   return (
     <FlatList

@@ -37,7 +37,7 @@ export type CreateReviewDraft = {
   items: ReviewDishDraft[];
 };
 
-export type RestaurantReviewItem = {
+type RestaurantReviewItem = {
   id: string;
   name: string;
   rating?: number | null;

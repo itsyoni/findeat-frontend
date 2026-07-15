@@ -173,6 +173,33 @@ export function createPostsApi(api: AxiosInstance) {
       return data;
     },
 
+    async deleteComment(id: string, commentId: string) {
+      const { data } = await api.delete<{
+        ok: true;
+        removedByPostAuthor: boolean;
+        removedUserId: string;
+      }>(`/posts/${id}/comments/${commentId}`);
+      commentsCache.delete(id);
+      return data;
+    },
+
+    async pinComment(id: string, commentId: string) {
+      const { data } = await api.post<{
+        pinnedCommentId: string;
+        pinnedAt: string;
+      }>(`/posts/${id}/comments/${commentId}/pin`);
+      commentsCache.delete(id);
+      return data;
+    },
+
+    async unpinComment(id: string, commentId: string) {
+      const { data } = await api.delete<{ pinnedCommentId: null }>(
+        `/posts/${id}/comments/${commentId}/pin`,
+      );
+      commentsCache.delete(id);
+      return data;
+    },
+
     async toggleLike(id: string, isLiked: boolean) {
       return isLiked ? this.unlike(id) : this.like(id);
     },

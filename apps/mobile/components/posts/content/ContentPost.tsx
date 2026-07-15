@@ -23,6 +23,8 @@ import PinchZoomImage from "@/components/common/PinchZoomImage";
 import PlaceStatusBookmark, {
   getPlaceStatusLabelKey,
 } from "@/components/restaurants/PlaceStatusBookmark";
+import PostDate from "@/components/posts/PostDate";
+import { isRtlText } from "@/lib/textDirection";
 
 type Props = {
   post: Post;
@@ -54,7 +56,8 @@ export default function ContentPost({
   onPinchEnd,
 }: Props) {
   const { t } = useTranslation("restaurants");
-  const { t: tCommon } = useTranslation("common");
+  const { t: tCommon, i18n } = useTranslation("common");
+  const isRtl = i18n.language.startsWith("he");
   const userRestaurant = post.restaurant?.userSaves?.[0];
   const isWantToTry = !!userRestaurant?.wantToTry;
   const isVisited = !!userRestaurant?.visited;
@@ -73,6 +76,7 @@ export default function ContentPost({
 
   const imageUrl = content?.imageUrl;
   const description = content?.description;
+  const descriptionIsRtl = isRtlText(description, isRtl);
 
   const heartOverlayScale = useSharedValue(0);
   const heartOverlayOpacity = useSharedValue(0);
@@ -204,8 +208,16 @@ export default function ContentPost({
         ) : (
           <View className="absolute inset-0 items-center justify-center bg-gray-900">
             <Text
-              style={textShadow}
-              className="px-8 text-center text-2xl font-bold text-white"
+              style={[
+                textShadow,
+                {
+                  alignSelf: "stretch",
+                  width: "100%",
+                  textAlign: "auto",
+                  writingDirection: descriptionIsRtl ? "rtl" : "ltr",
+                },
+              ]}
+              className="px-8 text-2xl font-bold text-white"
             >
               {description}
             </Text>
@@ -229,21 +241,19 @@ export default function ContentPost({
           }}
         />
 
-        {post.canDelete && (
-          <TouchableOpacity
-            className="absolute right-4 z-10 p-1"
-            style={{ top: contentTopInset + 16 }}
-            activeOpacity={0.8}
-            onPress={() => onOpenPostOptions(post.id)}
-          >
-            <DotsThreeOutlineIcon
-              size={30}
-              color="white"
-              weight="fill"
-              style={iconShadow}
-            />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity
+          className="absolute right-4 z-10 p-1"
+          style={{ top: contentTopInset + 16 }}
+          activeOpacity={0.8}
+          onPress={() => onOpenPostOptions(post.id)}
+        >
+          <DotsThreeOutlineIcon
+            size={30}
+            color="white"
+            weight="fill"
+            style={iconShadow}
+          />
+        </TouchableOpacity>
         <View className="absolute bottom-8 left-4 right-20">
           <TouchableOpacity
             className="mb-3 flex-row items-center gap-3"
@@ -316,16 +326,41 @@ export default function ContentPost({
             </TouchableOpacity>
           )}
 
-          {!!description && (
-            <View>
-              <Text className="text-base text-white">{description}</Text>
-              {!!content?.descriptionEditedAt && (
-                <Text className="mt-0.5 text-xs text-white/70">
-                  {tCommon("edited")}
+          <View>
+            {!!description && (
+              <>
+                <Text
+                  className="text-base text-white"
+                  style={{
+                    alignSelf: "stretch",
+                    width: "100%",
+                    textAlign: "auto",
+                    writingDirection: descriptionIsRtl ? "rtl" : "ltr",
+                  }}
+                >
+                  {description}
                 </Text>
-              )}
-            </View>
-          )}
+                {!!content?.descriptionEditedAt && (
+                  <Text
+                    className="mt-0.5 text-xs text-white/70"
+                    style={{
+                      alignSelf: "stretch",
+                      width: "100%",
+                      textAlign: "auto",
+                      writingDirection: descriptionIsRtl ? "rtl" : "ltr",
+                    }}
+                  >
+                    {tCommon("edited")}
+                  </Text>
+                )}
+              </>
+            )}
+            <PostDate
+              createdAt={post.createdAt}
+              tone="overlay"
+              hasContentAbove={!!description}
+            />
+          </View>
         </View>
 
         <View className="absolute bottom-26 right-4 w-16 items-center gap-5">

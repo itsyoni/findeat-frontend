@@ -1,6 +1,6 @@
 import type { UserRelationship } from "./profile";
 
-export type ConnectionUser = {
+type ConnectionUser = {
   id: string;
   username: string;
   displayName?: string | null;

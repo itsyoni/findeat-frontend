@@ -12,7 +12,7 @@ export type SupportTicketStatus =
   | "RESOLVED"
   | "CLOSED";
 
-export type SupportTicketUser = {
+type SupportTicketUser = {
   id: string;
   displayName: string;
   username: string;

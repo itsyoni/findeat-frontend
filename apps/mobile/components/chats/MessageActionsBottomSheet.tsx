@@ -1,6 +1,7 @@
 import AppBottomSheet from '@/components/common/AppBottomSheet';
 import Text from '@/components/common/AppText';
 import { useAppTheme } from '@/contexts/ThemeContext';
+import { useToast } from '@/contexts/ToastContext';
 import type { Message } from '@findeat/types';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Clipboard from 'expo-clipboard';
@@ -21,6 +22,7 @@ type Props = {
 export default function MessageActionsBottomSheet({ message, isMine, onClose, onReply, onDelete }: Props) {
   const { t } = useTranslation('chat');
   const { isDark } = useAppTheme();
+  const { showToast } = useToast();
   const [showDeleteChoices, setShowDeleteChoices] = useState(false);
   const [deleting, setDeleting] = useState<'me' | 'everyone' | null>(null);
   const iconColor = isDark ? '#FFF' : '#171717';
@@ -33,8 +35,13 @@ export default function MessageActionsBottomSheet({ message, isMine, onClose, on
 
   async function copy() {
     if (!message?.content) return;
-    await Clipboard.setStringAsync(message.content);
-    close();
+    try {
+      await Clipboard.setStringAsync(message.content);
+      close();
+      showToast(t('messageCopied'));
+    } catch {
+      showToast(t('messageCopyFailed'), { kind: 'error' });
+    }
   }
 
   async function remove(scope: 'me' | 'everyone') {
@@ -43,6 +50,9 @@ export default function MessageActionsBottomSheet({ message, isMine, onClose, on
     try {
       await onDelete(message, scope);
       close();
+      showToast(t(scope === 'everyone' ? 'messageDeletedForEveryone' : 'messageDeletedForMe'));
+    } catch {
+      showToast(t('messageDeleteFailed'), { kind: 'error' });
     } finally {
       setDeleting(null);
     }

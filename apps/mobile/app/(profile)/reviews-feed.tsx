@@ -1,4 +1,4 @@
-import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
+import { CommentsBottomSheet } from "@/components/common";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
 import { filterPostsByType } from "@findeat/utils";
@@ -62,11 +62,16 @@ export default function ProfileReviewsFeedScreen() {
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Could not delete post");
+      return false;
     }
   }
 
   if (loading || !profile) {
-    return <LoadingScreen variant="feed" />;
+    return (
+      <SafeAreaView edges={["top"]} style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}>
+        <ReviewFeed posts={[]} loading refreshing={false} onRefresh={refresh} onToggleLike={toggleLike} onOpenComments={openComments} onToggleWantToTry={toggleWantToTry} onOpenSharePost={setSharePostId} onOpenPostOptions={setOptionsPostId} />
+      </SafeAreaView>
+    );
   }
 
   return (

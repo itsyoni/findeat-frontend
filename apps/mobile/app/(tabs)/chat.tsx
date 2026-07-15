@@ -1,5 +1,4 @@
 import ChatList from "@/components/chats/ChatList";
-import { LoadingScreen } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import SearchResultRow from "@/components/search/SearchResultRow";
 import SearchResultsView from "@/components/search/SearchResultsView";
@@ -81,10 +80,6 @@ export default function ChatsScreen() {
     });
   }
 
-  if (loading) {
-    return <LoadingScreen variant="list" />;
-  }
-
   return (
     <SafeAreaView
       style={{ flex: 1, backgroundColor: isDark ? "#080808" : "#FBFAF8" }}
@@ -115,7 +110,7 @@ export default function ChatsScreen() {
           <SearchBar
             editable={false}
             placeholder={t("search")}
-            onPress={() => setIsSearching(true)}
+            onPress={() => { if (!loading) setIsSearching(true); }}
             rightAccessory={
               <TouchableOpacity
                 className="h-full aspect-square items-center justify-center rounded-2xl bg-brand"
@@ -129,6 +124,7 @@ export default function ChatsScreen() {
           <View className="flex-1 overflow-hidden rounded-t-[30px] bg-white pt-2 dark:bg-[#0F0F10]">
             <ChatList
               chats={chats}
+              loading={loading}
               refreshing={refreshing}
               onRefresh={onRefresh}
             />

@@ -1,4 +1,4 @@
-import { LoadingScreen , ThemedSafeAreaView } from "@/components/common";
+import { SkeletonList, ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import SearchResultRow from "@/components/search/SearchResultRow";
@@ -7,7 +7,8 @@ import { api } from "@/lib/api";
 import { searchFriends } from "@/services/search";
 import { SearchResultItem } from "@findeat/types/search";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { CaretLeftIcon, UserPlusIcon } from "phosphor-react-native";
+import { UserPlusIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -90,10 +91,6 @@ export default function AddGroupMembersScreen() {
     }
   }
 
-  if (loading) {
-    return <LoadingScreen variant="list" />;
-  }
-
   return (
     <>
       <Stack.Screen
@@ -105,7 +102,7 @@ export default function AddGroupMembersScreen() {
               className="flex-row items-center pr-3"
               onPress={() => router.back()}
             >
-              <CaretLeftIcon size={24} color="black" />
+              <DirectionalIcon direction="back" size={24} color="black" />
               <Text className="text-lg text-black">Back</Text>
             </Pressable>
           ),
@@ -153,7 +150,7 @@ export default function AddGroupMembersScreen() {
           </TouchableOpacity>
         </View>
 
-        <SearchResultsView
+        {loading ? <SkeletonList count={7} /> : <SearchResultsView
           searchRequest={searchAvailableFriends}
           placeholder="Search friends"
           emptyText="No friends found"
@@ -167,7 +164,7 @@ export default function AddGroupMembersScreen() {
               <SearchResultRow item={item} />
             </View>
           )}
-        />
+        />}
       </ThemedSafeAreaView>
     </>
   );

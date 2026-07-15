@@ -1,7 +1,7 @@
 import { TouchableOpacity, View } from "react-native";
 import Text from "./AppText";
 
-export type TabItem<T extends string> = {
+type TabItem<T extends string> = {
   label: string;
   value: T;
 };

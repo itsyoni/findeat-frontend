@@ -1,5 +1,5 @@
 import type { BusinessAccount } from "./business";
-import type { ManagedRestaurant } from "./restaurant";
+import type { ManagedRestaurant, RestaurantStatus } from "./restaurant";
 
 export type RestaurantClaim = {
   id: string;
@@ -32,18 +32,18 @@ export type RestaurantOwnershipRecord = {
   address?: string | null;
   city?: string | null;
   logoUrl?: string | null;
-  status: "PENDING" | "VERIFIED" | "CLAIMED" | "REJECTED" | "MERGED";
-  members: Array<{
+  status: RestaurantStatus;
+  members: {
     id: string;
     createdAt: string;
     user: RestaurantOwnershipUser;
-  }>;
-  claims: Array<{
+  }[];
+  claims: {
     id: string;
     status: "PENDING" | "APPROVED" | "REJECTED";
     createdAt: string;
     reviewedAt?: string | null;
     rejectionReason?: string | null;
     user: RestaurantOwnershipUser;
-  }>;
+  }[];
 };

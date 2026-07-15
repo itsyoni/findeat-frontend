@@ -5,6 +5,7 @@ import { getErrorMessage } from '@findeat/utils';
 import { useState } from 'react';
 import { Alert, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import AuthFormHeader from './AuthFormHeader';
 
 type Props = { onBack: () => void; initialEmail?: string; useBottomSheetInput?: boolean };
 
@@ -39,10 +40,9 @@ export default function ForgotPasswordForm({ onBack, initialEmail = '', useBotto
 
   return (
     <View>
-      <Text weight="bold" className="text-center text-2xl text-[#212121] dark:text-white">{t('forgotPassword')}</Text>
-      <Text className="mb-6 mt-2 text-center text-gray-500">{requested ? t('resetCodeSent') : t('forgotPasswordBody')}</Text>
+      <AuthFormHeader title={t('forgotPassword')} subtitle={requested ? t('resetCodeSent') : t('forgotPasswordBody')} />
       <View className="gap-4">
-        <TextInput useBottomSheetInput={useBottomSheetInput} value={email} onChangeText={setEmail} editable={!requested} placeholder={t('email')} keyboardType="email-address" autoCapitalize="none" className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800" />
+        <TextInput useBottomSheetInput={useBottomSheetInput} value={email} onChangeText={setEmail} editable={!requested} placeholder={t('emailPlaceholder')} keyboardType="email-address" autoCapitalize="none" className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800" />
         {requested ? <>
           <TextInput useBottomSheetInput={useBottomSheetInput} value={code} onChangeText={(value) => setCode(value.replace(/\D/g, '').slice(0, 6))} placeholder={t('verificationCode')} keyboardType="number-pad" maxLength={6} className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800" />
           <TextInput useBottomSheetInput={useBottomSheetInput} value={password} onChangeText={setPassword} placeholder={t('newPassword')} isPassword className="border border-[#D8D3CA] bg-[#F1EEE8] dark:border-gray-600 dark:bg-gray-800" />

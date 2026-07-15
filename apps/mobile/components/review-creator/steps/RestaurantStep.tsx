@@ -2,18 +2,20 @@ import Text from "@/components/common/AppText";
 import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 import { SelectedRestaurant } from "@findeat/types/restaurant";
 import { TouchableOpacity, View } from "react-native";
-import { ThemedSafeAreaView } from "@/components/common";
+import { Skeleton, SkeletonPulse, ThemedSafeAreaView } from "@/components/common";
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
   onSelect: (restaurant: SelectedRestaurant | null) => void;
   onBack: () => void;
+  loading?: boolean;
 };
 
 export default function RestaurantStep({
   selectedRestaurant,
   onSelect,
   onBack,
+  loading = false,
 }: Props) {
   return (
     <ThemedSafeAreaView
@@ -33,10 +35,15 @@ export default function RestaurantStep({
         Start by choosing the place you want to review.
       </Text>
 
-      <RestaurantSearch
-        selectedRestaurant={selectedRestaurant}
-        onSelect={onSelect}
-      />
+      {loading ? (
+        <SkeletonPulse style={{ marginTop: 24 }}>
+          <Skeleton height={52} radius={17} />
+          <Skeleton width="38%" height={16} radius={7} style={{ marginTop: 24, marginBottom: 12 }} />
+          {Array.from({ length: 6 }, (_, index) => <View key={index} className="flex-row items-center py-3"><Skeleton width={54} height={54} circle /><View className="ml-3 flex-1 gap-2"><Skeleton width="62%" height={15} radius={7} /><Skeleton width="48%" height={11} radius={6} /></View></View>)}
+        </SkeletonPulse>
+      ) : (
+        <RestaurantSearch selectedRestaurant={selectedRestaurant} onSelect={onSelect} />
+      )}
     </ThemedSafeAreaView>
   );
 }

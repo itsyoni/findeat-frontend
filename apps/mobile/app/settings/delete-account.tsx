@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { WarningCircleIcon } from 'phosphor-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { router } from 'expo-router';
 
 export default function DeleteAccountScreen() {
   const { t } = useTranslation('settings');
@@ -40,6 +41,20 @@ export default function DeleteAccountScreen() {
       <SettingsHeader title={t('deleteAccount')} />
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
+          <View className="mb-6 rounded-3xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950/30">
+            <Text weight="bold" className="text-lg text-amber-900 dark:text-amber-200">
+              {t('preferDeactivationTitle')}
+            </Text>
+            <Text className="mb-4 mt-1 leading-5 text-amber-800 dark:text-amber-300">
+              {t('preferDeactivationBody')}
+            </Text>
+            <AppButton
+              title={t('deactivateInstead')}
+              variant="outline"
+              onPress={() => router.replace('/settings/deactivate-account')}
+            />
+          </View>
+
           <View className="items-center rounded-3xl border border-red-200 bg-red-50 p-6 dark:border-red-900 dark:bg-red-950/30">
             <View className="h-16 w-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-950">
               <WarningCircleIcon size={34} color="#EF4444" weight="fill" />

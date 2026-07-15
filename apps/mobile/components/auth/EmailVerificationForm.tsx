@@ -6,6 +6,7 @@ import { getErrorMessage } from '@findeat/utils';
 import { useState } from 'react';
 import { Alert, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import AuthFormHeader from './AuthFormHeader';
 
 type Props = { email: string; onBack: () => void };
 
@@ -37,8 +38,7 @@ export default function EmailVerificationForm({ email, onBack }: Props) {
 
   return (
     <View>
-      <Text weight="bold" className="text-center text-2xl text-[#212121] dark:text-white">{t('verifyEmail')}</Text>
-      <Text className="mb-6 mt-2 text-center text-gray-500">{t('verificationSent', { email })}</Text>
+      <AuthFormHeader title={t('verifyEmail')} subtitle={t('verificationSent', { email })} />
       <TextInput
         useBottomSheetInput
         value={code}

@@ -7,6 +7,8 @@ import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { StorefrontIcon } from "@phosphor-icons/react/dist/csr/Storefront";
 import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
 import { HeadsetIcon } from "@phosphor-icons/react/dist/csr/Headset";
+import { SparkleIcon } from "@phosphor-icons/react/dist/csr/Sparkle";
+import { FlagIcon } from "@phosphor-icons/react/dist/csr/Flag";
 import type {
   AdminDashboardSection,
   AdminUser,
@@ -16,7 +18,9 @@ import type {
 import { AccountAvatar } from "../components/AccountAvatar";
 import { RestaurantOwnershipManager } from "../components/RestaurantOwnershipManager";
 import { SupportTicketsPanel } from "../components/SupportTicketsPanel";
+import { ProductUpdatesAdmin } from "../components/ProductUpdatesAdmin";
 import { UserIdentity } from "../components/UserIdentity";
+import { ModerationPanel } from "../components/ModerationPanel";
 import { request } from "../lib/api";
 
 export function AdminPage({
@@ -178,6 +182,15 @@ export function AdminPage({
             <small className="nav-count">{claims.length}</small>
           </button>
           <button
+            className={section === "moderation" ? "active" : ""}
+            onClick={() => {
+              setSection("moderation");
+              setError("");
+            }}
+          >
+            <FlagIcon className="nav-icon" weight="duotone" /> Moderation
+          </button>
+          <button
             className={section === "ownership" ? "active" : ""}
             onClick={() => {
               setSection("ownership");
@@ -194,6 +207,15 @@ export function AdminPage({
             }}
           >
             <HeadsetIcon className="nav-icon" weight="duotone" /> Support
+          </button>
+          <button
+            className={section === "updates" ? "active" : ""}
+            onClick={() => {
+              setSection("updates");
+              setError("");
+            }}
+          >
+            <SparkleIcon className="nav-icon" weight="duotone" /> What’s new
           </button>
           <button
             className={section === "admins" ? "active" : ""}
@@ -223,7 +245,7 @@ export function AdminPage({
           </div>
           <AccountAvatar account={account} />
         </header>
-        <div className="admin-content">
+        <div className={`admin-content ${section === "support" ? "support-admin-content" : ""}`}>
           {section === "claims" ? (
             <>
               <div className="page-heading">
@@ -307,10 +329,14 @@ export function AdminPage({
                 </div>
               )}
             </>
+          ) : section === "moderation" ? (
+            <ModerationPanel />
           ) : section === "ownership" ? (
             <RestaurantOwnershipManager />
           ) : section === "support" ? (
             <SupportTicketsPanel />
+          ) : section === "updates" ? (
+            <ProductUpdatesAdmin />
           ) : (
             <>
               <div className="page-heading">

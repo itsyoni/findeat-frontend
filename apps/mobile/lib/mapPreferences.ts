@@ -1,11 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { RestaurantMapFilter, RestaurantMapSort } from "@findeat/types";
-
-export type MapPreferences = {
-  filter: RestaurantMapFilter;
-  sort: RestaurantMapSort;
-  radiusKm: number | null;
-};
+import type {
+  MapPreferences,
+  RestaurantMapFilter,
+  RestaurantMapSort,
+} from "@findeat/types";
 
 export const DEFAULT_MAP_PREFERENCES: MapPreferences = {
   filter: "ALL",

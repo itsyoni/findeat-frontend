@@ -17,7 +17,6 @@ import {
 } from "@/hooks/useFeed";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
-import { LoadingScreen } from "@/components/common";
 
 const initialDraft: CreateReviewDraft = {
   visibility: "PUBLIC",
@@ -188,7 +187,7 @@ export default function ReviewCreator({
   }
 
   if (initializingRestaurant) {
-    return <LoadingScreen variant="detail" />;
+    return <RestaurantStep selectedRestaurant={null} loading onSelect={() => undefined} onBack={() => router.back()} />;
   }
 
   return (

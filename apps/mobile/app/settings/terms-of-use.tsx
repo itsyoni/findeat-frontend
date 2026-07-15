@@ -1,6 +1,7 @@
 import Text from '@/components/common/AppText';
 import SettingsHeader from '@/components/settings/SettingsHeader';
-import { privacySections, termsSections, type LegalSection } from '@/constants/legal';
+import { privacySections, termsSections } from '@/constants/legal';
+import type { LegalSection } from '@findeat/types';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { Linking, ScrollView, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';

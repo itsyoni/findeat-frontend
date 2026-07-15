@@ -30,7 +30,7 @@ export type RestaurantMembership = {
     name: string;
     logoUrl: string | null;
     city: string | null;
-    status: string;
+    status: RestaurantStatus;
   };
 };
 

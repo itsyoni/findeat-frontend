@@ -4,12 +4,14 @@ import Text from "../common/AppText";
 import { ImagesSquareIcon, StarIcon } from "phosphor-react-native";
 import { useTranslation } from "react-i18next";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { Skeleton, SkeletonPulse } from "../common";
 
 type Props = {
   posts: Post[];
   type: PostType;
   onPressPost: (postId: string) => void;
   onCreatePost?: () => void;
+  loading?: boolean;
 };
 
 function getPostImage(post: Post) {
@@ -28,9 +30,21 @@ function getPostText(post: Post) {
   return post.contentPost?.description ?? null;
 }
 
-export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost }: Props) {
+export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost, loading = false }: Props) {
   const { t } = useTranslation("profile");
   const { isDark } = useAppTheme();
+
+  if (loading) {
+    return (
+      <SkeletonPulse style={{ flexDirection: "row", flexWrap: "wrap" }}>
+        {Array.from({ length: 9 }, (_, index) => (
+          <View key={index} className="aspect-square w-1/3 border-[0.5px] border-line dark:border-gray-900">
+            <Skeleton height={160} radius={0} />
+          </View>
+        ))}
+      </SkeletonPulse>
+    );
+  }
 
   if (posts.length === 0) {
     const isReview = type === "REVIEW";

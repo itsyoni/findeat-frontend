@@ -4,10 +4,10 @@ import EmailVerificationForm from "@/components/auth/EmailVerificationForm";
 import ForgotPasswordForm from "@/components/auth/ForgotPasswordForm";
 import Text from "@/components/common/AppText";
 import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
-import { CaretLeftIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ImageBackground, TouchableOpacity, View } from "react-native";
+import { Alert, ImageBackground, TouchableOpacity, View } from "react-native";
 import Animated, {
   FadeInLeft,
   FadeInRight,
@@ -17,8 +17,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { LANGUAGE_KEY } from "@/constants/storage";
+import { applyAppLanguage } from "@/lib/appLanguage";
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { useAppTheme } from "@/contexts/ThemeContext";
 
@@ -33,6 +32,7 @@ export default function AuthIndexScreen() {
   const [authMode, setAuthMode] = useState<AuthMode>("login");
   const [pendingEmail, setPendingEmail] = useState("");
   const [transitionDirection, setTransitionDirection] = useState<1 | -1>(1);
+  const isRtl = i18n.language.startsWith("he");
 
   const steps = [
     {
@@ -50,6 +50,9 @@ export default function AuthIndexScreen() {
   ];
 
   const current = steps[step];
+  const visualTransitionDirection = isRtl
+    ? -transitionDirection
+    : transitionDirection;
 
   function openSheet(mode: AuthMode = "login") {
     setAuthMode(mode);
@@ -86,10 +89,13 @@ export default function AuthIndexScreen() {
   }
 
   function handleSwipe(translationX: number) {
-    if (translationX < -60 && step < steps.length - 1) {
+    const isForwardSwipe = isRtl ? translationX > 60 : translationX < -60;
+    const isBackSwipe = isRtl ? translationX < -60 : translationX > 60;
+
+    if (isForwardSwipe && step < steps.length - 1) {
       setTransitionDirection(1);
       setStep((currentStep) => currentStep + 1);
-    } else if (translationX > 60 && step > 0) {
+    } else if (isBackSwipe && step > 0) {
       setTransitionDirection(-1);
       setStep((currentStep) => currentStep - 1);
     }
@@ -103,10 +109,19 @@ export default function AuthIndexScreen() {
       runOnJS(handleSwipe)(event.translationX);
     });
 
-  async function toggleLanguage() {
+  function toggleLanguage() {
     const nextLanguage = i18n.language.startsWith("he") ? "en" : "he";
-    await i18n.changeLanguage(nextLanguage);
-    await AsyncStorage.setItem(LANGUAGE_KEY, nextLanguage);
+    Alert.alert(
+      t("common:languageRestartTitle"),
+      t("common:languageRestartDescription"),
+      [
+        { text: t("common:cancel"), style: "cancel" },
+        {
+          text: t("common:restartAndChange"),
+          onPress: () => void applyAppLanguage(nextLanguage),
+        },
+      ],
+    );
   }
 
   function IndicatorDot({ active }: { active: boolean }) {
@@ -145,14 +160,14 @@ export default function AuthIndexScreen() {
           >
             {step > 0 || sheetOpen ? (
               <TouchableOpacity onPress={handleBack}>
-                <CaretLeftIcon size={28} color="white" />
+                <DirectionalIcon direction="back" size={28} color="white" />
               </TouchableOpacity>
             ) : (
               <View style={{ width: 28 }} />
             )}
 
             <TouchableOpacity
-              onPress={() => void toggleLanguage()}
+              onPress={toggleLanguage}
               className="flex-row items-center rounded-full bg-black/35 px-3 py-2"
             >
               <Text className="mr-1.5 text-lg">
@@ -168,17 +183,30 @@ export default function AuthIndexScreen() {
             <>
               <Animated.View
                 key={current.title}
-                entering={(transitionDirection === 1 ? FadeInRight : FadeInLeft).duration(350)}
-                exiting={(transitionDirection === 1 ? FadeOutLeft : FadeOutRight).duration(200)}
+                entering={(visualTransitionDirection === 1 ? FadeInRight : FadeInLeft).duration(350)}
+                exiting={(visualTransitionDirection === 1 ? FadeOutLeft : FadeOutRight).duration(200)}
+                style={{ alignItems: "flex-start" }}
               >
                 <Text
                   weight="black"
                   className="text-6xl leading-15.5 text-white"
+                  style={{
+                    alignSelf: "stretch",
+                    textAlign: "auto",
+                    writingDirection: isRtl ? "rtl" : "ltr",
+                  }}
                 >
                   {current.title}
                 </Text>
 
-                <Text className="mt-5 max-w-72.5 text-lg leading-7 text-white/85">
+                <Text
+                  className="mt-5 max-w-72.5 text-lg leading-7 text-white/85"
+                  style={{
+                    alignSelf: "flex-start",
+                    textAlign: "auto",
+                    writingDirection: isRtl ? "rtl" : "ltr",
+                  }}
+                >
                   {current.subtitle}
                 </Text>
               </Animated.View>
@@ -249,7 +277,6 @@ export default function AuthIndexScreen() {
             {authMode === "signup" && (
               <SignupForm
                 onLogin={() => setAuthMode("login")}
-                onRestaurantSignup={() => setAuthMode("restaurant-signup")}
                 onVerificationRequired={(email) => {
                   setPendingEmail(email);
                   setAuthMode("verify-email");

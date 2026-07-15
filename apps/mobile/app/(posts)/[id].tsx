@@ -1,4 +1,4 @@
-import { CommentsBottomSheet, LoadingScreen } from "@/components/common";
+import { CommentsBottomSheet } from "@/components/common";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 import ContentFeed from "@/components/posts/content/ContentFeed";
@@ -14,18 +14,20 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { Alert, TouchableOpacity, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { CaretLeftIcon } from "phosphor-react-native";
+import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useQueryClient } from "@tanstack/react-query";
 import { removePostFromAppCache } from "@/hooks/useFeed";
 
 export default function PostScreen() {
   const insets = useSafeAreaInsets();
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, commentId } = useLocalSearchParams<{ id: string; commentId?: string }>();
   const queryClient = useQueryClient();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(
+    commentId ? id : null,
+  );
   const [sharePostId, setSharePostId] = useState<string | null>(null);
   const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
   const [feedHeight, setFeedHeight] = useState(0);
@@ -176,6 +178,7 @@ export default function PostScreen() {
     } catch (error) {
       console.error("Failed to delete post", error);
       Alert.alert("Error", "Could not delete post");
+      return false;
     }
   }
 
@@ -235,7 +238,13 @@ export default function PostScreen() {
   const loading = !id || loadedPostId !== id;
 
   if (loading) {
-    return <LoadingScreen variant="feed" />;
+    return (
+      <View className="flex-1 bg-white dark:bg-black" onLayout={(event) => setFeedHeight(event.nativeEvent.layout.height)}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <SafeAreaView edges={["top"]} pointerEvents="none" style={{ position: "absolute", top: 0, left: 0, right: 0, zIndex: 50 }}><View className="ml-4 mt-2 h-11 w-11 rounded-full bg-black/50" /></SafeAreaView>
+        {feedHeight > 0 ? <ContentFeed posts={[]} loading height={feedHeight} contentTopInset={insets.top} refreshing={false} onRefresh={onRefresh} onToggleLike={toggleLike} onOpenComments={setSelectedPostId} onToggleWantToTry={toggleWantToTry} onDeletePost={deletePost} onOpenSharePost={setSharePostId} onOpenPostOptions={setOptionsPostId} /> : null}
+      </View>
+    );
   }
 
   return (
@@ -261,7 +270,7 @@ export default function PostScreen() {
             onPress={() => router.back()}
             className="ml-4 mt-2 h-11 w-11 items-center justify-center rounded-full bg-black/50"
           >
-            <CaretLeftIcon size={24} color="white" weight="bold" />
+            <DirectionalIcon direction="back" size={24} color="white" weight="bold" />
           </TouchableOpacity>
         </SafeAreaView>
 
@@ -311,6 +320,7 @@ export default function PostScreen() {
 
         <CommentsBottomSheet
           postId={selectedPostId}
+          focusedCommentId={commentId}
           onClose={() => setSelectedPostId(null)}
           onCommentAdded={handleCommentAdded}
         />

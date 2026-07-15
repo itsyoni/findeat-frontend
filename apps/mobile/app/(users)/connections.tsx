@@ -1,6 +1,6 @@
 import {
   IconButton,
-  LoadingScreen,
+  SkeletonList,
   ThemedSafeAreaView,
 } from "@/components/common";
 import Text from "@/components/common/AppText";
@@ -18,7 +18,7 @@ import {
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, TouchableOpacity, View } from "react-native";
-import { CaretLeftIcon } from "phosphor-react-native";
+import { DirectionalBackIcon } from "@/components/common/icons/DirectionalIcon";
 
 type ConnectionsTab = "followers" | "following" | "friends";
 
@@ -106,15 +106,11 @@ export default function ConnectionsScreen() {
     loadConnections();
   }, [loadConnections]);
 
-  if (loading) {
-    return <LoadingScreen variant="list" />;
-  }
-
   return (
     <ThemedSafeAreaView edges={["top"]} className="pt-4">
       <View className="px-4 pb-2">
         <IconButton
-          icon={CaretLeftIcon}
+          icon={DirectionalBackIcon}
           variant="ghost"
           onPress={() => router.back()}
         />
@@ -139,7 +135,7 @@ export default function ConnectionsScreen() {
         ]}
       />
 
-      <FlatList
+      {loading ? <SkeletonList count={7} /> : <FlatList
         className="mt-6 px-6"
         refreshing={refreshing}
         onRefresh={onRefresh}
@@ -204,7 +200,7 @@ export default function ConnectionsScreen() {
           );
         }}
         ListEmptyComponent={<Text className="text-gray-500">No users yet</Text>}
-      />
+      />}
     </ThemedSafeAreaView>
   );
 }

@@ -71,7 +71,7 @@ export type ReviewPost = {
   items: ReviewItem[];
 };
 
-export type PostAuthorRestaurant = {
+type PostAuthorRestaurant = {
   id: string;
   name: string;
   logoUrl?: string | null;

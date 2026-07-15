@@ -3,7 +3,7 @@
     "name": "FindEat",
     "slug": "mobile",
     "scheme": "findeat",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
@@ -23,7 +23,9 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["CAMERA"]
+      "permissions": [
+        "CAMERA"
+      ]
     },
     "web": {
       "output": "static",
@@ -48,8 +50,20 @@
       "expo-image",
       "expo-status-bar",
       "expo-web-browser",
-      "expo-notifications",
+      [
+        "expo-notifications",
+        {
+          "defaultChannel": "findeat-alerts"
+        }
+      ],
       "expo-camera",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "FindEat uses your photo library so you can choose photos for posts, reviews, dishes, and your profile.",
+          "cameraPermission": "FindEat uses your camera so you can capture photos for posts and reviews."
+        }
+      ],
       [
         "expo-location",
         {
