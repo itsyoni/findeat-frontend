@@ -6,11 +6,13 @@ import ReportForm from "@/components/moderation/ReportForm";
 import type { Post } from "@findeat/types";
 import { BottomSheetView } from "@gorhom/bottom-sheet";
 import {
+  ArchiveIcon,
   NotePencilIcon,
   TrashIcon,
   WarningCircleIcon,
   FlagIcon,
   UserMinusIcon,
+  LinkSimpleIcon,
 } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,23 +20,30 @@ import { ActivityIndicator, TouchableOpacity, View } from "react-native";
 import { router } from "expo-router";
 import { useToast } from "@/contexts/ToastContext";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
+import { AppAlert as Alert } from "@/lib/appAlert";
+import { useQueryClient } from "@tanstack/react-query";
+import { removePostFromAppCache } from "@/hooks/useFeed";
 
 type Props = {
   postId: string | null;
   onClose: () => void;
   onDelete: (postId: string) => boolean | void | Promise<boolean | void>;
+  onArchived?: (postId: string) => void | Promise<void>;
 };
 
 export default function PostOptionsBottomSheet({
   postId,
   onClose,
   onDelete,
+  onArchived,
 }: Props) {
   const { t } = useTranslation("common");
   const { isDark } = useAppTheme();
   const { showToast } = useToast();
+  const queryClient = useQueryClient();
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [archiving, setArchiving] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [askingToBlock, setAskingToBlock] = useState(false);
   const [blocking, setBlocking] = useState(false);
@@ -66,11 +75,40 @@ export default function PostOptionsBottomSheet({
   function closeSheet() {
     setConfirmingDelete(false);
     setDeleting(false);
+    setArchiving(false);
     setReporting(false);
     setAskingToBlock(false);
     setBlocking(false);
     setBlockError("");
     onClose();
+  }
+
+  function confirmArchive() {
+    if (!postId || archiving) return;
+    Alert.alert(t("archivePostTitle"), t("archivePostDescription"), [
+      { text: t("cancel"), style: "cancel" },
+      {
+        text: t("archivePost"),
+        onPress: () => void archivePost(),
+      },
+    ]);
+  }
+
+  async function archivePost() {
+    if (!postId || archiving) return;
+    const id = postId;
+    try {
+      setArchiving(true);
+      await api.posts.archive(id);
+      removePostFromAppCache(queryClient, id);
+      await onArchived?.(id);
+      closeSheet();
+      showToast(t("postArchived"));
+    } catch {
+      showToast(t("postArchiveError"), { kind: "error" });
+    } finally {
+      setArchiving(false);
+    }
   }
 
   async function confirmDelete() {
@@ -94,6 +132,13 @@ export default function PostOptionsBottomSheet({
     const id = postId;
     closeSheet();
     router.push({ pathname: "/posts/edit/[id]", params: { id } });
+  }
+
+  function manageConnections() {
+    if (!postId) return;
+    const id = postId;
+    closeSheet();
+    router.push({ pathname: "/posts/connections/[id]", params: { id } });
   }
 
   function finishReport() {
@@ -127,7 +172,7 @@ export default function PostOptionsBottomSheet({
           : askingToBlock
             ? "48%"
             : activePost?.canDelete
-              ? "40%"
+              ? "67%"
               : "34%",
       ]}
       onClose={closeSheet}
@@ -274,6 +319,56 @@ export default function PostOptionsBottomSheet({
                 color={isDark ? "#6B7280" : "#9CA3AF"}
                 weight="bold"
               />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              disabled={archiving}
+              activeOpacity={0.72}
+              accessibilityRole="button"
+              className="mb-3 flex-row items-center rounded-2xl border border-gray-200 bg-white px-4 py-3.5 dark:border-gray-700 dark:bg-gray-900"
+              onPress={confirmArchive}
+            >
+              <View className="h-11 w-11 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40">
+                {archiving ? (
+                  <ActivityIndicator color="#3B82F6" />
+                ) : (
+                  <ArchiveIcon size={21} color="#3B82F6" weight="fill" />
+                )}
+              </View>
+              <View className="ml-3 flex-1">
+                <Text className="text-base font-bold text-black dark:text-white">
+                  {t("archivePost")}
+                </Text>
+                <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                  {t("archivePostHint")}
+                </Text>
+              </View>
+              <DirectionalIcon
+                direction="forward"
+                size={18}
+                color={isDark ? "#6B7280" : "#9CA3AF"}
+                weight="bold"
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.72}
+              accessibilityRole="button"
+              className="mb-3 flex-row items-center rounded-2xl border border-gray-200 bg-white px-4 py-3.5 dark:border-gray-700 dark:bg-gray-900"
+              onPress={manageConnections}
+            >
+              <View className="h-11 w-11 items-center justify-center rounded-full bg-amber-50 dark:bg-amber-950/40">
+                <LinkSimpleIcon size={21} color="#D4A72C" weight="bold" />
+              </View>
+              <View className="ml-3 flex-1">
+                <Text className="text-base font-bold text-black dark:text-white">
+                  {t("manageConnections")}
+                </Text>
+                <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                  {t("manageConnectionsOptionHint")}
+                </Text>
+              </View>
+              <DirectionalIcon direction="forward" size={18} color={isDark ? "#6B7280" : "#9CA3AF"} weight="bold" />
             </TouchableOpacity>
 
             <TouchableOpacity

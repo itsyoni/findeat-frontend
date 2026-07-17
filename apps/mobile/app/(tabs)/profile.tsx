@@ -7,12 +7,13 @@ import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { Animated } from "react-native";
 
 export default function ProfileScreen() {
   const { t } = useTranslation(["common", "profile"]);
   const { profile, loading, refresh } = useMyProfile();
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
+  const [scrollY] = useState(() => new Animated.Value(0));
 
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, activeFeed),
@@ -26,8 +27,17 @@ export default function ProfileScreen() {
   );
 
   return (
-    <View className="flex-1 bg-canvas dark:bg-black">
-      <PersonalProfileHeader profile={profile} loading={loading} />
+    <Animated.ScrollView
+      className="flex-1 bg-canvas dark:bg-black"
+      showsVerticalScrollIndicator={false}
+      contentContainerStyle={{ paddingBottom: 110 }}
+      scrollEventThrottle={16}
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: true },
+      )}
+    >
+      <PersonalProfileHeader profile={profile} loading={loading} scrollY={scrollY} />
 
       <Tabs
         activeTab={activeFeed}
@@ -38,25 +48,23 @@ export default function ProfileScreen() {
         ]}
       />
 
-      <View style={{ flex: 1 }}>
-        <ProfilePostGrid
-          posts={posts}
-          loading={loading}
-          type={activeFeed}
-          onCreatePost={() =>
-            router.push(activeFeed === "CONTENT" ? "/create/content" : "/create/review")
-          }
-          onPressPost={(postId) => {
-            router.push({
-              pathname:
-                activeFeed === "CONTENT"
-                  ? "/(profile)/content-feed"
-                  : "/(profile)/reviews-feed",
-              params: { postId },
-            });
-          }}
-        />
-      </View>
-    </View>
+      <ProfilePostGrid
+        posts={posts}
+        loading={loading}
+        type={activeFeed}
+        onCreatePost={() =>
+          router.push(activeFeed === "CONTENT" ? "/create/content" : "/create/review")
+        }
+        onPressPost={(postId) => {
+          router.push({
+            pathname:
+              activeFeed === "CONTENT"
+                ? "/(profile)/content-feed"
+                : "/(profile)/reviews-feed",
+            params: { postId },
+          });
+        }}
+      />
+    </Animated.ScrollView>
   );
 }

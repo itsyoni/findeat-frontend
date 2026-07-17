@@ -5,11 +5,12 @@ type Props = {
   label: string;
   value?: number;
   onChange: (value: number) => void;
+  error?: string;
 };
 
 const ratings = Array.from({ length: 10 }, (_, i) => i + 1);
 
-export default function RatingPicker({ label, value = 0, onChange }: Props) {
+export default function RatingPicker({ label, value = 0, onChange, error }: Props) {
   return (
     <View>
       <View className="mb-3 flex-row items-center justify-between">
@@ -42,6 +43,7 @@ export default function RatingPicker({ label, value = 0, onChange }: Props) {
           );
         })}
       </View>
+      {error ? <Text className="mt-2 text-sm text-red-500">{error}</Text> : null}
     </View>
   );
 }

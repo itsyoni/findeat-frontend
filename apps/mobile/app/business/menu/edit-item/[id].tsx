@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { AppButton, TextInput , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
@@ -5,16 +6,7 @@ import { getErrorMessage, uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  Switch,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, Switch, TouchableOpacity, View } from "react-native";
 
 export default function EditMenuItemScreen() {
   const params = useLocalSearchParams<{

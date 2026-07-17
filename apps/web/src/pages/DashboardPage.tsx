@@ -185,11 +185,14 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
         await request<ManagedRestaurant[]>("/restaurants/me");
       setRestaurants(nextRestaurants);
       if (nextRestaurants.length) {
-        const nextRestaurantId = nextRestaurants.some(
-          (item) => item.id === selectedRestaurantId,
-        )
-          ? selectedRestaurantId!
-          : nextRestaurants[0].id;
+        const incompleteRestaurant = nextRestaurants.find(
+          (item) => !item.setupComplete,
+        );
+        const nextRestaurantId =
+          incompleteRestaurant?.id ??
+          (nextRestaurants.some((item) => item.id === selectedRestaurantId)
+            ? selectedRestaurantId!
+            : nextRestaurants[0].id);
         if (nextRestaurantId !== selectedRestaurantId) {
           setSelectedRestaurantId(nextRestaurantId);
           localStorage.setItem("findeat-selected-restaurant", nextRestaurantId);
@@ -336,6 +339,29 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
             Sign out
           </button>
         </div>
+      </div>
+    );
+  if (!restaurant.setupComplete)
+    return (
+      <div className="restaurant-setup-shell">
+        <div className="restaurant-setup-topbar">
+          <div className="brand">
+            <div className="brand-mark">F</div>
+            <div>
+              <strong>FindEat</strong>
+              <small>Business setup</small>
+            </div>
+          </div>
+          <button className="secondary" onClick={onLogout}>
+            Sign out
+          </button>
+        </div>
+        <ProfilePage
+          key={restaurant.id}
+          restaurant={restaurant}
+          onSaved={load}
+          setupMode
+        />
       </div>
     );
 

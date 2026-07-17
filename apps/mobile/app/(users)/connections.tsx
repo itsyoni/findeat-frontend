@@ -12,17 +12,22 @@ import {
   getNextRelationshipAfterToggle,
   getRelationshipButtonColor,
   getRelationshipButtonText,
-  isFollowingRelationship,
   isFriendRelationship,
+  shouldRemoveFollowRelationship,
 } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, TouchableOpacity, View } from "react-native";
 import { DirectionalBackIcon } from "@/components/common/icons/DirectionalIcon";
+import { useAuth } from "@/contexts/AuthContext";
+import { AppAlert as Alert } from "@/lib/appAlert";
+import { useTranslation } from "react-i18next";
 
 type ConnectionsTab = "followers" | "following" | "friends";
 
 export default function ConnectionsScreen() {
+  const { user: currentUser } = useAuth();
+  const { t } = useTranslation(["profile", "common"]);
   const { id, type } = useLocalSearchParams<{
     id: string;
     type?: ConnectionsTab;
@@ -34,11 +39,33 @@ export default function ConnectionsScreen() {
   const [items, setItems] = useState<ConnectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const isOwnProfile = currentUser?.id === id;
 
   async function onRefresh() {
     setRefreshing(true);
     await loadConnections();
     setRefreshing(false);
+  }
+
+  function confirmRemoveFollower(userId: string, name: string) {
+    Alert.alert(
+      t("profile:removeFollowerTitle", { name }),
+      t("profile:removeFollowerDescription"),
+      [
+        { text: t("common:cancel"), style: "cancel" },
+        {
+          text: t("profile:remove"),
+          style: "destructive",
+          onPress: () => {
+            void api.users.removeFollower(userId).then(() => {
+              setItems((current) =>
+                current.filter((item) => item.follower?.id !== userId),
+              );
+            });
+          },
+        },
+      ],
+    );
   }
 
   const loadConnections = useCallback(async () => {
@@ -64,7 +91,7 @@ export default function ConnectionsScreen() {
     targetUserId: string,
     relationship?: UserRelationship,
   ) {
-    const isFollowing = isFollowingRelationship(relationship);
+    const isFollowing = shouldRemoveFollowRelationship(relationship);
 
     setItems((prev) =>
       prev.map((item) => {
@@ -177,7 +204,22 @@ export default function ConnectionsScreen() {
                 </View>
               </View>
 
-              <TouchableOpacity
+              {activeTab === "followers" && isOwnProfile ? (
+                <TouchableOpacity
+                  className="items-center rounded-xl bg-gray-200 px-4 py-2 dark:bg-gray-800"
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    confirmRemoveFollower(
+                      user.id,
+                      user.displayName?.trim() || user.username,
+                    );
+                  }}
+                >
+                  <Text className="font-bold text-black dark:text-white">
+                    {t("profile:remove")}
+                  </Text>
+                </TouchableOpacity>
+              ) : <TouchableOpacity
                 className={`w-30 items-center rounded-xl px-4 py-2 ${getRelationshipButtonColor(
                   relationship,
                 )}`}
@@ -190,12 +232,15 @@ export default function ConnectionsScreen() {
                   className={`text-center font-bold ${
                     isFriendRelationship(user.relationship)
                       ? "text-black"
-                      : "text-white"
+                      : user.relationship === "REQUESTED"
+                        ? "text-black dark:text-white"
+                      : "text-white dark:text-black"
                   }`}
                 >
                   {buttonText}
                 </Text>
               </TouchableOpacity>
+              }
             </TouchableOpacity>
           );
         }}

@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import AppBottomSheet from "@/components/common/AppBottomSheet";
 import { useComments } from "@/hooks/useComments";
 import type { Comment } from "@findeat/types";
@@ -9,7 +10,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Avatar from "./Avatar";
 import Text from "./AppText";

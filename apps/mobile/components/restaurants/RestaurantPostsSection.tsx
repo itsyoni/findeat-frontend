@@ -1,5 +1,4 @@
 import { Restaurant } from '@findeat/types';
-import { router } from 'expo-router';
 import { ImagesSquareIcon, StarIcon } from 'phosphor-react-native';
 import { ActivityIndicator, Image, Pressable, TouchableOpacity, View } from 'react-native';
 import { useAppTheme } from '@/contexts/ThemeContext';
@@ -14,9 +13,10 @@ type Props = {
   loadingMore?: boolean;
   hasMore?: boolean;
   onLoadMore?: () => void;
+  onPressPost: (postId: string) => void;
 };
 
-export default function RestaurantPostsSection({ posts, emptyText, loading, loadingMore, hasMore, onLoadMore }: Props) {
+export default function RestaurantPostsSection({ posts, emptyText, loading, loadingMore, hasMore, onLoadMore, onPressPost }: Props) {
   const { isDark } = useAppTheme();
   const { t } = useTranslation('restaurants');
 
@@ -41,7 +41,7 @@ export default function RestaurantPostsSection({ posts, emptyText, loading, load
         {posts.map((post) => (
         <Pressable
           key={post.id}
-          onPress={() => router.push({ pathname: '/(posts)/[id]', params: { id: post.id } })}
+          onPress={() => onPressPost(post.id)}
           className="aspect-square w-1/3 border-[0.5px] border-gray-100 bg-gray-200 dark:border-gray-900"
         >
           {post.imageUrl ? (

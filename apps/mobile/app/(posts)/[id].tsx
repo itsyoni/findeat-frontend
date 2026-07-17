@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { CommentsBottomSheet } from "@/components/common";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
@@ -12,7 +13,7 @@ import {
   useLocalSearchParams,
 } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useQueryClient } from "@tanstack/react-query";
@@ -310,6 +311,10 @@ export default function PostScreen() {
           postId={optionsPostId}
           onClose={() => setOptionsPostId(null)}
           onDelete={deletePost}
+          onArchived={() => {
+            if (router.canGoBack()) router.back();
+            else router.replace("/(tabs)");
+          }}
         />
 
       <SharePostBottomSheet

@@ -51,7 +51,7 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
     const Icon = isReview ? StarIcon : ImagesSquareIcon;
 
     return (
-      <View className="flex-1 items-center justify-center px-10 pb-16 pt-14">
+      <View className="min-h-80 items-center justify-center px-10 pb-16 pt-14">
         <View className="h-20 w-20 items-center justify-center rounded-full border-2 border-gray-200 dark:border-gray-700">
           <Icon size={36} color={isDark ? "#FFF" : "#111"} />
         </View>

@@ -125,4 +125,5 @@ export function removePostFromAppCache(
     post.id === postId ? null : post,
   );
   void queryClient.invalidateQueries({ queryKey: ["restaurant-posts"] });
+  void queryClient.invalidateQueries({ queryKey: ["restaurant-post-feed"] });
 }

@@ -10,6 +10,8 @@ import { StarIcon } from "@phosphor-icons/react/dist/csr/Star";
 import { TrashIcon } from "@phosphor-icons/react/dist/csr/Trash";
 import type { Dish, Menu } from "@findeat/types";
 import { DishEditorModal } from "../components/DishEditorModal";
+import { DishFoodTags } from "../components/DishFoodTags";
+import { foodTagLabel } from "../lib/foodTags";
 import { request, uploadImage } from "../lib/api";
 
 export function MenuPage({
@@ -29,6 +31,9 @@ export function MenuPage({
   const [dishPrice, setDishPrice] = useState("");
   const [dishCategory, setDishCategory] = useState("");
   const [dishImage, setDishImage] = useState<File | null>(null);
+  const [dishAllergens, setDishAllergens] = useState<string[]>([]);
+  const [dishDietaryTags, setDishDietaryTags] = useState<string[]>([]);
+  const [dishCuisineTags, setDishCuisineTags] = useState<string[]>([]);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
   const [error, setError] = useState("");
   const popularDishIds = useMemo(
@@ -80,6 +85,9 @@ export function MenuPage({
           price: dishPrice ? Number(dishPrice) : undefined,
           category: dishCategory || undefined,
           imageUrl,
+          allergens: dishAllergens,
+          dietaryTags: dishDietaryTags,
+          cuisineTags: dishCuisineTags,
         }),
       });
       setDishName("");
@@ -87,6 +95,9 @@ export function MenuPage({
       setDishPrice("");
       setDishCategory("");
       setDishImage(null);
+      setDishAllergens([]);
+      setDishDietaryTags([]);
+      setDishCuisineTags([]);
       setDishMenu(null);
       await reload();
     } catch (nextError) {
@@ -201,6 +212,16 @@ export function MenuPage({
                         {dish.isNew && <span className="new-tag">New</span>}
                       </div>
                       <p>{dish.description || "No description"}</p>
+                      {(dish.allergens?.length > 0 || dish.dietaryTags?.length > 0) && (
+                        <div className="dish-row-food-tags">
+                          {dish.allergens?.slice(0, 2).map((tag) => (
+                            <span className="warning" key={tag}>{foodTagLabel(tag)}</span>
+                          ))}
+                          {dish.dietaryTags?.slice(0, 2).map((tag) => (
+                            <span className="positive" key={tag}>{foodTagLabel(tag)}</span>
+                          ))}
+                        </div>
+                      )}
                       {(dish.reviewsCount ?? 0) > 0 && (
                         <small className="dish-rating">
                           <StarIcon size={13} weight="fill" aria-hidden="true" /> {dish.averageRating?.toFixed(1) || "—"} ·{" "}
@@ -284,6 +305,14 @@ export function MenuPage({
                         setDishDescription(event.target.value)
                       }
                       rows={3}
+                    />
+                    <DishFoodTags
+                      allergens={dishAllergens}
+                      dietaryTags={dishDietaryTags}
+                      cuisineTags={dishCuisineTags}
+                      onAllergensChange={setDishAllergens}
+                      onDietaryTagsChange={setDishDietaryTags}
+                      onCuisineTagsChange={setDishCuisineTags}
                     />
                     <label className="image-picker">
                       <input

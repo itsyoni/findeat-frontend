@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import useSettingsDirection from '@/components/settings/useSettingsDirection';
 
 export default function DeactivateAccountScreen() {
   const { t } = useTranslation('settings');
@@ -19,6 +20,7 @@ export default function DeactivateAccountScreen() {
   const [password, setPassword] = useState('');
   const [deactivating, setDeactivating] = useState(false);
   const [error, setError] = useState('');
+  const { rowStyle, textStyle } = useSettingsDirection();
 
   async function deactivateAccount() {
     if (!password || deactivating) return;
@@ -58,20 +60,20 @@ export default function DeactivateAccountScreen() {
           </View>
 
           <View className="mt-6 rounded-3xl border border-line bg-white p-5 dark:border-gray-800 dark:bg-[#111]">
-            <Text weight="bold" className="text-lg text-black dark:text-white">
+            <Text weight="bold" className="text-lg text-black dark:text-white" style={textStyle}>
               {t('whileDeactivated')}
             </Text>
             {['deactivateHidden', 'deactivateKeepsData', 'deactivateReturn'].map((key) => (
-              <View key={key} className="mt-3 flex-row items-start">
-                <Text className="mr-2 text-amber-600">•</Text>
-                <Text className="flex-1 leading-5 text-gray-600 dark:text-gray-300">
+              <View key={key} className="mt-3 flex-row items-start" style={rowStyle}>
+                <Text className="text-amber-600" style={{ marginEnd: 8 }}>•</Text>
+                <Text className="flex-1 leading-5 text-gray-600 dark:text-gray-300" style={textStyle}>
                   {t(key)}
                 </Text>
               </View>
             ))}
           </View>
 
-          <Text weight="bold" className="mb-2 mt-7 text-black dark:text-white">
+          <Text weight="bold" className="mb-2 mt-7 text-black dark:text-white" style={textStyle}>
             {t('currentPassword')}
           </Text>
           <TextInput
@@ -84,7 +86,7 @@ export default function DeactivateAccountScreen() {
 
           {error ? (
             <View className="mt-4 rounded-2xl bg-red-50 p-4 dark:bg-red-950/30">
-              <Text className="text-red-600 dark:text-red-400">{error}</Text>
+              <Text className="text-red-600 dark:text-red-400" style={textStyle}>{error}</Text>
             </View>
           ) : null}
 

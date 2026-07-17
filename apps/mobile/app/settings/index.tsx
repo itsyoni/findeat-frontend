@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import SettingsHeader from '@/components/settings/SettingsHeader';
 import SettingsRow from '@/components/settings/SettingsRow';
 import SettingsSection from '@/components/settings/SettingsSection';
@@ -6,9 +7,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
 import { router } from 'expo-router';
 import Constants from 'expo-constants';
-import { BellIcon, DeviceMobileIcon, FileTextIcon, HeadsetIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon, SparkleIcon } from 'phosphor-react-native';
+import { ArchiveIcon, BellIcon, DeviceMobileIcon, FileTextIcon, HeadsetIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon, SparkleIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
@@ -30,6 +31,7 @@ export default function SettingsScreen() {
       <ScrollView>
         <SettingsSection title={t('settings:yourAccount')}>
           <SettingsRow icon={<LockKeyIcon size={23} color={color} />} title={t('settings:passwordSecurity')} subtitle={t('settings:passwordSecuritySubtitle')} onPress={() => router.push('/settings/security')} />
+          <SettingsRow icon={<ArchiveIcon size={23} color={color} weight="fill" />} title={t('settings:archivedPosts')} subtitle={t('settings:archivedPostsSubtitle')} onPress={() => router.push('/settings/archived-posts')} />
         </SettingsSection>
         <SettingsSection title={t('settings:howYouUseFindEat')}>
           <SettingsRow icon={<BellIcon size={23} color={color} />} title={t('settings:notifications')} subtitle={t('settings:notificationsSubtitle')} onPress={() => router.push('/settings/notifications')} />

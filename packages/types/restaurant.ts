@@ -44,10 +44,37 @@ export type ManagedRestaurant = {
   phone?: string | null;
   website?: string | null;
   instagram?: string | null;
+  bio?: string | null;
+  categories: string[];
+  setupComplete: boolean;
+  missingSetupFields: string[];
   followersCount?: number;
   averageRating?: number | null;
   reviewsCount?: number;
 };
+
+export const RESTAURANT_CATEGORY_OPTIONS = [
+  "Cafe",
+  "Bakery",
+  "Fast food",
+  "Casual dining",
+  "Fine dining",
+  "Bar",
+  "Desserts",
+  "Italian",
+  "Japanese",
+  "Chinese",
+  "Indian",
+  "Thai",
+  "Mexican",
+  "Mediterranean",
+  "Middle Eastern",
+  "American",
+  "Korean",
+  "Greek",
+  "Vegan",
+  "Other",
+] as const;
 
 export type RestaurantPostSection = "OFFICIAL" | "COMMUNITY" | "REVIEWS";
 
@@ -90,6 +117,11 @@ export type Restaurant = {
   averageRating?: number | null;
   reviewsCount?: number;
   distanceKm?: number;
+  compatibility?: {
+    allergenWarnings: Array<{ tag: string; dishCount: number }>;
+    dietaryMatches: Array<{ tag: string; dishCount: number }>;
+    cuisineMatches: Array<{ tag: string; dishCount: number }>;
+  };
 };
 
 export type RestaurantMapFilter =

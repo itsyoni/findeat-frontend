@@ -1,235 +1,281 @@
 import Text from "@/components/common/AppText";
-import FormInput from "@/components/forms/FormInput";
+import { DirectionalForwardIcon } from "@/components/common/icons/DirectionalIcon";
 import { useAppTheme } from "@/contexts/ThemeContext";
-import { Switch, TouchableOpacity, View } from "react-native";
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
+import { CalendarBlankIcon, XCircleIcon } from "phosphor-react-native";
+import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
+import {
+  Modal,
+  Platform,
+  Switch,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  SafeAreaProvider,
+  SafeAreaView,
+} from "react-native-safe-area-context";
+import ProfileTagPickerPage, {
+  getProfileTagLabel,
+  type ProfileTagField,
+} from "./ProfileTagPickerPage";
 
 export type ProfileDetailsDraft = {
-  phoneNumber: string;
   birthday: string;
-  pronouns: string;
-  allergies: string;
+  pronouns: string[];
+  showPronouns: boolean;
+  allergies: string[];
   foodPreferences: string[];
   dietaryRestrictions: string[];
-  favoriteCuisines: string;
-  showPhoneNumber: boolean;
-  showBirthday: boolean;
-  showPronouns: boolean;
-  showAllergies: boolean;
-  showFoodPreferences: boolean;
-  showDietaryRestrictions: boolean;
-  showFavoriteCuisines: boolean;
+  favoriteCuisines: string[];
 };
 
 export const EMPTY_PROFILE_DETAILS: ProfileDetailsDraft = {
-  phoneNumber: "",
   birthday: "",
-  pronouns: "",
-  allergies: "",
+  pronouns: [],
+  showPronouns: true,
+  allergies: [],
   foodPreferences: [],
   dietaryRestrictions: [],
-  favoriteCuisines: "",
-  showPhoneNumber: false,
-  showBirthday: false,
-  showPronouns: true,
-  showAllergies: false,
-  showFoodPreferences: true,
-  showDietaryRestrictions: false,
-  showFavoriteCuisines: true,
+  favoriteCuisines: [],
 };
-
-const FOOD_PREFERENCES = [
-  "VEGAN",
-  "VEGETARIAN",
-  "PESCATARIAN",
-  "KOSHER",
-  "HALAL",
-] as const;
-
-const DIETARY_RESTRICTIONS = [
-  "GLUTEN_FREE",
-  "LACTOSE_FREE",
-  "NUT_FREE",
-  "SHELLFISH_FREE",
-  "LOW_SODIUM",
-  "DIABETIC_FRIENDLY",
-] as const;
 
 type Props = {
   value: ProfileDetailsDraft;
-  onChange: (value: ProfileDetailsDraft) => void;
+  onChange: Dispatch<SetStateAction<ProfileDetailsDraft>>;
 };
 
+const TAG_FIELDS: ProfileTagField[] = [
+  "foodPreferences",
+  "dietaryRestrictions",
+  "allergies",
+  "favoriteCuisines",
+];
+
+function dateFromIso(value: string) {
+  if (!value) return new Date(2000, 0, 1);
+  const [year, month, day] = value.split("-").map(Number);
+  return new Date(year, month - 1, day, 12);
+}
+
+function isoFromDate(value: Date) {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function ProfileDetailsEditor({ value, onChange }: Props) {
-  const { t } = useTranslation("profile");
+  const { t, i18n } = useTranslation(["profile", "common"]);
   const { isDark } = useAppTheme();
+  const [activeTagField, setActiveTagField] = useState<ProfileTagField | null>(null);
+  const [birthdayPickerOpen, setBirthdayPickerOpen] = useState(false);
+  const [pendingBirthday, setPendingBirthday] = useState(() => dateFromIso(value.birthday));
+
   const update = <K extends keyof ProfileDetailsDraft>(
     key: K,
     nextValue: ProfileDetailsDraft[K],
-  ) => onChange({ ...value, [key]: nextValue });
+  ) => onChange((current) => ({ ...current, [key]: nextValue }));
 
-  function toggleList(key: "foodPreferences" | "dietaryRestrictions", item: string) {
-    const current = value[key];
-    update(
-      key,
-      current.includes(item)
-        ? current.filter((currentItem) => currentItem !== item)
-        : [...current, item],
-    );
+  const formattedBirthday = useMemo(() => {
+    if (!value.birthday) return "";
+    return new Intl.DateTimeFormat(i18n.language.startsWith("he") ? "he-IL" : "en-GB", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    }).format(dateFromIso(value.birthday));
+  }, [i18n.language, value.birthday]);
+
+  function openBirthdayPicker() {
+    setPendingBirthday(dateFromIso(value.birthday));
+    setBirthdayPickerOpen(true);
+  }
+
+  function handleAndroidDate(event: DateTimePickerEvent, date?: Date) {
+    setBirthdayPickerOpen(false);
+    if (event.type === "set" && date) update("birthday", isoFromDate(date));
   }
 
   return (
     <View>
       <Text className="mt-1 text-sm leading-5 text-gray-500 dark:text-gray-400">
-        {t("foodProfileHint")}
+        {t("profile:foodProfileHint")}
       </Text>
 
-      <FormInput
-        label={t("phoneNumber")}
-        value={value.phoneNumber}
-        onChangeText={(text) => update("phoneNumber", text)}
-        placeholder={t("phoneNumberPlaceholder")}
-        keyboardType="phone-pad"
-      />
-      <VisibilityToggle
-        value={value.showPhoneNumber}
-        onChange={(nextValue) => update("showPhoneNumber", nextValue)}
-      />
+      <FieldLabel label={t("profile:birthday")} />
+      <TouchableOpacity
+        onPress={openBirthdayPicker}
+        activeOpacity={0.75}
+        className="flex-row items-center gap-3 rounded-2xl bg-[#f8f8f8] px-4 py-4 dark:bg-gray-900"
+      >
+        <CalendarBlankIcon size={21} color={isDark ? "#D1D5DB" : "#525252"} />
+        <Text
+          className={`flex-1 text-base ${formattedBirthday ? "text-black dark:text-white" : "text-gray-400"}`}
+        >
+          {formattedBirthday || t("profile:birthdayPlaceholder")}
+        </Text>
+        {!!value.birthday && (
+          <TouchableOpacity
+            onPress={() => update("birthday", "")}
+            hitSlop={10}
+            accessibilityLabel={t("profile:clearBirthday")}
+          >
+            <XCircleIcon size={21} color={isDark ? "#9CA3AF" : "#737373"} weight="fill" />
+          </TouchableOpacity>
+        )}
+      </TouchableOpacity>
 
-      <FormInput
-        label={t("birthday")}
-        value={value.birthday}
-        onChangeText={(text) => update("birthday", text)}
-        placeholder={t("birthdayPlaceholder")}
-        keyboardType="numbers-and-punctuation"
-        maxLength={10}
+      <SelectedTagsField
+        field="pronouns"
+        selected={value.pronouns}
+        onPress={() => setActiveTagField("pronouns")}
       />
-      <VisibilityToggle
-        value={value.showBirthday}
-        onChange={(nextValue) => update("showBirthday", nextValue)}
-      />
-
-      <FormInput
-        label={t("pronouns")}
-        value={value.pronouns}
-        onChangeText={(text) => update("pronouns", text)}
-        placeholder={t("pronounsPlaceholder")}
-        maxLength={40}
-      />
-      <VisibilityToggle
-        value={value.showPronouns}
-        onChange={(nextValue) => update("showPronouns", nextValue)}
-      />
-
-      <ChoiceField
-        label={t("foodPreferences")}
-        options={FOOD_PREFERENCES}
-        selected={value.foodPreferences}
-        onToggle={(item) => toggleList("foodPreferences", item)}
-      />
-      <VisibilityToggle
-        value={value.showFoodPreferences}
-        onChange={(nextValue) => update("showFoodPreferences", nextValue)}
-      />
-
-      <ChoiceField
-        label={t("dietaryRestrictions")}
-        options={DIETARY_RESTRICTIONS}
-        selected={value.dietaryRestrictions}
-        onToggle={(item) => toggleList("dietaryRestrictions", item)}
-      />
-      <VisibilityToggle
-        value={value.showDietaryRestrictions}
-        onChange={(nextValue) => update("showDietaryRestrictions", nextValue)}
-      />
-
-      <FormInput
-        label={t("allergies")}
-        value={value.allergies}
-        onChangeText={(text) => update("allergies", text)}
-        placeholder={t("commaSeparatedPlaceholder")}
-      />
-      <VisibilityToggle
-        value={value.showAllergies}
-        onChange={(nextValue) => update("showAllergies", nextValue)}
-      />
-
-      <FormInput
-        label={t("favoriteCuisines")}
-        value={value.favoriteCuisines}
-        onChangeText={(text) => update("favoriteCuisines", text)}
-        placeholder={t("favoriteCuisinesPlaceholder")}
-      />
-      <VisibilityToggle
-        value={value.showFavoriteCuisines}
-        onChange={(nextValue) => update("showFavoriteCuisines", nextValue)}
-      />
-
-      <Text className="mt-5 text-xs leading-5 text-gray-400">
-        {t("allergySafetyNotice")}
-      </Text>
-    </View>
-  );
-
-  function VisibilityToggle({
-    value: isVisible,
-    onChange: setVisible,
-  }: {
-    value: boolean;
-    onChange: (value: boolean) => void;
-  }) {
-    return (
-      <View className="mt-2 flex-row items-center justify-between rounded-xl bg-gray-50 px-3 py-2 dark:bg-gray-900">
+      <View className="mt-2 flex-row items-center justify-between rounded-2xl bg-[#f8f8f8] px-4 py-3 dark:bg-gray-900">
         <Text className="text-sm text-gray-600 dark:text-gray-300">
-          {t("showOnProfile")}
+          {t("profile:showPronounsOnProfile")}
         </Text>
         <Switch
-          value={isVisible}
-          onValueChange={setVisible}
+          value={value.showPronouns}
+          onValueChange={(nextValue) => update("showPronouns", nextValue)}
           trackColor={{ false: isDark ? "#374151" : "#D1D5DB", true: "#F6C445" }}
-          thumbColor={isVisible ? "#FFFFFF" : isDark ? "#9CA3AF" : "#FFFFFF"}
+          thumbColor="#FFFFFF"
         />
       </View>
-    );
-  }
 
-  function ChoiceField({
-    label,
-    options,
-    selected,
-    onToggle,
-  }: {
-    label: string;
-    options: readonly string[];
-    selected: string[];
-    onToggle: (value: string) => void;
-  }) {
-    return (
-      <View className="mt-5">
-        <Text className="mb-3 text-sm text-gray-500" weight="bold">
-          {label}
-        </Text>
-        <View className="flex-row flex-wrap gap-2">
-          {options.map((option) => {
-            const isSelected = selected.includes(option);
-            return (
-              <TouchableOpacity
-                key={option}
-                onPress={() => onToggle(option)}
-                className={`rounded-full border px-4 py-2.5 ${
-                  isSelected
-                    ? "border-amber-400 bg-amber-100 dark:bg-amber-900/50"
-                    : "border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-900"
-                }`}
-              >
-                <Text className="text-sm text-black dark:text-white">
-                  {t(`profileOptions.${option}`)}
+      {TAG_FIELDS.map((field) => (
+        <SelectedTagsField
+          key={field}
+          field={field}
+          selected={value[field]}
+          onPress={() => setActiveTagField(field)}
+        />
+      ))}
+
+      <Text className="mt-5 text-xs leading-5 text-gray-400">
+        {t("profile:allergySafetyNotice")}
+      </Text>
+
+      {activeTagField && (
+        <ProfileTagPickerPage
+          field={activeTagField}
+          selected={value[activeTagField]}
+          onClose={() => setActiveTagField(null)}
+          onDone={(selected) => {
+            update(activeTagField, selected);
+            setActiveTagField(null);
+          }}
+        />
+      )}
+
+      {Platform.OS === "android" && birthdayPickerOpen && (
+        <DateTimePicker
+          value={pendingBirthday}
+          mode="date"
+          maximumDate={new Date()}
+          minimumDate={new Date(1900, 0, 1)}
+          onChange={handleAndroidDate}
+        />
+      )}
+
+      {Platform.OS === "ios" && (
+        <Modal
+          visible={birthdayPickerOpen}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setBirthdayPickerOpen(false)}
+        >
+          <SafeAreaProvider style={{ flex: 1 }}>
+            <SafeAreaView
+              edges={["top", "bottom"]}
+              style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}
+            >
+              <View className="flex-1 bg-canvas px-5 dark:bg-black">
+              <View className="flex-row items-center justify-between py-3">
+                <TouchableOpacity onPress={() => setBirthdayPickerOpen(false)} className="px-2 py-3">
+                  <Text className="text-gray-500">{t("common:cancel")}</Text>
+                </TouchableOpacity>
+                <Text className="text-lg font-bold text-black dark:text-white">
+                  {t("profile:chooseBirthday")}
                 </Text>
-              </TouchableOpacity>
-            );
-          })}
+                <TouchableOpacity
+                  onPress={() => {
+                    update("birthday", isoFromDate(pendingBirthday));
+                    setBirthdayPickerOpen(false);
+                  }}
+                  className="px-2 py-3"
+                >
+                  <Text className="font-bold text-amber-600 dark:text-amber-300">
+                    {t("common:done")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <DateTimePicker
+                value={pendingBirthday}
+                mode="date"
+                display="inline"
+                maximumDate={new Date()}
+                minimumDate={new Date(1900, 0, 1)}
+                themeVariant={isDark ? "dark" : "light"}
+                onChange={(_, date) => date && setPendingBirthday(date)}
+                style={{ alignSelf: "stretch", marginTop: 12 }}
+              />
+              </View>
+            </SafeAreaView>
+          </SafeAreaProvider>
+        </Modal>
+      )}
+    </View>
+  );
+}
+
+function FieldLabel({ label }: { label: string }) {
+  return (
+    <Text className="mb-2 mt-5 text-sm text-gray-500" weight="bold">
+      {label}
+    </Text>
+  );
+}
+
+function SelectedTagsField({
+  field,
+  selected,
+  onPress,
+}: {
+  field: ProfileTagField;
+  selected: string[];
+  onPress: () => void;
+}) {
+  const { t } = useTranslation("profile");
+  const { isDark } = useAppTheme();
+
+  return (
+    <View>
+      <FieldLabel label={t(field)} />
+      <TouchableOpacity
+        onPress={onPress}
+        activeOpacity={0.75}
+        className="min-h-16 flex-row items-center gap-3 rounded-2xl bg-[#f8f8f8] px-4 py-3 dark:bg-gray-900"
+      >
+        <View className="flex-1 flex-row flex-wrap gap-2">
+          {selected.length ? (
+            selected.map((tag) => (
+              <View key={tag} className="rounded-full bg-amber-100 px-3 py-2 dark:bg-amber-900/50">
+                <Text className="text-sm text-amber-950 dark:text-amber-100">
+                  {getProfileTagLabel(t, tag)}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text className="py-1 text-gray-400">{t("noTagsSelected")}</Text>
+          )}
         </View>
-      </View>
-    );
-  }
+        <View>
+          <DirectionalForwardIcon size={20} color={isDark ? "#9CA3AF" : "#737373"} />
+        </View>
+      </TouchableOpacity>
+    </View>
+  );
 }

@@ -3,8 +3,9 @@ import type { SearchResultItem } from "@findeat/types";
 const priority = {
   FRIENDS: 0,
   FOLLOWING: 1,
-  FOLLOWED_BY: 2,
-  NONE: 3,
+  REQUESTED: 2,
+  FOLLOWED_BY: 3,
+  NONE: 4,
 };
 
 export function sortSearchResults(items: SearchResultItem[]) {

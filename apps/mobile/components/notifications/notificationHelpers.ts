@@ -17,6 +17,7 @@ export function notificationText(item: AppNotification, t: TFunction) {
 }
 
 export function notificationHref(item: AppNotification): Href | null {
+  if (item.type === 'FOLLOW_REQUEST') return '/settings/follow-requests';
   if (item.conversationId) return `/chats/${item.conversationId}`;
   if (item.postId)
     return {

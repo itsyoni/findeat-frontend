@@ -12,6 +12,8 @@ export type NotificationType =
   | 'FOLLOW'
   | 'FOLLOW_BACK'
   | 'FRIEND'
+  | 'FOLLOW_REQUEST'
+  | 'FOLLOW_REQUEST_ACCEPTED'
   | 'MESSAGE'
   | 'GROUP_INVITE'
   | 'GROUP_JOIN'

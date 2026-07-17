@@ -45,7 +45,7 @@ export default function ProfileActionsBottomSheet({
     >
       <BottomSheetView className="flex-1 px-5 pb-7 pt-1">
         <Text className="text-xl font-bold text-black dark:text-white">
-          {t(isRestaurant ? "restaurants:restaurantOptions" : "profile:profileOptions")}
+          {t(isRestaurant ? "restaurants:restaurantOptions" : "profile:profileActions")}
         </Text>
 
         {isRestaurant && (

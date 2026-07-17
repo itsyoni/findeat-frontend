@@ -31,6 +31,11 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: config.slug ?? "mobile",
     scheme,
 
+    plugins: [
+      ...(config.plugins ?? []),
+      "@react-native-community/datetimepicker",
+    ],
+
     ios: {
       ...config.ios,
       bundleIdentifier,

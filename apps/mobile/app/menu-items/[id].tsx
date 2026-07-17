@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { DishCompatibilityChips } from "@/components/restaurants/FoodCompatibility";
 
 export default function MenuItemScreen() {
   const { isDark } = useAppTheme();
@@ -198,6 +199,11 @@ export default function MenuItemScreen() {
               </View>
             )}
           </View>
+
+          <DishCompatibilityChips
+            compatibility={dish.compatibility}
+            detailed
+          />
 
           <View className="mt-6 flex-row items-center rounded-3xl border border-line bg-soft p-4 dark:border-gray-800 dark:bg-gray-900">
             <View className="h-12 w-12 items-center justify-center rounded-full bg-brand-soft dark:bg-orange-950/60">

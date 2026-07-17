@@ -8,6 +8,7 @@ import type {
   RestaurantMapSort,
   GoogleRestaurantSuggestion,
   UserRestaurant,
+  FeedPage,
 } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
@@ -80,6 +81,9 @@ export function createRestaurantsApi(api: AxiosInstance) {
       limit?: number;
       filter?: RestaurantMapFilter;
       sort?: RestaurantMapSort;
+      matchDietary?: boolean;
+      matchCuisines?: boolean;
+      hideFlaggedAllergens?: boolean;
     }) {
       const { data } = await api.get<Restaurant[]>("/restaurants/map/discover", {
         params: options,
@@ -157,6 +161,19 @@ export function createRestaurantsApi(api: AxiosInstance) {
       const { data } = await api.get<RestaurantPostsPage>(
         `/restaurants/${id}/posts`,
         { params: { section, cursor, limit: 18 } },
+      );
+      return data;
+    },
+
+    async postFeed(
+      id: string,
+      section: RestaurantPostSection,
+      cursor?: string,
+      anchorId?: string,
+    ) {
+      const { data } = await api.get<FeedPage>(
+        `/restaurants/${id}/post-feed`,
+        { params: { section, cursor, anchorId, limit: 10 } },
       );
       return data;
     },

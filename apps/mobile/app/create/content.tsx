@@ -1,16 +1,18 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
 import { TextInput } from "@/components/common";
 import FullPageRestaurantPicker from "@/components/restaurants/FullPageRestaurantPicker";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import PostVisibilitySelector from "@/components/posts/PostVisibilitySelector";
+import PostConnectionPicker from "@/components/posts/PostConnectionPicker";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { prependPostToFeedCache } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
 import type { PostVisibility, SelectedRestaurant } from "@findeat/types";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import * as ImagePicker from "expo-image-picker";
+import ImageCropPicker from "react-native-image-crop-picker";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
   ArrowCounterClockwiseIcon,
@@ -23,24 +25,15 @@ import {
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Linking,
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { ActivityIndicator, Image, KeyboardAvoidingView, Linking, Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 
 type Step = "CAMERA" | "DETAILS" | "RESTAURANT";
 
 export default function CreateContentScreen() {
-  const { restaurantId } = useLocalSearchParams<{ restaurantId?: string }>();
+  const { restaurantId, linkedPostId: initialLinkedPostId } =
+    useLocalSearchParams<{ restaurantId?: string; linkedPostId?: string }>();
   const { t } = useTranslation("create");
   const { isDark } = useAppTheme();
   const queryClient = useQueryClient();
@@ -50,6 +43,9 @@ export default function CreateContentScreen() {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<PostVisibility>("PUBLIC");
+  const [linkedPostId, setLinkedPostId] = useState<string | undefined>(
+    initialLinkedPostId,
+  );
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<SelectedRestaurant | null>(null);
   const [capturing, setCapturing] = useState(false);
@@ -97,16 +93,23 @@ export default function CreateContentScreen() {
   }
 
   async function openGallery() {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [9, 16],
-      quality: 0.9,
-    });
-
-    if (!result.canceled) {
-      const image = result.assets[0];
-      await selectPhoto(image.uri);
+    try {
+      const image = await ImageCropPicker.openPicker({
+        width: 1200,
+        height: 1500,
+        cropping: true,
+        freeStyleCropEnabled: false,
+        mediaType: "photo",
+        compressImageQuality: 0.9,
+        forceJpg: true,
+        cropperToolbarTitle: t("cropContentPhoto"),
+      });
+      await selectPhoto(image.path);
+    } catch (error) {
+      if ((error as { code?: string }).code !== "E_PICKER_CANCELLED") {
+        console.error("content image picker failed", error);
+        Alert.alert(t("imageCropErrorTitle"), t("imageCropErrorBody"));
+      }
     }
   }
 
@@ -140,17 +143,35 @@ export default function CreateContentScreen() {
         restaurantId,
         description: description.trim(),
         visibility,
+        linkedPostId,
       });
 
       prependPostToFeedCache(queryClient, createdPost);
-      router.replace({
-        pathname: "/(tabs)",
-        params: {
-          feed: createdPost.type,
-          postId: createdPost.id,
-          refresh: Date.now().toString(),
-        },
-      });
+      const openFeed = () =>
+        router.replace({
+          pathname: "/(tabs)",
+          params: {
+            feed: createdPost.type,
+            postId: createdPost.id,
+            refresh: Date.now().toString(),
+          },
+        });
+
+      if (linkedPostId) {
+        openFeed();
+      } else {
+        Alert.alert(t("addReviewPromptTitle"), t("addReviewPromptBody"), [
+          { text: t("maybeLater"), style: "cancel", onPress: openFeed },
+          {
+            text: t("writeFullReview"),
+            onPress: () =>
+              router.replace({
+                pathname: "/create/review",
+                params: { restaurantId, linkedPostId: createdPost.id },
+              }),
+          },
+        ]);
+      }
     } catch (error) {
       console.error(error);
       Alert.alert(t("publishError"), getErrorMessage(error, t("publishErrorBody")));
@@ -310,6 +331,15 @@ export default function CreateContentScreen() {
         <FullPageRestaurantPicker
           selectedRestaurant={selectedRestaurant}
           onSelect={(restaurant) => {
+            const previousId =
+              selectedRestaurant?.source === "FINDEAT"
+                ? selectedRestaurant.restaurant.id
+                : undefined;
+            const nextId =
+              restaurant?.source === "FINDEAT"
+                ? restaurant.restaurant.id
+                : undefined;
+            if (previousId !== nextId) setLinkedPostId(undefined);
             setSelectedRestaurant(restaurant);
             setStep("DETAILS");
           }}
@@ -439,6 +469,17 @@ export default function CreateContentScreen() {
                 className="min-h-28 bg-gray-50 dark:bg-gray-900"
               />
             </View>
+
+            <PostConnectionPicker
+              restaurantId={
+                selectedRestaurant?.source === "FINDEAT"
+                  ? selectedRestaurant.restaurant.id
+                  : undefined
+              }
+              candidateType="REVIEW"
+              selectedPostId={linkedPostId}
+              onSelect={setLinkedPostId}
+            />
 
             <PostVisibilitySelector
               value={visibility}

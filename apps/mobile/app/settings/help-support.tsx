@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import useSettingsDirection from '@/components/settings/useSettingsDirection';
 
 const categories: SupportTicketCategory[] = ['BUG', 'ACCOUNT', 'RESTAURANT', 'CONTENT', 'SAFETY', 'OTHER'];
 
@@ -24,6 +25,7 @@ export default function HelpSupportScreen() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [sent, setSent] = useState(false);
+  const { isRtl, rowStyle, textStyle } = useSettingsDirection();
 
   const colors = {
     background: isDark ? '#000' : '#FBFAF8',
@@ -94,11 +96,11 @@ export default function HelpSupportScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void loadTickets(); }} tintColor={colors.text} />}
         >
           <View style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 22, padding: 18 }}>
-            <Text weight="bold" style={{ color: colors.text, fontSize: 20 }}>{t('contactSupport')}</Text>
-            <Text style={{ color: colors.muted, marginTop: 6, lineHeight: 20 }}>{t('supportIntro')}</Text>
+            <Text weight="bold" style={[textStyle, { color: colors.text, fontSize: 20 }]}>{t('contactSupport')}</Text>
+            <Text style={[textStyle, { color: colors.muted, marginTop: 6, lineHeight: 20 }]}>{t('supportIntro')}</Text>
 
-            <Text weight="bold" style={{ color: colors.text, marginTop: 22, marginBottom: 10 }}>{t('supportCategory')}</Text>
-            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            <Text weight="bold" style={[textStyle, { color: colors.text, marginTop: 22, marginBottom: 10 }]}>{t('supportCategory')}</Text>
+            <View style={[rowStyle, { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }]}>
               {categories.map((item) => {
                 const selected = item === category;
                 return <TouchableOpacity key={item} onPress={() => setCategory(item)} style={{ borderRadius: 999, paddingHorizontal: 14, paddingVertical: 9, backgroundColor: selected ? colors.accent : colors.input }}>
@@ -107,16 +109,16 @@ export default function HelpSupportScreen() {
               })}
             </View>
 
-            <Text weight="bold" style={{ color: colors.text, marginTop: 20, marginBottom: 8 }}>{t('supportSubject')}</Text>
+            <Text weight="bold" style={[textStyle, { color: colors.text, marginTop: 20, marginBottom: 8 }]}>{t('supportSubject')}</Text>
             <TextInput
               value={subject}
               onChangeText={(value) => { setSubject(value); setSent(false); }}
               placeholder={t('supportSubjectPlaceholder')}
               placeholderTextColor={colors.muted}
               maxLength={120}
-              style={{ backgroundColor: colors.input, color: colors.text, borderRadius: 14, paddingHorizontal: 14, minHeight: 48, fontSize: 16 }}
+              style={{ backgroundColor: colors.input, color: colors.text, borderRadius: 14, paddingHorizontal: 14, minHeight: 48, fontSize: 16, textAlign: 'auto', writingDirection: isRtl ? 'rtl' : 'ltr' }}
             />
-            <Text weight="bold" style={{ color: colors.text, marginTop: 16, marginBottom: 8 }}>{t('supportMessage')}</Text>
+            <Text weight="bold" style={[textStyle, { color: colors.text, marginTop: 16, marginBottom: 8 }]}>{t('supportMessage')}</Text>
             <TextInput
               value={message}
               onChangeText={(value) => { setMessage(value); setSent(false); }}
@@ -125,7 +127,7 @@ export default function HelpSupportScreen() {
               multiline
               textAlignVertical="top"
               maxLength={5000}
-              style={{ backgroundColor: colors.input, color: colors.text, borderRadius: 14, padding: 14, minHeight: 120, fontSize: 16 }}
+              style={{ backgroundColor: colors.input, color: colors.text, borderRadius: 14, padding: 14, minHeight: 120, fontSize: 16, textAlign: 'auto', writingDirection: isRtl ? 'rtl' : 'ltr' }}
             />
             {error ? <Text style={{ color: '#EF4444', marginTop: 12 }}>{error}</Text> : null}
             {sent ? <View style={{ backgroundColor: isDark ? '#17351F' : '#E8F7EC', borderRadius: 12, padding: 12, marginTop: 12 }}>
@@ -135,7 +137,7 @@ export default function HelpSupportScreen() {
             <AppButton title={t('submitTicket')} loading={saving} disabled={subject.trim().length < 3 || message.trim().length < 10} onPress={() => void submit()} className="mt-4" />
           </View>
 
-          <Text weight="bold" style={{ color: colors.text, fontSize: 20, marginTop: 28, marginBottom: 12 }}>{t('mySupportRequests')}</Text>
+          <Text weight="bold" style={[textStyle, { color: colors.text, fontSize: 20, marginTop: 28, marginBottom: 12 }]}>{t('mySupportRequests')}</Text>
           {loading ? <SkeletonPulse>{[0, 1].map((item) => <View key={item} style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 18, padding: 16, marginBottom: 12 }}><View className="flex-row items-center justify-between"><View className="flex-1 gap-2"><Skeleton width="58%" height={16} radius={7} /><Skeleton width="42%" height={11} radius={5} /></View><Skeleton width={72} height={28} radius={14} /></View><Skeleton width="100%" height={12} radius={6} style={{ marginTop: 16 }} /><Skeleton width="82%" height={12} radius={6} style={{ marginTop: 8 }} /></View>)}</SkeletonPulse> : tickets.length === 0 ? (
             <View style={{ backgroundColor: colors.surface, borderRadius: 18, padding: 24, alignItems: 'center' }}>
               <Text weight="bold" style={{ color: colors.text }}>{t('noSupportRequests')}</Text>
@@ -143,19 +145,19 @@ export default function HelpSupportScreen() {
             </View>
           ) : tickets.map((ticket) => (
             <View key={ticket.id} style={{ backgroundColor: colors.surface, borderColor: colors.border, borderWidth: 1, borderRadius: 18, padding: 16, marginBottom: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <View style={[rowStyle, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }]}>
                 <View style={{ flex: 1 }}>
-                  <Text weight="bold" style={{ color: colors.text, fontSize: 16 }}>{ticket.subject}</Text>
-                  <Text style={{ color: colors.muted, marginTop: 3 }}>{t(`supportCategories.${ticket.category}`)} · {new Date(ticket.createdAt).toLocaleDateString()}</Text>
+                  <Text weight="bold" style={[textStyle, { color: colors.text, fontSize: 16 }]}>{ticket.subject}</Text>
+                  <Text style={[textStyle, { color: colors.muted, marginTop: 3 }]}>{t(`supportCategories.${ticket.category}`)} · {new Date(ticket.createdAt).toLocaleDateString()}</Text>
                 </View>
                 <View style={{ backgroundColor: ticket.status === 'RESOLVED' || ticket.status === 'CLOSED' ? (isDark ? '#17351F' : '#E8F7EC') : colors.input, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 6 }}>
                   <Text weight="bold" style={{ color: ticket.status === 'RESOLVED' || ticket.status === 'CLOSED' ? (isDark ? '#86EFAC' : '#166534') : colors.text, fontSize: 12 }}>{statusLabel(ticket.status)}</Text>
                 </View>
               </View>
-              <Text style={{ color: colors.text, marginTop: 12, lineHeight: 20 }}>{ticket.message}</Text>
+              <Text style={[textStyle, { color: colors.text, marginTop: 12, lineHeight: 20 }]}>{ticket.message}</Text>
               {ticket.adminReply ? <View style={{ backgroundColor: colors.input, borderRadius: 12, padding: 12, marginTop: 14 }}>
-                <Text weight="bold" style={{ color: colors.text }}>{t('adminReply')}</Text>
-                <Text style={{ color: colors.text, marginTop: 5, lineHeight: 20 }}>{ticket.adminReply}</Text>
+                <Text weight="bold" style={[textStyle, { color: colors.text }]}>{t('adminReply')}</Text>
+                <Text style={[textStyle, { color: colors.text, marginTop: 5, lineHeight: 20 }]}>{ticket.adminReply}</Text>
               </View> : null}
             </View>
           ))}

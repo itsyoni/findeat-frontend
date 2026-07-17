@@ -3,6 +3,7 @@ import { Image, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import { DishCompatibilityChips } from "./FoodCompatibility";
 
 type Props = {
   item: Restaurant["menus"][number]["items"][number];
@@ -62,6 +63,8 @@ export default function DishCard({ item, popular = false }: Props) {
               {t("dishReviewCount", { count: item.reviewsCount })}
             </Text>
           )}
+
+          <DishCompatibilityChips compatibility={item.compatibility} />
 
           <View className="mt-2 flex-row flex-wrap gap-1.5">
             {item.isFeatured && (

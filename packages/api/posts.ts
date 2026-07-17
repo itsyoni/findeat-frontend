@@ -14,6 +14,7 @@ export function createPostsApi(api: AxiosInstance) {
       imageUrl?: string;
       restaurantId?: string;
       visibility?: PostVisibility;
+      linkedPostId?: string;
     }) {
       const { data } = await api.post<Post>("/posts/content", payload);
 
@@ -30,13 +31,14 @@ export function createPostsApi(api: AxiosInstance) {
       serviceRating?: number;
       valueRating?: number;
       totalPrice?: number;
+      linkedPostId?: string;
       items: Array<{
         menuItemId?: string | null;
         customDishName?: string | null;
         customPrice?: number | null;
         imageUrl?: string | null;
-        rating?: number | null;
-        text?: string | null;
+        rating: number;
+        text: string;
         order: number;
       }>;
     }) {
@@ -52,6 +54,21 @@ export function createPostsApi(api: AxiosInstance) {
 
     async mine() {
       const { data } = await api.get<Post[]>("/posts/me");
+      return data;
+    },
+
+    async archived() {
+      const { data } = await api.get<Post[]>("/posts/archived");
+      return data;
+    },
+
+    async archive(id: string) {
+      const { data } = await api.post<Post>(`/posts/${id}/archive`);
+      return data;
+    },
+
+    async restore(id: string) {
+      const { data } = await api.delete<Post>(`/posts/${id}/archive`);
       return data;
     },
 
@@ -87,6 +104,27 @@ export function createPostsApi(api: AxiosInstance) {
 
     async get(id: string) {
       const { data } = await api.get<Post>(`/posts/${id}`);
+      return data;
+    },
+
+    async linkCandidates(restaurantId: string, type: PostType) {
+      const { data } = await api.get<Post[]>("/posts/link-candidates", {
+        params: { restaurantId, type },
+      });
+      return data;
+    },
+
+    async link(id: string, targetId: string) {
+      const { data } = await api.post<Post>(
+        `/posts/${id}/connections/${targetId}`,
+      );
+      return data;
+    },
+
+    async unlink(id: string, targetId: string) {
+      const { data } = await api.delete<Post>(
+        `/posts/${id}/connections/${targetId}`,
+      );
       return data;
     },
 

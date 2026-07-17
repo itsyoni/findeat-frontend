@@ -5,7 +5,7 @@ import { router } from 'expo-router';
 import { ChatCircleIcon, DotsThreeIcon, MapPinIcon } from 'phosphor-react-native';
 import DirectionalIcon from '@/components/common/icons/DirectionalIcon';
 import { useTranslation } from 'react-i18next';
-import { Image, TouchableOpacity, View } from 'react-native';
+import { Animated, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Text from '../common/AppText';
 import RestaurantFollowButton from './RestaurantFollowButton';
@@ -13,15 +13,17 @@ import RestaurantStats from './RestaurantStats';
 import RestaurantBadge from './RestaurantBadge';
 import { useState } from 'react';
 import { Skeleton, SkeletonPulse } from '../common';
+import ParallaxProfileCover from '../profile/ParallaxProfileCover';
 
 type Props = {
   restaurant?: Restaurant | null;
   loading?: boolean;
   onToggleFollow: () => void;
   onOpenOptions: () => void;
+  scrollY: Animated.Value;
 };
 
-export default function RestaurantHeader({ restaurant, loading = false, onToggleFollow, onOpenOptions }: Props) {
+export default function RestaurantHeader({ restaurant, loading = false, onToggleFollow, onOpenOptions, scrollY }: Props) {
   const { t } = useTranslation('restaurants');
   const [logoOpen, setLogoOpen] = useState(false);
 
@@ -59,11 +61,7 @@ export default function RestaurantHeader({ restaurant, loading = false, onToggle
   return (
     <View className="bg-white dark:bg-black">
       <View className="relative">
-        {restaurant.coverUrl ? (
-          <Image source={{ uri: restaurant.coverUrl }} className="h-60 w-full bg-gray-100" resizeMode="cover" />
-        ) : (
-          <View className="h-60 w-full bg-gray-100 dark:bg-gray-800" />
-        )}
+        <ParallaxProfileCover uri={restaurant.coverUrl} scrollY={scrollY} />
         <SafeAreaView edges={["top"]} pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
           <View className="flex-row items-center justify-between px-4 pt-2">
             <TouchableOpacity onPress={() => router.back()} className="h-11 w-11 items-center justify-center rounded-full bg-black/45">

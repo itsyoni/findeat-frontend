@@ -25,7 +25,10 @@ import { FlatList, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Mapbox from "@rnmapbox/maps";
-import BottomSheet, { BottomSheetView } from "@gorhom/bottom-sheet";
+import BottomSheet, {
+  BottomSheetScrollView,
+  BottomSheetView,
+} from "@gorhom/bottom-sheet";
 import {
   CheckIcon,
   CrosshairIcon,
@@ -84,6 +87,15 @@ export default function MapScreen() {
   const [radiusKm, setRadiusKm] = useState<number | null>(
     DEFAULT_MAP_PREFERENCES.radiusKm,
   );
+  const [matchDietary, setMatchDietary] = useState(
+    DEFAULT_MAP_PREFERENCES.matchDietary,
+  );
+  const [matchCuisines, setMatchCuisines] = useState(
+    DEFAULT_MAP_PREFERENCES.matchCuisines,
+  );
+  const [hideFlaggedAllergens, setHideFlaggedAllergens] = useState(
+    DEFAULT_MAP_PREFERENCES.hideFlaggedAllergens,
+  );
   const [filtersHydrated, setFiltersHydrated] = useState(false);
   const bottomSheetRef = useRef<BottomSheet>(null);
   const temporaryRestaurantIdRef = useRef<string | null>(null);
@@ -111,6 +123,9 @@ export default function MapScreen() {
       setMapFilter(preferences.filter);
       setMapSort(preferences.sort);
       setRadiusKm(preferences.radiusKm);
+      setMatchDietary(preferences.matchDietary);
+      setMatchCuisines(preferences.matchCuisines);
+      setHideFlaggedAllergens(preferences.hideFlaggedAllergens);
       setFiltersHydrated(true);
     });
 
@@ -126,8 +141,20 @@ export default function MapScreen() {
       filter: mapFilter,
       sort: mapSort,
       radiusKm,
+      matchDietary,
+      matchCuisines,
+      hideFlaggedAllergens,
     }).catch((error) => console.error("Could not save map filters:", error));
-  }, [filtersHydrated, mapFilter, mapSort, radiusKm, user?.id]);
+  }, [
+    filtersHydrated,
+    hideFlaggedAllergens,
+    mapFilter,
+    mapSort,
+    matchCuisines,
+    matchDietary,
+    radiusKm,
+    user?.id,
+  ]);
 
   const mapRestaurants = restaurants;
 
@@ -197,6 +224,9 @@ export default function MapScreen() {
         limit: 10,
         filter: mapFilter,
         sort: mapSort,
+        matchDietary,
+        matchCuisines,
+        hideFlaggedAllergens,
       });
 
       const requestedId =
@@ -250,7 +280,15 @@ export default function MapScreen() {
     } finally {
       setLoading(false);
     }
-  }, [mapFilter, mapSort, radiusKm, restaurantId]);
+  }, [
+    hideFlaggedAllergens,
+    mapFilter,
+    mapSort,
+    matchCuisines,
+    matchDietary,
+    radiusKm,
+    restaurantId,
+  ]);
 
   const dismissRestaurantPreview = useCallback(() => {
     setSelectedRestaurant(null);
@@ -892,9 +930,11 @@ export default function MapScreen() {
       <AppBottomSheet
         open={filtersOpen}
         onClose={() => setFiltersOpen(false)}
-        snapPoints={["68%"]}
+        snapPoints={["88%"]}
       >
-        <BottomSheetView className="flex-1 px-5 pb-7">
+        <BottomSheetScrollView
+          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 }}
+        >
           <Text className="text-2xl font-bold text-black dark:text-white">
             {t("map:filters")}
           </Text>
@@ -919,6 +959,57 @@ export default function MapScreen() {
                 <Text className={`font-bold ${mapFilter === filter ? "ml-1.5 text-white dark:text-black" : "text-black dark:text-white"}`}>
                   {t(`map:filter${filter}`)}
                 </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          <Text className="mb-2 mt-6 font-bold text-black dark:text-white">
+            {t("map:personalized")}
+          </Text>
+          <Text className="mb-3 text-sm leading-5 text-gray-500 dark:text-gray-400">
+            {t("map:personalizedHint")}
+          </Text>
+          <View className="gap-2">
+            {[
+              {
+                key: "dietary",
+                value: matchDietary,
+                onPress: () => setMatchDietary((current) => !current),
+                label: t("map:matchDietary"),
+              },
+              {
+                key: "cuisines",
+                value: matchCuisines,
+                onPress: () => setMatchCuisines((current) => !current),
+                label: t("map:matchCuisines"),
+              },
+              {
+                key: "allergens",
+                value: hideFlaggedAllergens,
+                onPress: () =>
+                  setHideFlaggedAllergens((current) => !current),
+                label: t("map:hideFlaggedAllergens"),
+              },
+            ].map((option) => (
+              <TouchableOpacity
+                key={option.key}
+                onPress={option.onPress}
+                className="flex-row items-center justify-between rounded-xl bg-gray-100 px-4 py-3.5 dark:bg-gray-800"
+              >
+                <Text className="flex-1 pr-3 font-semibold text-black dark:text-white">
+                  {option.label}
+                </Text>
+                <View
+                  className={`h-6 w-6 items-center justify-center rounded-full ${
+                    option.value
+                      ? "bg-emerald-600"
+                      : "border-2 border-gray-300 dark:border-gray-600"
+                  }`}
+                >
+                  {option.value && (
+                    <CheckIcon size={14} color="#FFF" weight="bold" />
+                  )}
+                </View>
               </TouchableOpacity>
             ))}
           </View>
@@ -964,13 +1055,13 @@ export default function MapScreen() {
 
           <TouchableOpacity
             onPress={() => setFiltersOpen(false)}
-            className="mt-auto rounded-2xl bg-black py-4 dark:bg-white"
+            className="mt-7 rounded-2xl bg-black py-4 dark:bg-white"
           >
             <Text className="text-center font-bold text-white dark:text-black">
               {t("map:showPlaces")}
             </Text>
           </TouchableOpacity>
-        </BottomSheetView>
+        </BottomSheetScrollView>
       </AppBottomSheet>
     </SafeAreaView>
   );

@@ -2,7 +2,7 @@ import Avatar from "@/components/common/Avatar";
 import FullScreenImageViewer from "@/components/common/FullScreenImageViewer";
 import { Profile } from "@findeat/types/profile";
 import { router } from "expo-router";
-import { Image, TouchableOpacity, View } from "react-native";
+import { Animated, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 import ProfileDetails from "./ProfileDetails";
@@ -11,13 +11,15 @@ import { GearSixIcon } from "phosphor-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Skeleton, SkeletonPulse } from "../common";
+import ParallaxProfileCover from "./ParallaxProfileCover";
 
 type Props = {
   profile?: Profile | null;
   loading?: boolean;
+  scrollY: Animated.Value;
 };
 
-export default function PersonalProfileHeader({ profile, loading = false }: Props) {
+export default function PersonalProfileHeader({ profile, loading = false, scrollY }: Props) {
   const { t } = useTranslation(["common", "profile"]);
   const [avatarOpen, setAvatarOpen] = useState(false);
 
@@ -47,15 +49,7 @@ export default function PersonalProfileHeader({ profile, loading = false }: Prop
   return (
     <View className="bg-white dark:bg-black">
       <View className="relative">
-        {profile.coverUrl ? (
-          <Image
-            source={{ uri: profile.coverUrl }}
-            className="h-60 w-full bg-gray-200"
-            resizeMode="cover"
-          />
-        ) : (
-          <View className="h-60 w-full bg-gray-200 dark:bg-gray-800" />
-        )}
+        <ParallaxProfileCover uri={profile.coverUrl} scrollY={scrollY} />
         <SafeAreaView
           edges={["top"]}
           pointerEvents="box-none"

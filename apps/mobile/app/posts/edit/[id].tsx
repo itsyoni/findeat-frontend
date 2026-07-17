@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { AppButton, Skeleton, SkeletonPulse, TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { useAppTheme } from "@/contexts/ThemeContext";
@@ -14,15 +15,7 @@ import {
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 function dishName(item: ReviewItem) {

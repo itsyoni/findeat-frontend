@@ -12,6 +12,7 @@ export type User = {
   language: Language;
   showActivityStatus?: boolean;
   showWhatsNewPopups?: boolean;
+  isPrivate?: boolean;
   phoneNumber?: string | null;
   birthday?: string | null;
   pronouns?: string | null;
@@ -26,6 +27,12 @@ export type User = {
   showFoodPreferences?: boolean;
   showDietaryRestrictions?: boolean;
   showFavoriteCuisines?: boolean;
+};
+
+export type FollowRequest = {
+  id: string;
+  createdAt: string;
+  requester: UserSummary & { relationship: import("./profile").UserRelationship };
 };
 
 export type UserSummary = {

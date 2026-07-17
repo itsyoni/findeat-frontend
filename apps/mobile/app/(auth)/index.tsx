@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import LoginForm from "@/components/auth/LoginForm";
 import SignupForm from "@/components/auth/SignupForm";
 import EmailVerificationForm from "@/components/auth/EmailVerificationForm";
@@ -7,7 +8,7 @@ import BottomSheet, { BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ImageBackground, TouchableOpacity, View } from "react-native";
+import { ImageBackground, TouchableOpacity, View } from "react-native";
 import Animated, {
   FadeInLeft,
   FadeInRight,

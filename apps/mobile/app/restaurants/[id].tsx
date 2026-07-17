@@ -1,9 +1,11 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { Skeleton, SkeletonList, SkeletonPulse } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Tabs from "@/components/common/Tabs";
 import RestaurantHeader from "@/components/restaurants/RestaurantHeader";
 import RestaurantMenuSection from "@/components/restaurants/RestaurantMenuSection";
 import RestaurantPostsSection from "@/components/restaurants/RestaurantPostsSection";
+import { RestaurantCompatibilitySummary } from "@/components/restaurants/FoodCompatibility";
 import ProfileActionsBottomSheet from "@/components/profile/ProfileActionsBottomSheet";
 import ReportBottomSheet from "@/components/moderation/ReportBottomSheet";
 import { useRestaurant } from "@/hooks/useRestaurant";
@@ -14,7 +16,7 @@ import type { Restaurant, RestaurantPostSection } from "@findeat/types";
 import { getErrorMessage } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { Animated, ScrollView, TouchableOpacity, View } from "react-native";
 import {
   BookmarkSimpleIcon,
   CheckCircleIcon,
@@ -33,6 +35,7 @@ export default function RestaurantScreen() {
   const [activeTab, setActiveTab] = useState<RestaurantTab>("OFFICIAL");
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [scrollY] = useState(() => new Animated.Value(0));
   const postSection: RestaurantPostSection =
     activeTab === "MENU" ? "OFFICIAL" : activeTab;
   const sectionPosts = useRestaurantPosts(
@@ -286,7 +289,7 @@ export default function RestaurantScreen() {
   if (loading) {
     return (
       <ScrollView className="flex-1 bg-canvas dark:bg-black">
-        <RestaurantHeader restaurant={null} loading onToggleFollow={() => undefined} onOpenOptions={() => undefined} />
+        <RestaurantHeader restaurant={null} loading scrollY={scrollY} onToggleFollow={() => undefined} onOpenOptions={() => undefined} />
         <SkeletonPulse>
           <View className="flex-row gap-3 bg-surface px-5 pb-5 pt-2 dark:bg-black">
             {[0, 1, 2].map((item) => <Skeleton key={item} width="31%" height={62} radius={12} />)}
@@ -310,9 +313,17 @@ export default function RestaurantScreen() {
 
   return (
     <>
-      <ScrollView className="flex-1 bg-canvas dark:bg-black">
+      <Animated.ScrollView
+        className="flex-1 bg-canvas dark:bg-black"
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true },
+        )}
+      >
       <RestaurantHeader
         restaurant={restaurant}
+        scrollY={scrollY}
         onToggleFollow={toggleFollow}
         onOpenOptions={() => setOptionsOpen(true)}
       />
@@ -394,6 +405,8 @@ export default function RestaurantScreen() {
         )}
       </View>
 
+      <RestaurantCompatibilitySummary compatibility={restaurant.compatibility} />
+
       <Tabs
         activeTab={activeTab}
         onChange={setActiveTab}
@@ -413,6 +426,16 @@ export default function RestaurantScreen() {
             loadingMore={sectionPosts.isFetchingNextPage}
             hasMore={sectionPosts.hasNextPage}
             onLoadMore={() => void sectionPosts.fetchNextPage()}
+            onPressPost={(postId) =>
+              router.push({
+                pathname: "/restaurants/post-feed",
+                params: {
+                  restaurantId: restaurant.id,
+                  section: activeTab,
+                  postId,
+                },
+              })
+            }
             emptyText={
               activeTab === "OFFICIAL"
                 ? restaurant.status === "CLAIMED"
@@ -432,7 +455,7 @@ export default function RestaurantScreen() {
           />
         )}
       </View>
-      </ScrollView>
+      </Animated.ScrollView>
 
       <ProfileActionsBottomSheet
         open={optionsOpen}

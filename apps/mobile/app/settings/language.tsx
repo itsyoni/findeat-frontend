@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import Text from '@/components/common/AppText';
 import SettingsHeader from '@/components/settings/SettingsHeader';
 import { useAppTheme } from '@/contexts/ThemeContext';
@@ -7,7 +8,7 @@ import { applyAppLanguage, type AppLanguage } from '@/lib/appLanguage';
 import { CheckIcon } from 'phosphor-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Alert, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const languages = [
@@ -21,6 +22,12 @@ export default function LanguageSettingsScreen() {
   const { showToast } = useToast();
   const [switchingTo, setSwitchingTo] = useState<AppLanguage | null>(null);
   const active = i18n.language.startsWith('he') ? 'he' : 'en';
+  const isRtl = active === 'he';
+  const labelDirectionStyle = {
+    alignSelf: 'stretch' as const,
+    textAlign: 'auto' as const,
+    writingDirection: isRtl ? ('rtl' as const) : ('ltr' as const),
+  };
 
   function selectLanguage(language: AppLanguage) {
     if (language === active || switchingTo) return;
@@ -52,11 +59,34 @@ export default function LanguageSettingsScreen() {
     <SettingsHeader title={t('chooseLanguage')} />
     <View className="pt-3">
       {languages.map((language) => (
-        <TouchableOpacity disabled={!!switchingTo} key={language.code} onPress={() => selectLanguage(language.code)} className="flex-row items-center px-5 py-4">
-          <Text className="mr-4 text-3xl">{language.flag}</Text>
-          <View className="flex-1">
-            <Text className="text-base text-black dark:text-white">{language.nativeLabel}</Text>
-            {language.label !== language.nativeLabel ? <Text className="mt-0.5 text-sm text-gray-500">{language.label}</Text> : null}
+        <TouchableOpacity
+          disabled={!!switchingTo}
+          key={language.code}
+          onPress={() => selectLanguage(language.code)}
+          className="flex-row items-center px-5 py-4"
+          style={{ direction: isRtl ? 'rtl' : 'ltr' }}
+        >
+          <Text className="text-3xl" style={{ marginEnd: 16 }}>
+            {language.flag}
+          </Text>
+          <View
+            className="flex-1"
+            style={{ alignItems: isRtl ? 'flex-end' : 'flex-start' }}
+          >
+            <Text
+              className="text-base text-black dark:text-white"
+              style={labelDirectionStyle}
+            >
+              {language.nativeLabel}
+            </Text>
+            {language.label !== language.nativeLabel ? (
+              <Text
+                className="mt-0.5 text-sm text-gray-500"
+                style={labelDirectionStyle}
+              >
+                {language.label}
+              </Text>
+            ) : null}
           </View>
           {switchingTo === language.code ? <ActivityIndicator color="#3B82F6" /> : active === language.code ? <CheckIcon size={22} color="#3B82F6" weight="bold" /> : null}
         </TouchableOpacity>

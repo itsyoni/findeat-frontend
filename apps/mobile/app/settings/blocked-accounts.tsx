@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { Avatar, SkeletonList } from "@/components/common";
 import Text from "@/components/common/AppText";
 import SettingsHeader from "@/components/settings/SettingsHeader";
@@ -7,8 +8,9 @@ import type { BlockedUser } from "@findeat/types";
 import { ProhibitIcon } from "phosphor-react-native";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import useSettingsDirection from "@/components/settings/useSettingsDirection";
 
 export default function BlockedAccountsScreen() {
   const { t } = useTranslation("settings");
@@ -16,6 +18,7 @@ export default function BlockedAccountsScreen() {
   const [users, setUsers] = useState<BlockedUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [unblockingId, setUnblockingId] = useState<string | null>(null);
+  const { rowStyle, textStyle } = useSettingsDirection();
 
   useEffect(() => {
     let cancelled = false;
@@ -77,20 +80,22 @@ export default function BlockedAccountsScreen() {
             <View
               key={user.id}
               className="flex-row items-center border-b border-line px-5 py-4 dark:border-gray-800"
+              style={rowStyle}
             >
               <Avatar
                 uri={user.avatarUrl}
                 username={user.username}
                 size={50}
               />
-              <View className="ml-3 min-w-0 flex-1">
+              <View className="min-w-0 flex-1" style={{ marginStart: 12 }}>
                 <Text
                   numberOfLines={1}
                   className="font-bold text-black dark:text-white"
+                  style={textStyle}
                 >
                   {user.displayName || user.username}
                 </Text>
-                <Text numberOfLines={1} className="mt-0.5 text-sm text-gray-500">
+                <Text numberOfLines={1} className="mt-0.5 text-sm text-gray-500" style={textStyle}>
                   @{user.username}
                 </Text>
               </View>

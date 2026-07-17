@@ -11,6 +11,7 @@ import { FlatList, Image, Switch, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SparkleIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
+import useSettingsDirection from '@/components/settings/useSettingsDirection';
 
 export default function WhatsNewScreen() {
   const { t } = useTranslation('settings');
@@ -25,6 +26,7 @@ export default function WhatsNewScreen() {
   const popupsEnabled =
     pendingPopupPreference ?? (user?.showWhatsNewPopups !== false);
   const background = isDark ? '#000' : '#FBFAF8';
+  const { rowStyle, textStyle } = useSettingsDirection();
   const recordedIds = useRef(new Set<string>());
   const onViewableItemsChanged = useCallback(({ viewableItems }: { viewableItems: ViewToken<ProductUpdate>[] }) => {
     for (const token of viewableItems) {
@@ -73,12 +75,12 @@ export default function WhatsNewScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: background }}>
       <SettingsHeader title={t('whatsNew')} />
       <View className="mx-4 mt-4 rounded-3xl border border-line bg-white px-5 py-4 dark:border-gray-800 dark:bg-[#111]">
-        <View className="flex-row items-center">
-          <View className="min-w-0 flex-1 pr-4">
-            <Text weight="bold" className="text-base text-black dark:text-white">
+        <View className="flex-row items-center" style={rowStyle}>
+          <View className="min-w-0 flex-1" style={{ paddingEnd: 16 }}>
+            <Text weight="bold" className="text-base text-black dark:text-white" style={textStyle}>
               {t('whatsNewPopups')}
             </Text>
-            <Text className="mt-1 text-sm leading-5 text-gray-500 dark:text-gray-400">
+            <Text className="mt-1 text-sm leading-5 text-gray-500 dark:text-gray-400" style={textStyle}>
               {t('whatsNewPopupsSubtitle')}
             </Text>
           </View>
@@ -91,7 +93,7 @@ export default function WhatsNewScreen() {
           />
         </View>
         {preferenceError ? (
-          <Text className="mt-3 text-sm text-red-500">{preferenceError}</Text>
+          <Text className="mt-3 text-sm text-red-500" style={textStyle}>{preferenceError}</Text>
         ) : null}
       </View>
       {loading ? (
@@ -121,7 +123,7 @@ export default function WhatsNewScreen() {
           ListEmptyComponent={(
             <View className="mt-20 items-center px-8">
               <SparkleIcon size={46} color="#F4B942" weight="duotone" />
-              <Text weight="bold" className="mt-4 text-xl text-black dark:text-white">{t('noProductUpdates')}</Text>
+              <Text weight="bold" className="mt-4 text-xl text-black dark:text-white" style={textStyle}>{t('noProductUpdates')}</Text>
               <Text className="mt-2 text-center text-gray-500">{t('noProductUpdatesSubtitle')}</Text>
             </View>
           )}
@@ -129,14 +131,14 @@ export default function WhatsNewScreen() {
             <View className="mb-4 overflow-hidden rounded-3xl border border-line bg-white dark:border-gray-800 dark:bg-[#111]">
               {update.imageUrl ? <Image source={{ uri: update.imageUrl }} className="h-48 w-full" resizeMode="cover" /> : null}
               <View className="p-5">
-                <View className="flex-row items-center">
+                <View className="flex-row items-center" style={rowStyle}>
                   <SparkleIcon size={17} color="#F4B942" weight="fill" />
-                  <Text weight="bold" className="ml-2 text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400">{t('whatsNew')}</Text>
+                  <Text weight="bold" className="text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400" style={[textStyle, { marginStart: 8 }]}>{t('whatsNew')}</Text>
                   {update.versionLabel ? <Text className="ml-auto text-xs text-gray-400">{update.versionLabel}</Text> : null}
                 </View>
-                <Text weight="bold" className="mt-3 text-2xl text-black dark:text-white">{update.title}</Text>
-                <Text className="mt-3 text-base leading-6 text-gray-600 dark:text-gray-300">{update.body}</Text>
-                <Text className="mt-4 text-xs text-gray-400">{new Date(update.publishedAt ?? update.createdAt).toLocaleDateString()}</Text>
+                <Text weight="bold" className="mt-3 text-2xl text-black dark:text-white" style={textStyle}>{update.title}</Text>
+                <Text className="mt-3 text-base leading-6 text-gray-600 dark:text-gray-300" style={textStyle}>{update.body}</Text>
+                <Text className="mt-4 text-xs text-gray-400" style={textStyle}>{new Date(update.publishedAt ?? update.createdAt).toLocaleDateString()}</Text>
               </View>
             </View>
           )}

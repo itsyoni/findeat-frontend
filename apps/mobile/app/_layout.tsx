@@ -4,7 +4,7 @@ import { useFonts } from "expo-font";
 import { Stack, router, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, LogBox, View } from "react-native";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import "./../global.css";
@@ -17,6 +17,16 @@ import { PortalHost } from "@gorhom/portal";
 import { LoadingScreen } from "@/components/common";
 import WhatsNewModal from "@/components/updates/WhatsNewModal";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { AppAlertProvider } from "@/contexts/AppAlertContext";
+
+// iOS can finish a native navigation animation just after React Native has
+// detached its development-only value listener. The animation is unaffected;
+// suppress only this known native emitter race and keep every other warning.
+if (__DEV__) {
+  LogBox.ignoreLogs([
+    "Sending `onAnimatedValueUpdate` with no listeners registered.",
+  ]);
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,18 +62,20 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider>
         <SafeAreaProvider>
-          <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <ToastProvider>
-                <NotificationProvider>
-                  <BottomSheetModalProvider>
-                    <RootNavigator />
-                    <PortalHost name="pinch-zoom" />
-                  </BottomSheetModalProvider>
-                </NotificationProvider>
-              </ToastProvider>
-            </AuthProvider>
-          </QueryClientProvider>
+          <AppAlertProvider>
+            <QueryClientProvider client={queryClient}>
+              <AuthProvider>
+                <ToastProvider>
+                  <NotificationProvider>
+                    <BottomSheetModalProvider>
+                      <RootNavigator />
+                      <PortalHost name="pinch-zoom" />
+                    </BottomSheetModalProvider>
+                  </NotificationProvider>
+                </ToastProvider>
+              </AuthProvider>
+            </QueryClientProvider>
+          </AppAlertProvider>
         </SafeAreaProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
@@ -100,6 +112,7 @@ function RootNavigator() {
         <Stack.Screen name="(profile)" options={{ headerShown: false }} />
         <Stack.Screen name="(posts)/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="posts/edit/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="posts/connections/[id]" options={{ headerShown: false }} />
         <Stack.Screen name="create/content" options={{ headerShown: false }} />
         <Stack.Screen name="create/review" options={{ headerShown: false }} />
         <Stack.Screen name="business/index" />
@@ -115,6 +128,7 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen name="restaurants/[id]" options={{ headerShown: false }} />
+        <Stack.Screen name="restaurants/post-feed" options={{ headerShown: false }} />
         <Stack.Screen name="menu-items/[id]" options={{ headerShown: false }} />
       </Stack>
 

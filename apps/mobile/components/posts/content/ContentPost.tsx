@@ -15,6 +15,7 @@ import Animated, {
   useSharedValue,
   withSequence,
   withSpring,
+  withTiming,
 } from "react-native-reanimated";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import { useTranslation } from "react-i18next";
@@ -25,6 +26,8 @@ import PlaceStatusBookmark, {
 } from "@/components/restaurants/PlaceStatusBookmark";
 import PostDate from "@/components/posts/PostDate";
 import { isRtlText } from "@/lib/textDirection";
+import PostConnectionCard from "@/components/posts/PostConnectionCard";
+import ExpandablePostCaption from "@/components/posts/ExpandablePostCaption";
 
 type Props = {
   post: Post;
@@ -42,6 +45,8 @@ type Props = {
     isWantToTry: boolean,
   ) => void;
 };
+
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
 
 export default function ContentPost({
   post,
@@ -98,6 +103,11 @@ export default function ContentPost({
 
   const likeAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: likeScale.value }],
+  }));
+
+  const gradientHeight = useSharedValue(280);
+  const gradientAnimatedStyle = useAnimatedStyle(() => ({
+    height: gradientHeight.value,
   }));
 
   const iconShadow = {
@@ -168,6 +178,19 @@ export default function ContentPost({
     onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
   }
 
+  function handleCaptionExpansion(
+    expanded: boolean,
+    fullTextHeight: number,
+  ) {
+    const extraCaptionHeight = Math.max(0, fullTextHeight - 24) + 28;
+    const maximumHeight = Math.max(280, height - contentTopInset);
+    const nextHeight = expanded
+      ? Math.min(maximumHeight, 280 + extraCaptionHeight)
+      : 280;
+
+    gradientHeight.set(withTiming(nextHeight, { duration: 260 }));
+  }
+
   const bookmarkLabelKey = getPlaceStatusLabelKey(
     isWantToTry,
     isVisited,
@@ -224,7 +247,7 @@ export default function ContentPost({
           </View>
         )}
 
-        <LinearGradient
+        <AnimatedLinearGradient
           pointerEvents="none"
           colors={[
             "transparent",
@@ -232,13 +255,15 @@ export default function ContentPost({
             "rgba(0,0,0,0.25)",
             "rgba(0,0,0,0.5)",
           ]}
-          style={{
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: 280,
-          }}
+          style={[
+            {
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+            },
+            gradientAnimatedStyle,
+          ]}
         />
 
         <TouchableOpacity
@@ -329,17 +354,13 @@ export default function ContentPost({
           <View>
             {!!description && (
               <>
-                <Text
-                  className="text-base text-white"
-                  style={{
-                    alignSelf: "stretch",
-                    width: "100%",
-                    textAlign: "auto",
-                    writingDirection: descriptionIsRtl ? "rtl" : "ltr",
-                  }}
-                >
-                  {description}
-                </Text>
+                <ExpandablePostCaption
+                  key={`${post.id}-${description}`}
+                  text={description}
+                  isRtl={descriptionIsRtl}
+                  tone="overlay"
+                  onExpansionChange={handleCaptionExpansion}
+                />
                 {!!content?.descriptionEditedAt && (
                   <Text
                     className="mt-0.5 text-xs text-white/70"
@@ -355,10 +376,15 @@ export default function ContentPost({
                 )}
               </>
             )}
+            <PostConnectionCard
+              sourceType="CONTENT"
+              linkedPosts={post.linkedPosts}
+              tone="overlay"
+            />
             <PostDate
               createdAt={post.createdAt}
               tone="overlay"
-              hasContentAbove={!!description}
+              hasContentAbove={!!description || !!post.linkedPosts?.length}
             />
           </View>
         </View>

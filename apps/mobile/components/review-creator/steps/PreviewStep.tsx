@@ -6,6 +6,7 @@ import DishCard from "../components/DishCard";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import PostVisibilitySelector from "@/components/posts/PostVisibilitySelector";
 import type { PostVisibility } from "@findeat/types";
+import PostConnectionPicker from "@/components/posts/PostConnectionPicker";
 
 type Props = {
   draft: CreateReviewDraft;
@@ -13,6 +14,7 @@ type Props = {
   onBack: () => void;
   onPublish: () => void;
   onVisibilityChange: (visibility: PostVisibility) => void;
+  onLinkedPostChange: (postId?: string) => void;
 };
 
 export default function PreviewStep({
@@ -21,6 +23,7 @@ export default function PreviewStep({
   onBack,
   onPublish,
   onVisibilityChange,
+  onLinkedPostChange,
 }: Props) {
   const restaurantName =
     draft.restaurant?.source === "FINDEAT"
@@ -121,6 +124,17 @@ export default function PreviewStep({
         <PostVisibilitySelector
           value={draft.visibility}
           onChange={onVisibilityChange}
+        />
+
+        <PostConnectionPicker
+          restaurantId={
+            draft.restaurant?.source === "FINDEAT"
+              ? draft.restaurant.restaurant.id
+              : undefined
+          }
+          candidateType="CONTENT"
+          selectedPostId={draft.linkedPostId}
+          onSelect={onLinkedPostChange}
         />
 
         <TouchableOpacity

@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import Text from "@/components/common/AppText";
 import { useAuth } from "@/contexts/AuthContext";
 import { loginSchema } from "@/lib/validation/auth";
@@ -6,7 +7,7 @@ import { getErrorMessage } from "@findeat/utils";
 import { EnvelopeSimpleIcon, LockIcon } from "phosphor-react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Keyboard, TouchableOpacity, View } from "react-native";
+import { Keyboard, TouchableOpacity, View } from "react-native";
 import { ZodError } from "zod";
 import { TextInput } from "../common";
 import { useAppTheme } from "@/contexts/ThemeContext";

@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { AppButton, IconButton, Skeleton, SkeletonPulse } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
@@ -14,15 +15,7 @@ import { router } from "expo-router";
 import { DirectionalBackIcon } from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Alert,
-  Image,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/contexts/ThemeContext";
 
@@ -71,20 +64,15 @@ export default function EditProfileScreen() {
         if (cancelled) return;
 
         const nextDetails: ProfileDetailsDraft = {
-          phoneNumber: data.phoneNumber ?? "",
-          birthday: formatBirthdayForInput(data.birthday),
-          pronouns: data.pronouns ?? "",
-          allergies: data.allergies?.join(", ") ?? "",
+          birthday: data.birthday?.slice(0, 10) ?? "",
+          pronouns: data.pronouns
+            ? data.pronouns.split(" · ").map((item) => item.trim()).filter(Boolean)
+            : [],
+          showPronouns: data.showPronouns ?? true,
+          allergies: data.allergies ?? [],
           foodPreferences: data.foodPreferences ?? [],
           dietaryRestrictions: data.dietaryRestrictions ?? [],
-          favoriteCuisines: data.favoriteCuisines?.join(", ") ?? "",
-          showPhoneNumber: data.showPhoneNumber ?? false,
-          showBirthday: data.showBirthday ?? false,
-          showPronouns: data.showPronouns ?? true,
-          showAllergies: data.showAllergies ?? false,
-          showFoodPreferences: data.showFoodPreferences ?? true,
-          showDietaryRestrictions: data.showDietaryRestrictions ?? false,
-          showFavoriteCuisines: data.showFavoriteCuisines ?? true,
+          favoriteCuisines: data.favoriteCuisines ?? [],
         };
         setOriginal({
           username: data.username ?? "",
@@ -144,14 +132,6 @@ export default function EditProfileScreen() {
       return;
     }
 
-    let birthday: string | null;
-    try {
-      birthday = parseBirthdayInput(details.birthday);
-    } catch {
-      Alert.alert(t("profile:invalidBirthday"), t("profile:invalidBirthdayHint"));
-      return;
-    }
-
     try {
       setLoading(true);
 
@@ -168,20 +148,13 @@ export default function EditProfileScreen() {
         bio: bio.trim() || null,
         avatarUrl: finalAvatarUrl ?? undefined,
         coverUrl: finalCoverUrl,
-        phoneNumber: details.phoneNumber.trim() || null,
-        birthday,
-        pronouns: details.pronouns.trim() || null,
-        allergies: commaList(details.allergies),
+        birthday: details.birthday || null,
+        pronouns: details.pronouns.length ? details.pronouns.join(" · ") : null,
+        allergies: details.allergies,
         foodPreferences: details.foodPreferences,
         dietaryRestrictions: details.dietaryRestrictions,
-        favoriteCuisines: commaList(details.favoriteCuisines),
-        showPhoneNumber: details.showPhoneNumber,
-        showBirthday: details.showBirthday,
+        favoriteCuisines: details.favoriteCuisines,
         showPronouns: details.showPronouns,
-        showAllergies: details.showAllergies,
-        showFoodPreferences: details.showFoodPreferences,
-        showDietaryRestrictions: details.showDietaryRestrictions,
-        showFavoriteCuisines: details.showFavoriteCuisines,
       });
 
       await refreshUser();
@@ -387,7 +360,7 @@ export default function EditProfileScreen() {
             multiline
           />
 
-          <SectionTitle title={t("profile:foodProfile")} />
+          <SectionTitle title={t("profile:personalization")} />
           <ProfileDetailsEditor value={details} onChange={setDetails} />
 
           <AppButton
@@ -401,34 +374,6 @@ export default function EditProfileScreen() {
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
-}
-
-function commaList(value: string) {
-  return [...new Set(value.split(",").map((item) => item.trim()).filter(Boolean))];
-}
-
-function formatBirthdayForInput(value?: string | null) {
-  if (!value) return "";
-  const [year, month, day] = value.slice(0, 10).split("-");
-  return `${day}/${month}/${year}`;
-}
-
-function parseBirthdayInput(value: string) {
-  const normalized = value.trim();
-  if (!normalized) return null;
-  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(normalized);
-  if (!match) throw new Error("Invalid birthday");
-  const [, day, month, year] = match;
-  const isoDate = `${year}-${month}-${day}`;
-  const date = new Date(`${isoDate}T00:00:00.000Z`);
-  if (
-    Number.isNaN(date.getTime()) ||
-    date.toISOString().slice(0, 10) !== isoDate ||
-    date > new Date()
-  ) {
-    throw new Error("Invalid birthday");
-  }
-  return isoDate;
 }
 
 function SectionTitle({ title }: { title: string }) {

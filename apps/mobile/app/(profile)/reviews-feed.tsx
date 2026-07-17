@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { CommentsBottomSheet } from "@/components/common";
 import { useMyProfile } from "@/hooks/useMyProfile";
 import { api } from "@/lib/api";
@@ -5,16 +6,17 @@ import { filterPostsByType } from "@findeat/utils";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 import { useCallback, useMemo, useState } from "react";
-import { Alert } from "react-native";
+
 import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { removePostFromAppCache } from "@/hooks/useFeed";
 
 export default function ProfileReviewsFeedScreen() {
   const queryClient = useQueryClient();
+  const { postId } = useLocalSearchParams<{ postId?: string }>();
   const { isDark } = useAppTheme();
   const { profile, loading, refresh } = useMyProfile();
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
@@ -24,6 +26,10 @@ export default function ProfileReviewsFeedScreen() {
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, "REVIEW"),
     [profile?.posts],
+  );
+  const initialIndex = useMemo(
+    () => Math.max(posts.findIndex((post) => post.id === postId), 0),
+    [postId, posts],
   );
 
   useFocusEffect(
@@ -81,6 +87,7 @@ export default function ProfileReviewsFeedScreen() {
     >
       <ReviewFeed
         posts={posts}
+        initialIndex={initialIndex}
         refreshing={false}
         onRefresh={refresh}
         onToggleLike={toggleLike}
@@ -94,6 +101,7 @@ export default function ProfileReviewsFeedScreen() {
         postId={optionsPostId}
         onClose={() => setOptionsPostId(null)}
         onDelete={deletePost}
+        onArchived={() => refresh()}
       />
 
       <SharePostBottomSheet

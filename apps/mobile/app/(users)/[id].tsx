@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { Skeleton, SkeletonList, SkeletonPulse } from "@/components/common";
 import Text from "@/components/common/AppText";
 import Avatar from "@/components/common/Avatar";
@@ -7,6 +8,7 @@ import ProfileManagedRestaurants from "@/components/profile/ProfileManagedRestau
 import ProfileDetails from "@/components/profile/ProfileDetails";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
 import ProfileActionsBottomSheet from "@/components/profile/ProfileActionsBottomSheet";
+import ParallaxProfileCover from "@/components/profile/ParallaxProfileCover";
 import ReportBottomSheet from "@/components/moderation/ReportBottomSheet";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { api } from "@/lib/api";
@@ -18,28 +20,33 @@ import {
   getRelationshipButtonText,
   isFollowingRelationship,
   isFriendRelationship,
+  shouldRemoveFollowRelationship,
 } from "@findeat/utils";
 import { Redirect, router, useLocalSearchParams } from "expo-router";
 import {
   DotsThreeIcon,
+  LockKeyIcon,
   ProhibitIcon,
 } from "phosphor-react-native";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useMemo, useState } from "react";
-import { Alert, Image, TouchableOpacity, View } from "react-native";
+import { Animated, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAppTheme } from "@/contexts/ThemeContext";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
   const { user: currentUser } = useAuth();
   const { t } = useTranslation(["common", "profile"]);
   const queryClient = useQueryClient();
+  const { isDark } = useAppTheme();
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [scrollY] = useState(() => new Animated.Value(0));
   const {
     profile: user,
     setProfile: setUser,
@@ -55,7 +62,8 @@ export default function UserProfileScreen() {
     if (!user) return;
 
     try {
-      const shouldUnfollow = isFollowingRelationship(user.relationship);
+      const shouldUnfollow = shouldRemoveFollowRelationship(user.relationship);
+      const wasFollowing = isFollowingRelationship(user.relationship);
 
       const result = shouldUnfollow
         ? await api.users.unfollow(user.id)
@@ -67,9 +75,10 @@ export default function UserProfileScreen() {
               ...currentUser,
               relationship: result.relationship,
               isFollowing: isFollowingRelationship(result.relationship),
-              followersCount: shouldUnfollow
-                ? Math.max(0, currentUser.followersCount - 1)
-                : currentUser.followersCount + 1,
+              followersCount:
+                currentUser.followersCount +
+                (isFollowingRelationship(result.relationship) ? 1 : 0) -
+                (wasFollowing ? 1 : 0),
             }
           : currentUser,
       );
@@ -128,7 +137,11 @@ export default function UserProfileScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 bg-canvas dark:bg-black">
+      <ScrollView
+        className="flex-1 bg-canvas dark:bg-black"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
         <SkeletonPulse>
           <View className="relative">
             <Skeleton height={240} radius={0} />
@@ -146,7 +159,7 @@ export default function UserProfileScreen() {
         </SkeletonPulse>
         <Tabs activeTab="CONTENT" onChange={() => undefined} tabs={[{ label: t("common:content"), value: "CONTENT" }, { label: t("common:reviews"), value: "REVIEW" }]} />
         <SkeletonList variant="grid" count={9} />
-      </View>
+      </ScrollView>
     );
   }
 
@@ -176,17 +189,18 @@ export default function UserProfileScreen() {
 
   return (
     <View className="flex-1 bg-canvas dark:bg-black">
-      <View className="flex-1">
+      <Animated.ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true },
+        )}
+      >
         <View className="relative">
-          {user.coverUrl ? (
-            <Image
-              source={{ uri: user.coverUrl }}
-              className="h-60 w-full bg-gray-200"
-              resizeMode="cover"
-            />
-          ) : (
-            <View className="h-60 w-full bg-gray-200 dark:bg-gray-800" />
-          )}
+          <ParallaxProfileCover uri={user.coverUrl} scrollY={scrollY} />
 
           <SafeAreaView
             edges={["top"]}
@@ -214,7 +228,7 @@ export default function UserProfileScreen() {
           </SafeAreaView>
         </View>
 
-        <View className="-mt-7 flex-1 rounded-t-[30px] bg-white dark:bg-black">
+        <View className="-mt-7 rounded-t-[30px] bg-white dark:bg-black">
           <View className="-mt-12 items-center px-5">
             <TouchableOpacity
               activeOpacity={user.avatarUrl ? 0.8 : 1}
@@ -247,7 +261,7 @@ export default function UserProfileScreen() {
 
           <View className="mt-5 w-full flex-row">
             <View className="flex-1">
-              <Text className="text-center text-xl font-bold text-black dark:text-white">{user.posts.length}</Text>
+              <Text className="text-center text-xl font-bold text-black dark:text-white">{user.postsCount}</Text>
               <Text className="mt-1 text-center text-sm text-gray-500">{t("profile:posts")}</Text>
             </View>
 
@@ -287,6 +301,8 @@ export default function UserProfileScreen() {
                 className={`text-center font-bold ${
                   isFriendRelationship(user.relationship)
                     ? "text-black"
+                    : user.relationship === "REQUESTED"
+                      ? "text-black dark:text-white"
                     : "text-white dark:text-black"
                 }`}
               >
@@ -305,6 +321,15 @@ export default function UserProfileScreen() {
           </View>
         </View>
 
+        {user.isPrivate && !user.canViewPrivateContent ? (
+          <View className="mt-7 min-h-80 items-center border-t border-line px-8 pt-10 dark:border-gray-800">
+            <View className="h-16 w-16 items-center justify-center rounded-full border-2 border-black dark:border-white">
+              <LockKeyIcon size={29} color={isDark ? "#FFF" : "#171717"} weight="fill" />
+            </View>
+            <Text weight="bold" className="mt-4 text-xl text-black dark:text-white">{t("profile:privateAccount")}</Text>
+            <Text className="mt-2 text-center leading-5 text-gray-500">{t("profile:privateAccountHint")}</Text>
+          </View>
+        ) : <>
         <Tabs
           activeTab={activeFeed}
           onChange={setActiveFeed}
@@ -314,26 +339,25 @@ export default function UserProfileScreen() {
           ]}
         />
 
-        <View style={{ flex: 1 }}>
-          <ProfilePostGrid
-            posts={posts}
-            type={activeFeed}
-            onPressPost={(postId) => {
-              router.push({
-                pathname:
-                  activeFeed === "CONTENT"
-                    ? "/(users)/content-feed"
-                    : "/(users)/reviews-feed",
-                params: {
-                  userId: user.id,
-                  postId,
-                },
-              });
-            }}
-          />
+        <ProfilePostGrid
+          posts={posts}
+          type={activeFeed}
+          onPressPost={(postId) => {
+            router.push({
+              pathname:
+                activeFeed === "CONTENT"
+                  ? "/(users)/content-feed"
+                  : "/(users)/reviews-feed",
+              params: {
+                userId: user.id,
+                postId,
+              },
+            });
+          }}
+        />
+        </>}
         </View>
-        </View>
-      </View>
+      </Animated.ScrollView>
 
       <ProfileActionsBottomSheet
         open={optionsOpen}

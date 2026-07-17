@@ -24,12 +24,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   getNextRelationshipAfterToggle,
   isFollowingRelationship,
+  shouldRemoveFollowRelationship,
 } from '@findeat/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function NotificationsScreen() {
   const { t } = useTranslation('notifications');
   const { isDark } = useAppTheme();
   const queryClient = useQueryClient();
+  const { refreshUser } = useAuth();
   const [relationshipOverrides, setRelationshipOverrides] = useState<
     Record<string, UserRelationship>
   >({});
@@ -88,7 +91,7 @@ export default function NotificationsScreen() {
 
     const current =
       relationshipOverrides[item.actorId] ?? item.actorRelationship ?? 'NONE';
-    const wasFollowing = isFollowingRelationship(current);
+    const wasFollowing = shouldRemoveFollowRelationship(current);
     const optimisticRelationship = getNextRelationshipAfterToggle(current);
     setRelationshipOverrides((values) => ({
       ...values,
@@ -111,7 +114,21 @@ export default function NotificationsScreen() {
   }
 
   function notificationAction(item: AppNotification) {
-    const isFollowNotification = ['FOLLOW', 'FOLLOW_BACK', 'FRIEND'].includes(item.type);
+    if (item.type === 'FOLLOW_REQUEST' && item.actorId) {
+      return {
+        label: t('confirm'),
+        active: false,
+        isPost: false,
+        preview: undefined,
+        run: () => {
+          void api.users.approveFollowRequest(item.actorId!).then(async () => {
+            await Promise.all([notifications.refetch(), refreshUser()]);
+          });
+        },
+      };
+    }
+
+    const isFollowNotification = ['FOLLOW', 'FOLLOW_BACK', 'FRIEND', 'FOLLOW_REQUEST_ACCEPTED'].includes(item.type);
 
     if (isFollowNotification && item.actorId) {
       const relationship =
@@ -125,6 +142,8 @@ export default function NotificationsScreen() {
               ? t('following')
               : relationship === 'FOLLOWED_BY'
                 ? t('followBack')
+                : relationship === 'REQUESTED'
+                  ? t('requested')
                 : t('follow'),
         active: following,
         isPost: false,

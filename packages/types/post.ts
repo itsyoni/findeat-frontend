@@ -71,6 +71,23 @@ export type ReviewPost = {
   items: ReviewItem[];
 };
 
+export type LinkedPost = {
+  id: string;
+  type: PostType;
+  visibility: PostVisibility;
+  authorId?: string | null;
+  restaurantId?: string | null;
+  createdAt: string;
+  contentPost?: Pick<
+    ContentPost,
+    "imageUrl" | "videoUrl" | "description"
+  > | null;
+  reviewPost?: Pick<
+    ReviewPost,
+    "coverImageUrl" | "summary" | "overallRating"
+  > | null;
+};
+
 type PostAuthorRestaurant = {
   id: string;
   name: string;
@@ -93,9 +110,12 @@ export type Post = {
 
   contentPost?: ContentPost | null;
   reviewPost?: ReviewPost | null;
+  experienceId?: string | null;
+  linkedPosts?: LinkedPost[];
 
   createdAt: string;
   updatedAt: string;
+  archivedAt?: string | null;
 
   likesCount: number;
   restaurantSavesCount: number;

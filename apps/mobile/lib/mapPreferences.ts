@@ -9,6 +9,9 @@ export const DEFAULT_MAP_PREFERENCES: MapPreferences = {
   filter: "ALL",
   sort: "BEST",
   radiusKm: 50,
+  matchDietary: false,
+  matchCuisines: false,
+  hideFlaggedAllergens: false,
 };
 
 const FILTERS: RestaurantMapFilter[] = [
@@ -47,6 +50,9 @@ export async function getMapPreferences(userId: string) {
       radiusKm: RADII.includes(parsed.radiusKm as number | null)
         ? (parsed.radiusKm as number | null)
         : DEFAULT_MAP_PREFERENCES.radiusKm,
+      matchDietary: parsed.matchDietary === true,
+      matchCuisines: parsed.matchCuisines === true,
+      hideFlaggedAllergens: parsed.hideFlaggedAllergens === true,
     };
   } catch {
     return DEFAULT_MAP_PREFERENCES;

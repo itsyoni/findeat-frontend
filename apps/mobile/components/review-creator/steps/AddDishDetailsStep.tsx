@@ -39,6 +39,14 @@ export default function AddDishDetailsStep({
   const [imageUri, setImageUri] = useState<string>();
   const [rating, setRating] = useState<number>();
   const [text, setText] = useState("");
+  const [attemptedSave, setAttemptedSave] = useState(false);
+
+  const missingName = !isFromMenu && !dishName.trim();
+  const missingPrice = !isFromMenu && (price == null || price <= 0);
+  const missingRating = rating == null;
+  const missingNote = !text.trim();
+  const isComplete =
+    !missingName && !missingPrice && !missingRating && !missingNote;
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -52,6 +60,9 @@ export default function AddDishDetailsStep({
   }
 
   function handleSave() {
+    setAttemptedSave(true);
+    if (!isComplete) return;
+
     if (isFromMenu && selectedDish) {
       onSave({
         menuItemId: selectedDish.id,
@@ -59,19 +70,19 @@ export default function AddDishDetailsStep({
         menuItemPrice: selectedDish.price,
         imageUri,
         fallbackImageUrl: selectedDish.imageUrl,
-        rating,
-        text: text.trim() || undefined,
+        rating: rating!,
+        text: text.trim(),
       });
 
       return;
     }
 
     onSave({
-      customDishName: dishName.trim() || undefined,
-      customPrice: price,
+      customDishName: dishName.trim(),
+      customPrice: price!,
       imageUri,
-      rating,
-      text: text.trim() || undefined,
+      rating: rating!,
+      text: text.trim(),
     });
   }
 
@@ -157,12 +168,26 @@ export default function AddDishDetailsStep({
 
             <View className="mt-7 gap-6 rounded-3xl bg-gray-50 p-5 dark:bg-gray-900">
               {!isFromMenu && (
-                <TextInput
-                  className="rounded-2xl border border-gray-200 bg-white px-4 py-4 text-base text-black dark:border-gray-700 dark:bg-black dark:text-white"
-                  placeholder={t("dishNameOptional")}
-                  value={dishName}
-                  onChangeText={setDishName}
-                />
+                <View>
+                  <Text className="mb-3 font-bold text-black dark:text-white">
+                    {t("dishName")}
+                  </Text>
+                  <TextInput
+                    className={`rounded-2xl border bg-white px-4 py-4 text-base text-black dark:bg-black dark:text-white ${
+                      attemptedSave && missingName
+                        ? "border-red-500 dark:border-red-500"
+                        : "border-gray-200 dark:border-gray-700"
+                    }`}
+                    placeholder={t("dishNamePlaceholder")}
+                    value={dishName}
+                    onChangeText={setDishName}
+                  />
+                  {attemptedSave && missingName ? (
+                    <Text className="mt-2 text-sm text-red-500">
+                      {t("fieldRequired")}
+                    </Text>
+                  ) : null}
+                </View>
               )}
 
               {isFromMenu ? (
@@ -181,26 +206,50 @@ export default function AddDishDetailsStep({
                 </View>
               ) : (
                 <PriceInput
-                  label={t("priceOptional")}
+                  label={t("price")}
                   value={price}
                   onChange={setPrice}
+                  error={
+                    attemptedSave && missingPrice
+                      ? t("validPriceRequired")
+                      : undefined
+                  }
                 />
               )}
 
               <RatingPicker
-                label={t("dishRatingOptional")}
+                label={t("dishRating")}
                 value={rating}
                 onChange={setRating}
+                error={
+                  attemptedSave && missingRating
+                    ? t("ratingRequired")
+                    : undefined
+                }
               />
 
-              <TextInput
-                className="min-h-24 rounded-2xl border border-gray-200 bg-white px-4 py-4 text-base text-black dark:border-gray-700 dark:bg-black dark:text-white"
-                placeholder={t("dishNoteOptional")}
-                value={text}
-                onChangeText={setText}
-                multiline
-                textAlignVertical="top"
-              />
+              <View>
+                <Text className="mb-3 font-bold text-black dark:text-white">
+                  {t("dishNote")}
+                </Text>
+                <TextInput
+                  className={`min-h-24 rounded-2xl border bg-white px-4 py-4 text-base text-black dark:bg-black dark:text-white ${
+                    attemptedSave && missingNote
+                      ? "border-red-500 dark:border-red-500"
+                      : "border-gray-200 dark:border-gray-700"
+                  }`}
+                  placeholder={t("dishNotePlaceholder")}
+                  value={text}
+                  onChangeText={setText}
+                  multiline
+                  textAlignVertical="top"
+                />
+                {attemptedSave && missingNote ? (
+                  <Text className="mt-2 text-sm text-red-500">
+                    {t("fieldRequired")}
+                  </Text>
+                ) : null}
+              </View>
             </View>
 
             <AppButton title={t("saveDish")} onPress={handleSave} />

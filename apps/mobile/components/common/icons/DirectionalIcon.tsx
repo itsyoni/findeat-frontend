@@ -37,3 +37,8 @@ export function DirectionalBackIcon(props: IconProps) {
   const Icon = I18nManager.isRTL ? CaretRightIcon : CaretLeftIcon;
   return <Icon {...props} />;
 }
+
+export function DirectionalForwardIcon(props: IconProps) {
+  const Icon = I18nManager.isRTL ? CaretLeftIcon : CaretRightIcon;
+  return <Icon {...props} />;
+}

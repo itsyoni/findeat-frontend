@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
 import { CommentsBottomSheet } from "@/components/common";
@@ -8,12 +9,7 @@ import { filterPostsByType } from "@findeat/utils";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useCallback, useMemo, useState } from "react";
-import {
-  Alert,
-  Dimensions,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Dimensions, TouchableOpacity, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { removePostFromAppCache } from "@/hooks/useFeed";
@@ -128,11 +124,12 @@ export default function ProfileContentFeedScreen() {
         onOpenPostOptions={setOptionsPostId}
       />
 
-      <PostOptionsBottomSheet
-        postId={optionsPostId}
-        onClose={() => setOptionsPostId(null)}
-        onDelete={deletePost}
-      />
+        <PostOptionsBottomSheet
+          postId={optionsPostId}
+          onClose={() => setOptionsPostId(null)}
+          onDelete={deletePost}
+          onArchived={() => refresh()}
+        />
 
       <SharePostBottomSheet
         postId={sharePostId}

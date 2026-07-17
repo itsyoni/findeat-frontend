@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
@@ -5,7 +6,7 @@ import { Menu } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
-import { Alert, FlatList, Image, TouchableOpacity, View } from "react-native";
+import { FlatList, Image, TouchableOpacity, View } from "react-native";
 import { ThemedSafeAreaView, AppButton, Skeleton, SkeletonPulse, TextInput } from "@/components/common";
 
 export default function ManageMenuScreen() {

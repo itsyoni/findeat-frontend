@@ -4,6 +4,7 @@ import { ImageIcon } from "@phosphor-icons/react/dist/csr/Image";
 import { XIcon } from "@phosphor-icons/react/dist/csr/X";
 import type { Dish } from "@findeat/types";
 import { request, uploadImage } from "../lib/api";
+import { DishFoodTags } from "./DishFoodTags";
 
 type DishEditorModalProps = {
   dish: Dish;
@@ -18,6 +19,9 @@ export function DishEditorModal({ dish, onClose, onSaved }: DishEditorModalProps
   const [description, setDescription] = useState(dish.description || "");
   const [isAvailable, setIsAvailable] = useState(dish.isAvailable);
   const [isFeatured, setIsFeatured] = useState(dish.isFeatured);
+  const [allergens, setAllergens] = useState(dish.allergens ?? []);
+  const [dietaryTags, setDietaryTags] = useState(dish.dietaryTags ?? []);
+  const [cuisineTags, setCuisineTags] = useState(dish.cuisineTags ?? []);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(dish.imageUrl || "");
   const [removeImage, setRemoveImage] = useState(false);
@@ -66,6 +70,9 @@ export function DishEditorModal({ dish, onClose, onSaved }: DishEditorModalProps
           description: description.trim() || null,
           isAvailable,
           isFeatured,
+          allergens,
+          dietaryTags,
+          cuisineTags,
           ...(uploadedImage ? { imageUrl: uploadedImage } : removeImage ? { imageUrl: null } : {}),
         }),
       });
@@ -102,6 +109,17 @@ export function DishEditorModal({ dish, onClose, onSaved }: DishEditorModalProps
             <div className="dish-editor-options full">
               <label><input type="checkbox" checked={isAvailable} onChange={(event) => setIsAvailable(event.target.checked)} /><span><strong>Available</strong><small>Customers can currently order this dish</small></span></label>
               <label><input type="checkbox" checked={isFeatured} onChange={(event) => setIsFeatured(event.target.checked)} /><span><strong>Restaurant pick</strong><small>Feature this dish on the restaurant menu</small></span></label>
+            </div>
+            <div className="full">
+              <DishFoodTags
+                allergens={allergens}
+                dietaryTags={dietaryTags}
+                cuisineTags={cuisineTags}
+                onAllergensChange={setAllergens}
+                onDietaryTagsChange={setDietaryTags}
+                onCuisineTagsChange={setCuisineTags}
+                compact
+              />
             </div>
           </div>
         </div>

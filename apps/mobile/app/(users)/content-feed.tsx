@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { CommentsBottomSheet } from "@/components/common";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
@@ -11,7 +12,7 @@ import {
 } from "expo-router";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Alert, Dimensions, TouchableOpacity, View } from "react-native";
+import { Dimensions, TouchableOpacity, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 import { removePostFromAppCache } from "@/hooks/useFeed";
@@ -259,6 +260,9 @@ export default function UserContentFeedScreen() {
         postId={optionsPostId}
         onClose={() => setOptionsPostId(null)}
         onDelete={deletePost}
+        onArchived={(archivedPostId) => {
+          setPosts((current) => current.filter((post) => post.id !== archivedPostId));
+        }}
       />
 
       <SharePostBottomSheet

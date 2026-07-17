@@ -35,6 +35,8 @@ import PlaceStatusBookmark, {
 } from "@/components/restaurants/PlaceStatusBookmark";
 import PostDate from "@/components/posts/PostDate";
 import { isRtlText } from "@/lib/textDirection";
+import PostConnectionCard from "@/components/posts/PostConnectionCard";
+import ExpandablePostCaption from "@/components/posts/ExpandablePostCaption";
 
 type Props = {
   post: Post;
@@ -555,17 +557,11 @@ export default function ReviewPost({
         <View className="mt-3">
           {!!activeSlide?.text && (
             <>
-              <Text
-                className="text-gray-700 dark:text-gray-300"
-                style={{
-                alignSelf: "stretch",
-                width: "100%",
-                textAlign: "auto",
-                writingDirection: activeTextIsRtl ? "rtl" : "ltr",
-                }}
-                >
-                {activeSlide.text}
-              </Text>
+              <ExpandablePostCaption
+                key={`${activeSlide.id}-${activeSlide.text}`}
+                text={activeSlide.text}
+                isRtl={activeTextIsRtl}
+              />
               {!!activeSlide.textEditedAt && (
                 <Text
                   className="mt-0.5 text-xs text-gray-400"
@@ -581,9 +577,15 @@ export default function ReviewPost({
               )}
             </>
           )}
+          <PostConnectionCard
+            sourceType="REVIEW"
+            linkedPosts={post.linkedPosts}
+          />
           <PostDate
             createdAt={post.createdAt}
-            hasContentAbove={!!activeSlide?.text}
+            hasContentAbove={
+              !!activeSlide?.text || !!post.linkedPosts?.length
+            }
           />
         </View>
       </View>

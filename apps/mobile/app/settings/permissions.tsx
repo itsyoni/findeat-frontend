@@ -19,6 +19,7 @@ import { useCallback, useEffect, useState } from "react";
 import { AppState, Linking, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import useSettingsDirection from "@/components/settings/useSettingsDirection";
 
 type PermissionKey = "camera" | "photos" | "location" | "notifications";
 type PermissionState = {
@@ -41,6 +42,7 @@ export default function PermissionsSettingsScreen() {
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState<PermissionKey | null>(null);
   const color = isDark ? "#FFF" : "#171717";
+  const { textStyle } = useSettingsDirection();
 
   const loadPermissions = useCallback(async () => {
     try {
@@ -109,7 +111,7 @@ export default function PermissionsSettingsScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}>
       <SettingsHeader title={t("appPermissions")} />
       <ScrollView contentContainerStyle={{ paddingBottom: 44 }}>
-        <Text className="px-5 pt-4 leading-5 text-gray-500">{t("appPermissionsIntro")}</Text>
+        <Text className="px-5 pt-4 leading-5 text-gray-500" style={textStyle}>{t("appPermissionsIntro")}</Text>
         <SettingsSection title={t("devicePermissions")}>
           {rows.map((row) => (
             <PermissionRow
@@ -124,7 +126,7 @@ export default function PermissionsSettingsScreen() {
             />
           ))}
         </SettingsSection>
-        <Text className="px-5 pt-5 text-sm leading-5 text-gray-500">{t("permissionsSystemHint")}</Text>
+        <Text className="px-5 pt-5 text-sm leading-5 text-gray-500" style={textStyle}>{t("permissionsSystemHint")}</Text>
         <TouchableOpacity onPress={() => void Linking.openSettings()} className="mx-5 mt-4 items-center rounded-2xl bg-ink py-3.5 dark:bg-white">
           <Text weight="bold" className="text-white dark:text-black">{t("openDeviceSettings")}</Text>
         </TouchableOpacity>
@@ -151,6 +153,7 @@ function PermissionRow({
   onPress: () => void;
 }) {
   const { t } = useTranslation("settings");
+  const { rowStyle, textStyle, isRtl } = useSettingsDirection();
   const status = permission.limited
     ? "limited"
     : permission.status === "granted"
@@ -175,15 +178,15 @@ function PermissionRow({
         : "text-gray-600 dark:text-gray-300";
 
   return (
-    <View className="flex-row items-center border-b border-line px-5 py-4 last:border-b-0 dark:border-gray-800">
-      <View className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-soft dark:bg-gray-900">{icon}</View>
-      <View className="min-w-0 flex-1 pr-3">
-        <Text className="text-base text-ink dark:text-white">{title}</Text>
-        <Text className="mt-0.5 text-sm leading-5 text-gray-500">{subtitle}</Text>
+    <View className="flex-row items-center border-b border-line px-5 py-4 last:border-b-0 dark:border-gray-800" style={rowStyle}>
+      <View className="h-10 w-10 items-center justify-center rounded-full bg-soft dark:bg-gray-900" style={{ marginEnd: 16 }}>{icon}</View>
+      <View className="min-w-0 flex-1" style={{ paddingEnd: 12 }}>
+        <Text className="text-base text-ink dark:text-white" style={textStyle}>{title}</Text>
+        <Text className="mt-0.5 text-sm leading-5 text-gray-500" style={textStyle}>{subtitle}</Text>
         {loading ? (
           <SkeletonPulse style={{ marginTop: 8 }}><Skeleton width={76} height={22} radius={11} /></SkeletonPulse>
         ) : (
-          <View className={`mt-2 self-start rounded-full px-2.5 py-1 ${statusBackgroundClass}`}>
+          <View className={`mt-2 rounded-full px-2.5 py-1 ${statusBackgroundClass}`} style={{ alignSelf: isRtl ? "flex-end" : "flex-start" }}>
             <Text weight="bold" className={`text-xs ${statusTextClass}`}>{t(`permissionStatus.${status}`)}</Text>
           </View>
         )}

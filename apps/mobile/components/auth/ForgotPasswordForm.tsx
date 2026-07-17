@@ -1,9 +1,10 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import Text from '@/components/common/AppText';
 import { TextInput } from '@/components/common';
 import { api } from '@/lib/api';
 import { getErrorMessage } from '@findeat/utils';
 import { useState } from 'react';
-import { Alert, TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import AuthFormHeader from './AuthFormHeader';
 

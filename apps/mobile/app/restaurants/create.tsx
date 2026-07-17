@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
@@ -5,7 +6,7 @@ import { uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Alert, Image, ScrollView, TouchableOpacity } from "react-native";
+import { Image, ScrollView, TouchableOpacity } from "react-native";
 
 export default function CreateRestaurantScreen() {
   const [name, setName] = useState("");

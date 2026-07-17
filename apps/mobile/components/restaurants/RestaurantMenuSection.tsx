@@ -63,7 +63,14 @@ export default function RestaurantMenuSection({
         ...menu,
         items: menu.items.filter((item) => {
           if (!cleanQuery) return true;
-          return [item.name, item.description, item.category]
+          return [
+            item.name,
+            item.description,
+            item.category,
+            ...(item.allergens ?? []),
+            ...(item.dietaryTags ?? []),
+            ...(item.cuisineTags ?? []),
+          ]
             .filter(Boolean)
             .some((value) => value!.toLocaleLowerCase().includes(cleanQuery));
         }),

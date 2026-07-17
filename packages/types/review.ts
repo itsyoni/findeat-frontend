@@ -19,14 +19,15 @@ export type ReviewDishDraft = {
   customPrice?: number;
   fallbackImageUrl?: string | null;
   imageUri?: string;
-  rating?: number;
-  text?: string;
+  rating: number;
+  text: string;
   order: number;
 };
 
 export type CreateReviewDraft = {
   visibility: PostVisibility;
   restaurant: SelectedRestaurant | null;
+  linkedPostId?: string;
   coverImageUri?: string;
   summary: string;
   overallRating?: number;

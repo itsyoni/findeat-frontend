@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { CommentsBottomSheet } from "@/components/common";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";
 import SharePostBottomSheet from "@/components/chats/share/SharePostBottomSheet";
@@ -5,8 +6,8 @@ import ReviewFeed from "@/components/posts/review/ReviewFeed";
 import { api } from "@/lib/api";
 import { Post } from "@findeat/types/post";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
-import { Alert } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -15,7 +16,7 @@ import { removePostFromAppCache } from "@/hooks/useFeed";
 export default function UserReviewsFeedScreen() {
   const queryClient = useQueryClient();
   const { isDark } = useAppTheme();
-  const { userId } = useLocalSearchParams<{
+  const { userId, postId } = useLocalSearchParams<{
     userId: string;
     postId?: string;
   }>();
@@ -26,6 +27,11 @@ export default function UserReviewsFeedScreen() {
   const [sharePostId, setSharePostId] = useState<string | null>(null);
   const [optionsPostId, setOptionsPostId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+
+  const initialIndex = useMemo(
+    () => Math.max(posts.findIndex((post) => post.id === postId), 0),
+    [postId, posts],
+  );
 
   const fetchPosts = useCallback(async () => {
     if (!userId) return null;
@@ -212,6 +218,7 @@ export default function UserReviewsFeedScreen() {
     >
       <ReviewFeed
         posts={posts}
+        initialIndex={initialIndex}
         refreshing={refreshing}
         onRefresh={onRefresh}
         onToggleLike={toggleLike}
@@ -225,6 +232,9 @@ export default function UserReviewsFeedScreen() {
         postId={optionsPostId}
         onClose={() => setOptionsPostId(null)}
         onDelete={deletePost}
+        onArchived={(archivedPostId) => {
+          setPosts((current) => current.filter((post) => post.id !== archivedPostId));
+        }}
       />
 
       <SharePostBottomSheet

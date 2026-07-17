@@ -47,6 +47,9 @@ export function createMenuApi(api: AxiosInstance) {
         price?: number | null;
         imageUrl?: string | null;
         category?: string | null;
+        allergens?: string[];
+        dietaryTags?: string[];
+        cuisineTags?: string[];
       },
     ) {
       const { data } = await api.post<Dish>(
@@ -67,6 +70,9 @@ export function createMenuApi(api: AxiosInstance) {
         category?: string | null;
         isAvailable?: boolean;
         isFeatured?: boolean;
+        allergens?: string[];
+        dietaryTags?: string[];
+        cuisineTags?: string[];
       },
     ) {
       const { data } = await api.patch<Dish>(

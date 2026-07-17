@@ -1,6 +1,7 @@
 import type {
   ConnectionItem,
   BlockedUser,
+  FollowRequest,
   Language,
   Profile,
   UserRelationship,
@@ -52,6 +53,7 @@ export function createUsersApi(api: AxiosInstance) {
       language?: Language;
       showActivityStatus?: boolean;
       showWhatsNewPopups?: boolean;
+      isPrivate?: boolean;
       phoneNumber?: string | null;
       birthday?: string | null;
       pronouns?: string | null;
@@ -127,6 +129,40 @@ export function createUsersApi(api: AxiosInstance) {
 
     async blockedUsers() {
       const { data } = await api.get<BlockedUser[]>("/users/me/blocked");
+      return data;
+    },
+
+    async followRequests() {
+      const { data } = await api.get<FollowRequest[]>("/users/me/follow-requests");
+      return data;
+    },
+
+    async approveFollowRequest(requesterId: string) {
+      const { data } = await api.post<{ ok: true }>(
+        `/users/follow-requests/${requesterId}/approve`,
+      );
+      return data;
+    },
+
+    async rejectFollowRequest(requesterId: string) {
+      const { data } = await api.delete<{ ok: true }>(
+        `/users/follow-requests/${requesterId}`,
+      );
+      return data;
+    },
+
+    async removeFollower(followerId: string) {
+      const { data } = await api.delete<{ ok: true }>(
+        `/users/followers/${followerId}`,
+      );
+      return data;
+    },
+
+    async changePrivacy(isPrivate: boolean) {
+      const { data } = await api.patch<{ isPrivate: boolean }>(
+        "/users/me/privacy",
+        { isPrivate },
+      );
       return data;
     },
 

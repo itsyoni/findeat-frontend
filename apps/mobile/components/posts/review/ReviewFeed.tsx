@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, View } from "react-native";
 import ReviewPost from "./ReviewPost";
 import ReviewFeedEmptyState from "./ReviewFeedEmptyState";
 import { Skeleton, SkeletonPulse } from "@/components/common";
+import { useRef } from "react";
 
 type Props = {
   posts: Post[];
@@ -21,6 +22,7 @@ type Props = {
     isWantToTry: boolean,
   ) => void;
   loading?: boolean;
+  initialIndex?: number;
 };
 
 export default function ReviewFeed({
@@ -36,7 +38,9 @@ export default function ReviewFeed({
   onOpenSharePost,
   onOpenPostOptions,
   loading = false,
+  initialIndex = 0,
 }: Props) {
+  const listRef = useRef<FlatList<Post>>(null);
   if (loading) {
     return (
       <SkeletonPulse style={{ flex: 1, paddingTop: contentTopInset + 12 }}>
@@ -57,6 +61,7 @@ export default function ReviewFeed({
   }
   return (
     <FlatList
+      ref={listRef}
       className="bg-canvas dark:bg-black"
       style={{ flex: 1 }}
       data={posts}
@@ -69,6 +74,16 @@ export default function ReviewFeed({
       maxToRenderPerBatch={3}
       windowSize={5}
       removeClippedSubviews
+      initialScrollIndex={initialIndex > 0 ? initialIndex : undefined}
+      onScrollToIndexFailed={({ index, averageItemLength }) => {
+        listRef.current?.scrollToOffset({
+          offset: Math.max(0, averageItemLength * index),
+          animated: false,
+        });
+        requestAnimationFrame(() => {
+          listRef.current?.scrollToIndex({ index, animated: false });
+        });
+      }}
       contentContainerStyle={{
         flexGrow: 1,
         paddingTop: contentTopInset + 12,

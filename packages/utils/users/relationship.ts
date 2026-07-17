@@ -11,6 +11,18 @@ export function isFriendRelationship(relationship?: UserRelationship | null) {
   return relationship === "FRIENDS";
 }
 
+export function isRequestedRelationship(
+  relationship?: UserRelationship | null,
+) {
+  return relationship === "REQUESTED";
+}
+
+export function shouldRemoveFollowRelationship(
+  relationship?: UserRelationship | null,
+) {
+  return isFollowingRelationship(relationship) || relationship === "REQUESTED";
+}
+
 export function getRelationshipButtonText(
   relationship?: UserRelationship | null,
 ) {
@@ -21,6 +33,8 @@ export function getRelationshipButtonText(
       return "Following";
     case "FOLLOWED_BY":
       return "Follow back";
+    case "REQUESTED":
+      return "Requested";
     default:
       return "Follow";
   }
@@ -34,6 +48,8 @@ export function getRelationshipButtonColor(
       return "bg-[#F7D786]";
     case "FOLLOWING":
       return "bg-gray-900 dark:bg-gray-100";
+    case "REQUESTED":
+      return "bg-gray-200 dark:bg-gray-800";
     default:
       return "bg-black dark:bg-white";
   }
@@ -47,6 +63,8 @@ export function getRelationshipLabel(relationship?: UserRelationship | null) {
       return "Following";
     case "FOLLOWED_BY":
       return "Follows you";
+    case "REQUESTED":
+      return "Requested";
     default:
       return undefined;
   }
@@ -57,6 +75,7 @@ export function getNextRelationshipAfterToggle(
 ): UserRelationship {
   if (relationship === "FRIENDS") return "FOLLOWED_BY";
   if (relationship === "FOLLOWING") return "NONE";
+  if (relationship === "REQUESTED") return "NONE";
 
   return "FOLLOWING";
 }

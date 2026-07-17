@@ -1,3 +1,4 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { CommentsBottomSheet } from "@/components/common";
 import SearchBar from "@/components/common/inputs/SearchBar";
 import Tabs from "@/components/common/Tabs";
@@ -21,7 +22,7 @@ import type { FeedPage } from "@findeat/types";
 import { router } from "expo-router";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostOptionsBottomSheet from "@/components/chats/PostOptionsBottomSheet";

@@ -12,6 +12,7 @@ import { WarningCircleIcon } from 'phosphor-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { router } from 'expo-router';
+import useSettingsDirection from '@/components/settings/useSettingsDirection';
 
 export default function DeleteAccountScreen() {
   const { t } = useTranslation('settings');
@@ -22,6 +23,7 @@ export default function DeleteAccountScreen() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const canDelete = password.length > 0 && confirmation === 'DELETE' && !deleting;
+  const { rowStyle, textStyle } = useSettingsDirection();
 
   async function deleteAccount() {
     if (!canDelete) return;
@@ -42,10 +44,10 @@ export default function DeleteAccountScreen() {
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 48 }} keyboardShouldPersistTaps="handled">
           <View className="mb-6 rounded-3xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900 dark:bg-amber-950/30">
-            <Text weight="bold" className="text-lg text-amber-900 dark:text-amber-200">
+            <Text weight="bold" className="text-lg text-amber-900 dark:text-amber-200" style={textStyle}>
               {t('preferDeactivationTitle')}
             </Text>
-            <Text className="mb-4 mt-1 leading-5 text-amber-800 dark:text-amber-300">
+            <Text className="mb-4 mt-1 leading-5 text-amber-800 dark:text-amber-300" style={textStyle}>
               {t('preferDeactivationBody')}
             </Text>
             <AppButton
@@ -68,16 +70,16 @@ export default function DeleteAccountScreen() {
           </View>
 
           <View className="mt-6 rounded-3xl border border-line bg-white p-5 dark:border-gray-800 dark:bg-[#111]">
-            <Text weight="bold" className="text-lg text-black dark:text-white">{t('whatWillBeDeleted')}</Text>
+            <Text weight="bold" className="text-lg text-black dark:text-white" style={textStyle}>{t('whatWillBeDeleted')}</Text>
             {['deletePostsReviews', 'deleteSocialData', 'deleteProfileMedia', 'deleteRestaurantAccess'].map((key) => (
-              <View key={key} className="mt-3 flex-row items-start">
-                <Text className="mr-2 text-red-500">•</Text>
-                <Text className="flex-1 leading-5 text-gray-600 dark:text-gray-300">{t(key)}</Text>
+              <View key={key} className="mt-3 flex-row items-start" style={rowStyle}>
+                <Text className="text-red-500" style={{ marginEnd: 8 }}>•</Text>
+                <Text className="flex-1 leading-5 text-gray-600 dark:text-gray-300" style={textStyle}>{t(key)}</Text>
               </View>
             ))}
           </View>
 
-          <Text weight="bold" className="mb-2 mt-7 text-black dark:text-white">{t('currentPassword')}</Text>
+          <Text weight="bold" className="mb-2 mt-7 text-black dark:text-white" style={textStyle}>{t('currentPassword')}</Text>
           <TextInput
             isPassword
             value={password}
@@ -86,8 +88,8 @@ export default function DeleteAccountScreen() {
             autoCapitalize="none"
           />
 
-          <Text weight="bold" className="mb-2 mt-5 text-black dark:text-white">{t('confirmAccountDeletion')}</Text>
-          <Text className="mb-3 text-sm text-gray-500 dark:text-gray-400">
+          <Text weight="bold" className="mb-2 mt-5 text-black dark:text-white" style={textStyle}>{t('confirmAccountDeletion')}</Text>
+          <Text className="mb-3 text-sm text-gray-500 dark:text-gray-400" style={textStyle}>
             {t('typeDeleteToConfirm')}
           </Text>
           <TextInput
@@ -100,7 +102,7 @@ export default function DeleteAccountScreen() {
 
           {error ? (
             <View className="mt-4 rounded-2xl bg-red-50 p-4 dark:bg-red-950/30">
-              <Text className="text-red-600 dark:text-red-400">{error}</Text>
+              <Text className="text-red-600 dark:text-red-400" style={textStyle}>{error}</Text>
             </View>
           ) : null}
 

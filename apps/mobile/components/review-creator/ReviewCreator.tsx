@@ -1,10 +1,11 @@
+import { AppAlert as Alert } from "@/lib/appAlert";
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { Dish } from "@findeat/types";
 import { CreateReviewDraft, CreateReviewStep } from "@findeat/types/review";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { Alert, View } from "react-native";
+import { View } from "react-native";
 import AddDishDetailsStep from "./steps/AddDishDetailsStep";
 import CoverStep from "./steps/CoverStep";
 import DishesStep from "./steps/DishesStep";
@@ -17,6 +18,7 @@ import {
 } from "@/hooks/useFeed";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 const initialDraft: CreateReviewDraft = {
   visibility: "PUBLIC",
@@ -27,11 +29,14 @@ const initialDraft: CreateReviewDraft = {
 
 export default function ReviewCreator({
   initialRestaurantId,
+  initialLinkedPostId,
 }: {
   initialRestaurantId?: string;
+  initialLinkedPostId?: string;
 }) {
   const queryClient = useQueryClient();
   const { refreshUser } = useAuth();
+  const { t } = useTranslation("create");
   const [step, setStep] = useState<CreateReviewStep>("RESTAURANT");
   const [draft, setDraft] = useState<CreateReviewDraft>(initialDraft);
   const [loading, setLoading] = useState(false);
@@ -51,6 +56,7 @@ export default function ReviewCreator({
         setDraft((current) => ({
           ...current,
           restaurant: { source: "FINDEAT", restaurant },
+          linkedPostId: initialLinkedPostId,
         }));
         setStep("COVER");
       })
@@ -65,7 +71,7 @@ export default function ReviewCreator({
     return () => {
       cancelled = true;
     };
-  }, [initialRestaurantId]);
+  }, [initialLinkedPostId, initialRestaurantId]);
 
   function updateDraft(update: Partial<CreateReviewDraft>) {
     setDraft((current) => ({
@@ -141,7 +147,7 @@ export default function ReviewCreator({
             ? await uploadImage(item.imageUri)
             : undefined,
           rating: item.rating,
-          text: item.text?.trim() || undefined,
+          text: item.text.trim(),
           order: item.order,
         })),
       );
@@ -155,6 +161,7 @@ export default function ReviewCreator({
         atmosphereRating: draft.atmosphereRating,
         serviceRating: draft.serviceRating,
         valueRating: draft.valueRating,
+        linkedPostId: draft.linkedPostId,
         items: uploadedItems,
       });
 
@@ -170,14 +177,35 @@ export default function ReviewCreator({
       setSelectedMenuDish(null);
       setStep("RESTAURANT");
 
-      router.replace({
-        pathname: "/(tabs)",
-        params: {
-          feed: createdPost.type,
-          postId: createdPost.id,
-          refresh: Date.now().toString(),
-        },
-      });
+      const openFeed = () =>
+        router.replace({
+          pathname: "/(tabs)",
+          params: {
+            feed: createdPost.type,
+            postId: createdPost.id,
+            refresh: Date.now().toString(),
+          },
+        });
+
+      if (draft.linkedPostId) {
+        openFeed();
+      } else {
+        Alert.alert(
+          t("addContentPromptTitle"),
+          t("addContentPromptBody"),
+          [
+            { text: t("done"), style: "cancel", onPress: openFeed },
+            {
+              text: t("addQuickPost"),
+              onPress: () =>
+                router.replace({
+                  pathname: "/create/content",
+                  params: { restaurantId, linkedPostId: createdPost.id },
+                }),
+            },
+          ],
+        );
+      }
     } catch (error) {
       console.error(error);
       Alert.alert("Error", getErrorMessage(error, "Could not publish review"));
@@ -197,7 +225,7 @@ export default function ReviewCreator({
           selectedRestaurant={draft.restaurant}
           onSelect={(restaurant) => {
             if (!restaurant) return;
-            updateDraft({ restaurant });
+            updateDraft({ restaurant, linkedPostId: undefined });
             setStep("COVER");
           }}
           onBack={() => router.back()}
@@ -291,6 +319,7 @@ export default function ReviewCreator({
           onBack={() => setStep("DISHES")}
           onPublish={publishReview}
           onVisibilityChange={(visibility) => updateDraft({ visibility })}
+          onLinkedPostChange={(linkedPostId) => updateDraft({ linkedPostId })}
         />
       )}
     </View>
