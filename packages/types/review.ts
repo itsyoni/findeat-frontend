@@ -24,6 +24,14 @@ export type ReviewDishDraft = {
   order: number;
 };
 
+export type ReviewDishFormDraft = {
+  dishName: string;
+  price?: number;
+  imageUri?: string;
+  rating?: number;
+  text: string;
+};
+
 export type CreateReviewDraft = {
   visibility: PostVisibility;
   restaurant: SelectedRestaurant | null;

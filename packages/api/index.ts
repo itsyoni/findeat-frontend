@@ -11,6 +11,9 @@ import { createNotificationsApi } from "./notifications";
 import { createSupportApi } from "./support";
 import { createProductUpdatesApi } from "./product-updates";
 import { createReportsApi } from "./reports";
+import { createPlaceListsApi } from "./place-lists";
+import { createCreatorImpactApi } from "./creator-impact";
+import { createProfileTagsApi } from "./profile-tags";
 
 type GetToken = () => string | null | Promise<string | null>;
 
@@ -35,6 +38,9 @@ export function createApiFromClient(client: AxiosInstance) {
     support: createSupportApi(client),
     productUpdates: createProductUpdatesApi(client),
     reports: createReportsApi(client),
+    placeLists: createPlaceListsApi(client),
+    creatorImpact: createCreatorImpactApi(client),
+    profileTags: createProfileTagsApi(client),
   };
 }
 

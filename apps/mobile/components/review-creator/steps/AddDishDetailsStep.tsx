@@ -1,8 +1,11 @@
 import Text from "@/components/common/AppText";
 import { Dish } from "@findeat/types";
-import { ReviewDishDraft } from "@findeat/types/review";
+import {
+  ReviewDishDraft,
+  ReviewDishFormDraft,
+} from "@findeat/types/review";
 import * as ImagePicker from "expo-image-picker";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Image,
   Keyboard,
@@ -17,28 +20,43 @@ import { ThemedSafeAreaView, AppButton, TextInput } from "@/components/common";
 import PriceInput from "../components/PriceInput";
 import RatingPicker from "../components/RatingPicker";
 import { useTranslation } from "react-i18next";
+import SaveDraftButton from "@/components/posts/SaveDraftButton";
 
 type Props = {
   selectedDish: Dish | null;
   onBack: () => void;
   onSave: (item: Omit<ReviewDishDraft, "id" | "order">) => void;
+  initialDraft?: ReviewDishFormDraft | null;
+  onDraftChange?: (draft: ReviewDishFormDraft) => void;
+  onSaveDraft: () => void;
+  savingDraft?: boolean;
 };
 
 export default function AddDishDetailsStep({
   selectedDish,
   onBack,
   onSave,
+  initialDraft,
+  onDraftChange,
+  onSaveDraft,
+  savingDraft,
 }: Props) {
   const { t } = useTranslation("create");
   const isFromMenu = !!selectedDish;
 
-  const [dishName, setDishName] = useState(selectedDish?.name ?? "");
-  const [price, setPrice] = useState<number | undefined>(
-    selectedDish?.price ?? undefined,
+  const [dishName, setDishName] = useState(
+    initialDraft?.dishName ?? selectedDish?.name ?? "",
   );
-  const [imageUri, setImageUri] = useState<string>();
-  const [rating, setRating] = useState<number>();
-  const [text, setText] = useState("");
+  const [price, setPrice] = useState<number | undefined>(
+    initialDraft?.price ?? selectedDish?.price ?? undefined,
+  );
+  const [imageUri, setImageUri] = useState<string | undefined>(
+    initialDraft?.imageUri,
+  );
+  const [rating, setRating] = useState<number | undefined>(
+    initialDraft?.rating,
+  );
+  const [text, setText] = useState(initialDraft?.text ?? "");
   const [attemptedSave, setAttemptedSave] = useState(false);
 
   const missingName = !isFromMenu && !dishName.trim();
@@ -47,6 +65,10 @@ export default function AddDishDetailsStep({
   const missingNote = !text.trim();
   const isComplete =
     !missingName && !missingPrice && !missingRating && !missingNote;
+
+  useEffect(() => {
+    onDraftChange?.({ dishName, price, imageUri, rating, text });
+  }, [dishName, imageUri, onDraftChange, price, rating, text]);
 
   async function pickImage() {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -101,11 +123,14 @@ export default function AddDishDetailsStep({
               paddingBottom: 40,
             }}
           >
-            <TouchableOpacity onPress={onBack}>
-              <Text className="font-bold text-black dark:text-white">
-                ← Back
-              </Text>
-            </TouchableOpacity>
+            <View className="flex-row items-center justify-between">
+              <TouchableOpacity onPress={onBack}>
+                <Text className="font-bold text-black dark:text-white">
+                  ← Back
+                </Text>
+              </TouchableOpacity>
+              <SaveDraftButton onPress={onSaveDraft} saving={savingDraft} />
+            </View>
 
             <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
               {isFromMenu

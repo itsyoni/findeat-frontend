@@ -35,6 +35,8 @@
     "POLL_CREATED": "{{name}} created a poll",
     "POLL_ENDED": "A poll has ended",
     "RESTAURANT_CLAIM_APPROVED": "Your restaurant claim was approved",
-    "RESTAURANT_CLAIM_REJECTED": "Your restaurant claim was rejected"
+    "RESTAURANT_CLAIM_REJECTED": "Your restaurant claim was rejected",
+    "PLACE_LIST_INVITE": "{{name}} invited you to a shared list",
+    "PROFILE_TAG_UNLOCKED": "You unlocked a new profile tag"
   }
 }

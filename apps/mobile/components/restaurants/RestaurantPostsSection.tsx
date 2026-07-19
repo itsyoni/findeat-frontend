@@ -19,14 +19,22 @@ type Props = {
 export default function RestaurantPostsSection({ posts, emptyText, loading, loadingMore, hasMore, onLoadMore, onPressPost }: Props) {
   const { isDark } = useAppTheme();
   const { t } = useTranslation('restaurants');
+  const feedBackground = isDark ? '#000' : '#FFF';
 
   if (loading) {
-    return <SkeletonList variant="grid" count={6} />;
+    return (
+      <View style={{ backgroundColor: feedBackground }}>
+        <SkeletonList variant="grid" count={6} />
+      </View>
+    );
   }
 
   if (posts.length === 0) {
     return (
-      <View className="items-center justify-center py-16">
+      <View
+        className="items-center justify-center py-16"
+        style={{ backgroundColor: feedBackground }}
+      >
         <View className="h-16 w-16 items-center justify-center rounded-full border-2 border-gray-200 dark:border-gray-700">
           <ImagesSquareIcon size={28} color={isDark ? '#FFF' : '#111'} />
         </View>
@@ -36,13 +44,17 @@ export default function RestaurantPostsSection({ posts, emptyText, loading, load
   }
 
   return (
-    <View className="-mx-6">
-      <View className="flex-row flex-wrap">
+    <View className="-mx-6" style={{ backgroundColor: feedBackground }}>
+      <View
+        className="flex-row flex-wrap"
+        style={{ backgroundColor: feedBackground }}
+      >
         {posts.map((post) => (
         <Pressable
           key={post.id}
           onPress={() => onPressPost(post.id)}
-          className="aspect-square w-1/3 border-[0.5px] border-gray-100 bg-gray-200 dark:border-gray-900"
+          className="aspect-square w-1/3 border-[0.5px] border-gray-100 dark:border-gray-900"
+          style={{ backgroundColor: isDark ? '#111827' : '#E5E7EB' }}
         >
           {post.imageUrl ? (
             <Image source={{ uri: post.imageUrl }} className="h-full w-full" resizeMode="cover" />

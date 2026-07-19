@@ -2,6 +2,7 @@ import {
   ALLERGEN_OPTIONS,
   CUISINE_OPTIONS,
   DISH_DIETARY_OPTIONS,
+  DISH_TAG_OPTIONS,
 } from "@findeat/types";
 import { foodTagLabel } from "../lib/foodTags";
 import { useState } from "react";
@@ -10,9 +11,11 @@ type Props = {
   allergens: string[];
   dietaryTags: string[];
   cuisineTags: string[];
+  dishTags: string[];
   onAllergensChange: (tags: string[]) => void;
   onDietaryTagsChange: (tags: string[]) => void;
   onCuisineTagsChange: (tags: string[]) => void;
+  onDishTagsChange: (tags: string[]) => void;
   compact?: boolean;
 };
 
@@ -76,9 +79,11 @@ export function DishFoodTags({
   allergens,
   dietaryTags,
   cuisineTags,
+  dishTags,
   onAllergensChange,
   onDietaryTagsChange,
   onCuisineTagsChange,
+  onDishTagsChange,
   compact = false,
 }: Props) {
   return (
@@ -105,6 +110,14 @@ export function DishFoodTags({
         options={DISH_DIETARY_OPTIONS}
         tone="positive"
         onChange={onDietaryTagsChange}
+      />
+      <TagGroup
+        title="Dish style"
+        hint="These power dish discovery and reviewer profile collections."
+        values={dishTags}
+        options={DISH_TAG_OPTIONS}
+        tone="cuisine"
+        onChange={onDishTagsChange}
       />
       <TagGroup
         title="Cuisine"

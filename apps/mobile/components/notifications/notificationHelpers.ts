@@ -17,7 +17,10 @@ export function notificationText(item: AppNotification, t: TFunction) {
 }
 
 export function notificationHref(item: AppNotification): Href | null {
+  if (item.type === 'PROFILE_TAG_UNLOCKED') return '/settings/profile-tags';
   if (item.type === 'FOLLOW_REQUEST') return '/settings/follow-requests';
+  if (item.type === 'PLACE_LIST_INVITE') return '/saved-lists';
+  if (item.placeListId) return `/saved-lists/${item.placeListId}`;
   if (item.conversationId) return `/chats/${item.conversationId}`;
   if (item.postId)
     return {

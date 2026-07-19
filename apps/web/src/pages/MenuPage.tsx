@@ -7,12 +7,64 @@ import { ListDashesIcon } from "@phosphor-icons/react/dist/csr/ListDashes";
 import { PencilSimpleIcon } from "@phosphor-icons/react/dist/csr/PencilSimple";
 import { PlusIcon } from "@phosphor-icons/react/dist/csr/Plus";
 import { StarIcon } from "@phosphor-icons/react/dist/csr/Star";
+import { HeartIcon } from "@phosphor-icons/react/dist/csr/Heart";
+import { ChartLineUpIcon } from "@phosphor-icons/react/dist/csr/ChartLineUp";
+import { DotsThreeVerticalIcon } from "@phosphor-icons/react/dist/csr/DotsThreeVertical";
 import { TrashIcon } from "@phosphor-icons/react/dist/csr/Trash";
 import type { Dish, Menu } from "@findeat/types";
 import { DishEditorModal } from "../components/DishEditorModal";
 import { DishFoodTags } from "../components/DishFoodTags";
+import { DishInsightsModal } from "../components/DishInsightsModal";
 import { foodTagLabel } from "../lib/foodTags";
 import { request, uploadImage } from "../lib/api";
+
+function DishRowFoodTags({
+  allergens = [],
+  dietaryTags = [],
+  dishTags = [],
+}: {
+  allergens?: string[];
+  dietaryTags?: string[];
+  dishTags?: string[];
+}) {
+  const tags = [
+    ...allergens.map((value) => ({ value, tone: "warning" })),
+    ...dietaryTags.map((value) => ({ value, tone: "positive" })),
+    ...dishTags.map((value) => ({ value, tone: "positive" })),
+  ];
+
+  if (tags.length === 0) return null;
+
+  const visibleTags = tags.slice(0, 2);
+  const hiddenTags = tags.slice(2);
+
+  return (
+    <div className="dish-row-food-tags">
+      {visibleTags.map((tag) => (
+        <span className={tag.tone} key={`${tag.tone}-${tag.value}`}>
+          {foodTagLabel(tag.value)}
+        </span>
+      ))}
+      {hiddenTags.length > 0 && (
+        <details className="dish-row-more-tags">
+          <summary aria-label={`Show ${hiddenTags.length} more food tags`}>
+            +{hiddenTags.length}
+          </summary>
+          <div className="dish-row-more-tags-panel">
+            <strong>More dish information</strong>
+            <div>
+              {hiddenTags.map((tag) => (
+                <span className={tag.tone} key={`${tag.tone}-${tag.value}`}>
+                  {foodTagLabel(tag.value)}
+                </span>
+              ))}
+            </div>
+          </div>
+        </details>
+      )}
+    </div>
+  );
+}
 
 export function MenuPage({
   menus,
@@ -34,7 +86,10 @@ export function MenuPage({
   const [dishAllergens, setDishAllergens] = useState<string[]>([]);
   const [dishDietaryTags, setDishDietaryTags] = useState<string[]>([]);
   const [dishCuisineTags, setDishCuisineTags] = useState<string[]>([]);
+  const [dishTags, setDishTags] = useState<string[]>([]);
   const [editingDish, setEditingDish] = useState<Dish | null>(null);
+  const [insightsDish, setInsightsDish] = useState<Dish | null>(null);
+  const [openDishOptions, setOpenDishOptions] = useState<string | null>(null);
   const [error, setError] = useState("");
   const popularDishIds = useMemo(
     () =>
@@ -88,6 +143,7 @@ export function MenuPage({
           allergens: dishAllergens,
           dietaryTags: dishDietaryTags,
           cuisineTags: dishCuisineTags,
+          dishTags,
         }),
       });
       setDishName("");
@@ -98,6 +154,7 @@ export function MenuPage({
       setDishAllergens([]);
       setDishDietaryTags([]);
       setDishCuisineTags([]);
+      setDishTags([]);
       setDishMenu(null);
       await reload();
     } catch (nextError) {
@@ -147,7 +204,7 @@ export function MenuPage({
   }
 
   return (
-    <div className="page-stack">
+    <div className="page-stack" onClick={() => setOpenDishOptions(null)}>
       <div className="page-heading">
         <div>
           <p className="eyebrow">RESTAURANT MENU</p>
@@ -176,7 +233,7 @@ export function MenuPage({
         menus.map((menu) => (
           <section className="menu-section" key={menu.id}>
             <button
-              className="section-heading"
+              className={`section-heading ${openMenu === menu.id ? "open" : ""}`}
               onClick={() => setOpenMenu(openMenu === menu.id ? null : menu.id)}
             >
               <div>
@@ -210,71 +267,110 @@ export function MenuPage({
                           <span className="popular-tag">Popular</span>
                         )}
                         {dish.isNew && <span className="new-tag">New</span>}
+                        {!dish.isAvailable && (
+                          <span className="unavailable-tag">Unavailable</span>
+                        )}
                       </div>
                       <p>{dish.description || "No description"}</p>
-                      {(dish.allergens?.length > 0 || dish.dietaryTags?.length > 0) && (
-                        <div className="dish-row-food-tags">
-                          {dish.allergens?.slice(0, 2).map((tag) => (
-                            <span className="warning" key={tag}>{foodTagLabel(tag)}</span>
-                          ))}
-                          {dish.dietaryTags?.slice(0, 2).map((tag) => (
-                            <span className="positive" key={tag}>{foodTagLabel(tag)}</span>
-                          ))}
+                      <DishRowFoodTags
+                        allergens={dish.allergens}
+                        dietaryTags={dish.dietaryTags}
+                        dishTags={dish.dishTags}
+                      />
+                      <div className="dish-meta">
+                        {(dish.reviewsCount ?? 0) > 0 && (
+                          <small className="dish-rating">
+                            <StarIcon size={13} weight="fill" aria-hidden="true" /> {dish.averageRating?.toFixed(1) || "—"} ·{" "}
+                            {dish.reviewsCount}{" "}
+                            {dish.reviewsCount === 1 ? "review" : "reviews"}
+                          </small>
+                        )}
+                        <small className="dish-favorites">
+                          <HeartIcon size={13} weight="fill" aria-hidden="true" />
+                          {dish.favoriteCount ?? 0}{" "}
+                          {(dish.favoriteCount ?? 0) === 1
+                            ? "customer favorite"
+                            : "customer favorites"}
+                        </small>
+                      </div>
+                    </div>
+                    <div className="dish-row-side">
+                      <strong className="dish-price">
+                        {dish.price == null ? "—" : `₪${dish.price.toFixed(2)}`}
+                      </strong>
+                      <button
+                        type="button"
+                        className={`dish-options-trigger ${openDishOptions === dish.id ? "active" : ""}`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setOpenDishOptions((current) =>
+                            current === dish.id ? null : dish.id,
+                          );
+                        }}
+                        aria-label={`Options for ${dish.name}`}
+                        aria-expanded={openDishOptions === dish.id}
+                      >
+                        <DotsThreeVerticalIcon size={20} weight="bold" aria-hidden="true" />
+                      </button>
+                      {openDishOptions === dish.id && (
+                        <div
+                          className="dish-options-menu"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenDishOptions(null);
+                              setInsightsDish(dish);
+                            }}
+                          >
+                            <ChartLineUpIcon size={18} weight="duotone" aria-hidden="true" />
+                            <span><strong>View statistics</strong><small>Quick and Pro insights</small></span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenDishOptions(null);
+                              void updateDish(dish, { isFeatured: !dish.isFeatured });
+                            }}
+                          >
+                            <StarIcon size={18} weight={dish.isFeatured ? "fill" : "regular"} aria-hidden="true" />
+                            <span><strong>{dish.isFeatured ? "Remove restaurant pick" : "Make restaurant pick"}</strong><small>Control menu highlighting</small></span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenDishOptions(null);
+                              void updateDish(dish, { isAvailable: !dish.isAvailable });
+                            }}
+                          >
+                            <CheckIcon size={18} weight="bold" aria-hidden="true" />
+                            <span><strong>{dish.isAvailable ? "Mark unavailable" : "Make available"}</strong><small>{dish.isAvailable ? "Hide it from customers" : "Show it to customers"}</small></span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenDishOptions(null);
+                              setEditingDish(dish);
+                            }}
+                          >
+                            <PencilSimpleIcon size={18} weight="bold" aria-hidden="true" />
+                            <span><strong>Edit dish</strong><small>Details, photo, and tags</small></span>
+                          </button>
+                          <button
+                            type="button"
+                            className="danger"
+                            onClick={() => {
+                              setOpenDishOptions(null);
+                              void deleteDish(dish.id);
+                            }}
+                          >
+                            <TrashIcon size={18} weight="bold" aria-hidden="true" />
+                            <span><strong>Delete dish</strong><small>Permanently remove it</small></span>
+                          </button>
                         </div>
                       )}
-                      {(dish.reviewsCount ?? 0) > 0 && (
-                        <small className="dish-rating">
-                          <StarIcon size={13} weight="fill" aria-hidden="true" /> {dish.averageRating?.toFixed(1) || "—"} ·{" "}
-                          {dish.reviewsCount}{" "}
-                          {dish.reviewsCount === 1 ? "review" : "reviews"}
-                        </small>
-                      )}
                     </div>
-                    <strong>
-                      {dish.price == null ? "—" : `₪${dish.price.toFixed(2)}`}
-                    </strong>
-                    <button
-                      type="button"
-                      className={`feature-button ${dish.isFeatured ? "selected" : ""}`}
-                      title={
-                        dish.isFeatured
-                          ? "Remove from restaurant picks"
-                          : "Feature as a restaurant pick"
-                      }
-                      onClick={() =>
-                        void updateDish(dish, { isFeatured: !dish.isFeatured })
-                      }
-                    >
-                      <StarIcon size={18} weight={dish.isFeatured ? "fill" : "regular"} aria-hidden="true" />
-                    </button>
-                    <label className="switch">
-                      <input
-                        type="checkbox"
-                        checked={dish.isAvailable}
-                        onChange={(event) =>
-                          void updateDish(dish, {
-                            isAvailable: event.target.checked,
-                          })
-                        }
-                      />
-                      <span />
-                    </label>
-                    <button
-                      type="button"
-                      className="icon-button edit"
-                      onClick={() => setEditingDish(dish)}
-                      aria-label="Edit dish"
-                    >
-                      <PencilSimpleIcon size={17} weight="bold" aria-hidden="true" />
-                    </button>
-                    <button
-                      type="button"
-                      className="icon-button danger"
-                      onClick={() => void deleteDish(dish.id)}
-                      aria-label="Delete dish"
-                    >
-                      <TrashIcon size={17} weight="bold" aria-hidden="true" />
-                    </button>
                   </article>
                 ))}
                 {dishMenu === menu.id ? (
@@ -310,9 +406,11 @@ export function MenuPage({
                       allergens={dishAllergens}
                       dietaryTags={dishDietaryTags}
                       cuisineTags={dishCuisineTags}
+                      dishTags={dishTags}
                       onAllergensChange={setDishAllergens}
                       onDietaryTagsChange={setDishDietaryTags}
                       onCuisineTagsChange={setDishCuisineTags}
+                      onDishTagsChange={setDishTags}
                     />
                     <label className="image-picker">
                       <input
@@ -365,6 +463,13 @@ export function MenuPage({
             )}
           </section>
         ))
+      )}
+      {insightsDish && (
+        <DishInsightsModal
+          dish={insightsDish}
+          allDishes={menus.flatMap((menu) => menu.items)}
+          onClose={() => setInsightsDish(null)}
+        />
       )}
       {editingDish && <DishEditorModal dish={editingDish} onClose={() => setEditingDish(null)} onSaved={reload} />}
     </div>

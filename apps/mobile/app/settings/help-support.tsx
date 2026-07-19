@@ -10,14 +10,17 @@ import { KeyboardAvoidingView, Platform, RefreshControl, ScrollView, TextInput, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import useSettingsDirection from '@/components/settings/useSettingsDirection';
+import { useLocalSearchParams } from 'expo-router';
 
 const categories: SupportTicketCategory[] = ['BUG', 'ACCOUNT', 'RESTAURANT', 'CONTENT', 'SAFETY', 'OTHER'];
 
 export default function HelpSupportScreen() {
   const { t } = useTranslation('settings');
+  const { topic } = useLocalSearchParams<{ topic?: string }>();
   const { isDark } = useAppTheme();
-  const [category, setCategory] = useState<SupportTicketCategory>('BUG');
-  const [subject, setSubject] = useState('');
+  const isAccessibilityRequest = topic === 'accessibility';
+  const [category, setCategory] = useState<SupportTicketCategory>(isAccessibilityRequest ? 'OTHER' : 'BUG');
+  const [subject, setSubject] = useState(isAccessibilityRequest ? t('accessibilitySupportSubject') : '');
   const [message, setMessage] = useState('');
   const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [loading, setLoading] = useState(true);

@@ -5,13 +5,15 @@ import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
 import type { DishDetails } from "@findeat/types";
 import { router, Stack, useLocalSearchParams } from "expo-router";
-import { ForkKnifeIcon, StarIcon } from "phosphor-react-native";
+import { ForkKnifeIcon, HeartIcon, StarIcon } from "phosphor-react-native";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { DishCompatibilityChips } from "@/components/restaurants/FoodCompatibility";
+import { AppAlert as Alert } from "@/lib/appAlert";
+import { publishDishFavoriteChange } from "@/lib/dishFavorites";
 
 export default function MenuItemScreen() {
   const { isDark } = useAppTheme();
@@ -19,6 +21,67 @@ export default function MenuItemScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [dish, setDish] = useState<DishDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [favoritePending, setFavoritePending] = useState(false);
+
+  async function toggleFavorite() {
+    if (!dish || favoritePending) return;
+    const wasFavorite = dish.isFavorite === true;
+    const previousFavoriteCount = dish.favoriteCount ?? 0;
+    setFavoritePending(true);
+    setDish({
+      ...dish,
+      isFavorite: !wasFavorite,
+      favoriteCount: Math.max(
+        0,
+        (dish.favoriteCount ?? 0) + (wasFavorite ? -1 : 1),
+      ),
+    });
+    publishDishFavoriteChange({
+      dishId: dish.id,
+      isFavorite: !wasFavorite,
+      favoriteCount: Math.max(
+        0,
+        (dish.favoriteCount ?? 0) + (wasFavorite ? -1 : 1),
+      ),
+    });
+    try {
+      const result = wasFavorite
+        ? await api.menu.unfavoriteDish(dish.id)
+        : await api.menu.favoriteDish(dish.id);
+      setDish((current) =>
+        current
+          ? {
+              ...current,
+              isFavorite: result.isFavorite,
+              favoriteCount: result.favoriteCount,
+            }
+          : current,
+      );
+      publishDishFavoriteChange({
+        dishId: dish.id,
+        isFavorite: result.isFavorite,
+        favoriteCount: result.favoriteCount,
+      });
+    } catch {
+      setDish((current) =>
+        current
+          ? {
+              ...current,
+              isFavorite: wasFavorite,
+              favoriteCount: previousFavoriteCount,
+            }
+          : current,
+      );
+      publishDishFavoriteChange({
+        dishId: dish.id,
+        isFavorite: wasFavorite,
+        favoriteCount: previousFavoriteCount,
+      });
+      Alert.alert(t("favoriteDishError"));
+    } finally {
+      setFavoritePending(false);
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -146,20 +209,51 @@ export default function MenuItemScreen() {
         )}
 
         <View className="-mt-8 min-h-[430px] rounded-t-[34px] bg-white px-5 pb-16 pt-8 dark:bg-black">
-          <View className="flex-row items-start justify-between gap-5">
+          <View className="flex-row items-center justify-between gap-5">
             <Text className="min-w-0 flex-1 text-3xl font-bold leading-9 text-black dark:text-white">
               {dish.name}
             </Text>
-            {dish.price != null && (
-              <View className="rounded-full bg-brand-soft px-4 py-2 dark:bg-orange-950/50">
-                <Text className="text-xl font-bold text-brand dark:text-orange-300">
-                  ₪{dish.price}
+            <View className="flex-row items-center gap-2">
+              <TouchableOpacity
+                accessibilityRole="button"
+                accessibilityLabel={t(
+                  dish.isFavorite ? "removeFavoriteDish" : "favoriteDish",
+                )}
+                disabled={favoritePending}
+                onPress={() => void toggleFavorite()}
+                className={`h-11 flex-row items-center justify-center gap-1.5 rounded-full px-3 ${
+                  dish.isFavorite
+                    ? "bg-rose-100 dark:bg-rose-950"
+                    : "bg-gray-100 dark:bg-gray-900"
+                }`}
+                style={{ opacity: favoritePending ? 0.55 : 1 }}
+              >
+                <HeartIcon
+                  size={22}
+                  color={dish.isFavorite ? "#E11D48" : isDark ? "#D1D5DB" : "#6B7280"}
+                  weight={dish.isFavorite ? "fill" : "regular"}
+                />
+                <Text
+                  className={`text-sm font-bold ${
+                    dish.isFavorite
+                      ? "text-rose-700 dark:text-rose-300"
+                      : "text-gray-600 dark:text-gray-300"
+                  }`}
+                >
+                  {dish.favoriteCount ?? 0}
                 </Text>
-              </View>
-            )}
+              </TouchableOpacity>
+              {dish.price != null && (
+                <View className="rounded-full bg-brand-soft px-4 py-2 dark:bg-orange-950/50">
+                  <Text className="text-xl font-bold text-brand dark:text-orange-300">
+                    ₪{dish.price}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
 
-          <View className="mt-5 flex-row flex-wrap gap-2">
+          <View className="mt-3 flex-row flex-wrap gap-2">
             <View
               className={`rounded-full px-3 py-1.5 ${
                 dish.isAvailable

@@ -9,6 +9,7 @@ import {
   View,
 } from "react-native";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { useAccessibilityPreferences } from "@/contexts/AccessibilityContext";
 
 type Props = TextInputProps & {
   leftIcon?: ReactNode;
@@ -46,6 +47,8 @@ export default function TextInput({
   ...props
 }: Props) {
   const { isDark } = useAppTheme();
+  const { textScale, usesSystemTextSize, boldText } =
+    useAccessibilityPreferences();
   const [hidden, setHidden] = useState(isPassword);
   const isRtl = value?.trim() ? startsWithRtl(value) : I18nManager.isRTL;
   const Input = useBottomSheetInput ? BottomSheetTextInput : RNTextInput;
@@ -66,6 +69,7 @@ export default function TextInput({
         value={value}
         onChangeText={onChangeText}
         secureTextEntry={isPassword && hidden}
+        allowFontScaling={usesSystemTextSize}
         placeholderTextColor={placeholderTextColor ?? (isDark ? "#9CA3AF" : "#747474")}
         textAlign={isRtl ? "right" : "left"}
         textAlignVertical={isMultiline ? "top" : "center"}
@@ -73,9 +77,9 @@ export default function TextInput({
           {
             flex: 1,
             paddingVertical: 16,
-            fontSize: 16,
+            fontSize: Math.round(16 * textScale),
             color: isDark ? "#FFF" : "#171717",
-            fontFamily: "CabinetRegular",
+            fontFamily: boldText ? "CabinetMedium" : "CabinetRegular",
             writingDirection: isRtl ? "rtl" : "ltr",
             minHeight: isMultiline ? 120 : undefined,
           },

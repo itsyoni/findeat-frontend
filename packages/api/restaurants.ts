@@ -9,6 +9,8 @@ import type {
   GoogleRestaurantSuggestion,
   UserRestaurant,
   FeedPage,
+  RestaurantOpeningHours,
+  SavedPostAttribution,
 } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
@@ -21,7 +23,6 @@ export function createRestaurantsApi(api: AxiosInstance) {
 
     async create(payload: {
       name: string;
-      city?: string | null;
       address?: string | null;
       description?: string | null;
       avatarUrl?: string | null;
@@ -33,12 +34,11 @@ export function createRestaurantsApi(api: AxiosInstance) {
 
     async updateMine(payload: {
       name?: string;
-      address?: string | null;
-      city?: string | null;
       coverUrl?: string | null;
       phone?: string | null;
       website?: string | null;
       instagram?: string | null;
+      openingHours?: RestaurantOpeningHours | null;
     }) {
       const { data } = await api.patch<Restaurant>("/restaurants/me", payload);
       return data;
@@ -66,6 +66,13 @@ export function createRestaurantsApi(api: AxiosInstance) {
 
     async savedMine() {
       const { data } = await api.get("/restaurants/saved/me");
+      return data;
+    },
+
+    async savedPostsMine() {
+      const { data } = await api.get<SavedPostAttribution[]>(
+        "/restaurants/saved-posts/me",
+      );
       return data;
     },
 
@@ -116,7 +123,6 @@ export function createRestaurantsApi(api: AxiosInstance) {
     async fromGoogle(payload: {
       name: string;
       address?: string | null;
-      city?: string | null;
       latitude?: number | null;
       longitude?: number | null;
       googlePlaceId: string;

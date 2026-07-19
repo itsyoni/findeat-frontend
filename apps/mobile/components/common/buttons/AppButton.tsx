@@ -56,6 +56,8 @@ export default function AppButton({
 
   return (
     <TouchableOpacity
+      accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={onPress}
       className={`flex-row items-center justify-center gap-2 rounded-2xl px-5 py-4 ${

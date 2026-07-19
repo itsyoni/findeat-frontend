@@ -33,6 +33,7 @@ export type ReviewItem = {
     price?: number | null;
     imageUrl?: string | null;
     category?: string | null;
+    dishTags?: string[];
   } | null;
 
   customDishName?: string | null;
@@ -42,6 +43,7 @@ export type ReviewItem = {
   rating?: number | null;
   text?: string | null;
   textEditedAt?: string | null;
+  tagSnapshot?: string[];
   order: number;
 
   createdAt: string;

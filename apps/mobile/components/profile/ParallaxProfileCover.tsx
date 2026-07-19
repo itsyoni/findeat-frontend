@@ -1,36 +1,61 @@
-import { Animated, StyleSheet, View } from "react-native";
+import { useAppTheme } from "@/contexts/ThemeContext";
+import { StyleSheet, View } from "react-native";
+import Animated, {
+  Extrapolation,
+  interpolate,
+  type SharedValue,
+  useAnimatedStyle,
+} from "react-native-reanimated";
 
 export const PROFILE_COVER_HEIGHT = 240;
 
 type Props = {
   uri?: string | null;
-  scrollY: Animated.Value;
+  scrollY: SharedValue<number>;
 };
 
 export default function ParallaxProfileCover({ uri, scrollY }: Props) {
-  const translateY = scrollY.interpolate({
-    inputRange: [-PROFILE_COVER_HEIGHT, 0, PROFILE_COVER_HEIGHT],
-    outputRange: [-PROFILE_COVER_HEIGHT / 2, 0, PROFILE_COVER_HEIGHT * 0.55],
-    extrapolate: "clamp",
-  });
-  const scale = scrollY.interpolate({
-    inputRange: [-PROFILE_COVER_HEIGHT, 0],
-    outputRange: [2, 1],
-    extrapolateRight: "clamp",
+  const { isDark } = useAppTheme();
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [-PROFILE_COVER_HEIGHT, 0, PROFILE_COVER_HEIGHT],
+      [-PROFILE_COVER_HEIGHT / 2, 0, PROFILE_COVER_HEIGHT * 0.55],
+      Extrapolation.CLAMP,
+    );
+    const scale = interpolate(
+      scrollY.value,
+      [-PROFILE_COVER_HEIGHT, 0, PROFILE_COVER_HEIGHT],
+      [2, 1, 1],
+      Extrapolation.CLAMP,
+    );
+    return { transform: [{ translateY }, { scale }] };
   });
 
   return (
-    <View style={styles.frame}>
+    <View
+      style={[
+        styles.frame,
+        { backgroundColor: isDark ? "#000" : "#FFF" },
+      ]}
+    >
       {uri ? (
         <Animated.Image
           source={{ uri }}
           resizeMode="cover"
-          style={[styles.cover, { transform: [{ translateY }, { scale }] }]}
+          style={[
+            styles.cover,
+            { backgroundColor: isDark ? "#000" : "#FFF" },
+            animatedStyle,
+          ]}
         />
       ) : (
         <Animated.View
-          className="bg-gray-200 dark:bg-gray-800"
-          style={[styles.cover, { transform: [{ translateY }, { scale }] }]}
+          style={[
+            styles.cover,
+            { backgroundColor: isDark ? "#1F2937" : "#E5E7EB" },
+            animatedStyle,
+          ]}
         />
       )}
     </View>
@@ -41,7 +66,7 @@ const styles = StyleSheet.create({
   frame: {
     height: PROFILE_COVER_HEIGHT,
     width: "100%",
-    overflow: "hidden",
+    overflow: "visible",
   },
   cover: {
     height: PROFILE_COVER_HEIGHT,

@@ -21,8 +21,12 @@ export type NotificationType =
   | 'POLL_ENDED'
   | 'RESTAURANT_CLAIM_APPROVED'
   | 'RESTAURANT_CLAIM_REJECTED'
+  | 'RESTAURANT_ADDRESS_CHANGE_APPROVED'
+  | 'RESTAURANT_ADDRESS_CHANGE_REJECTED'
   | 'RESTAURANT_FOLLOW'
-  | 'RESTAURANT_REVIEW';
+  | 'RESTAURANT_REVIEW'
+  | 'PLACE_LIST_INVITE'
+  | 'PROFILE_TAG_UNLOCKED';
 
 export type AppNotification = {
   id: string;
@@ -45,6 +49,7 @@ export type AppNotification = {
   commentId?: string | null;
   conversationId?: string | null;
   restaurantId?: string | null;
+  placeListId?: string | null;
   readAt?: string | null;
   createdAt: string;
 };

@@ -4,6 +4,7 @@ export type Comment = {
   id: string;
   content: string;
   createdAt: string;
+  editedAt?: string | null;
   user: UserSummary;
   parentId?: string | null;
   parent?: {
@@ -17,6 +18,29 @@ export type Comment = {
   canDelete: boolean;
   canModerate: boolean;
   isPinned: boolean;
+  pinnedAt?: string | null;
+  isAuthorNote?: boolean;
   canPin: boolean;
   mentions?: { user: UserSummary }[];
+};
+
+export type CommentContext = {
+  isPostAuthor: boolean;
+  canCreateAuthorNote: boolean;
+  canCreatePoll: boolean;
+  poll: PostPoll | null;
+};
+
+export type PostPoll = {
+  id: string;
+  title: string;
+  closedAt?: string | null;
+  totalVotes: number;
+  options: Array<{
+    id: string;
+    title?: string | null;
+    order: number;
+    votesCount: number;
+    isVoted: boolean;
+  }>;
 };

@@ -9,12 +9,15 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import SaveDraftButton from "@/components/posts/SaveDraftButton";
 
 type Props = {
   restaurant: Restaurant | null;
   onBack: () => void;
   onSelect: (dish: Dish) => void;
   onAddCustom: () => void;
+  onSaveDraft: () => void;
+  savingDraft?: boolean;
 };
 
 export default function SelectMenuDishStep({
@@ -22,6 +25,8 @@ export default function SelectMenuDishStep({
   onBack,
   onSelect,
   onAddCustom,
+  onSaveDraft,
+  savingDraft,
 }: Props) {
   const [fullRestaurant, setFullRestaurant] = useState<Restaurant | null>(null);
   const [query, setQuery] = useState("");
@@ -77,9 +82,12 @@ export default function SelectMenuDishStep({
           paddingBottom: 40,
         }}
       >
-        <TouchableOpacity onPress={onBack}>
-          <Text className="font-bold text-black dark:text-white">← Back</Text>
-        </TouchableOpacity>
+        <View className="flex-row items-center justify-between">
+          <TouchableOpacity onPress={onBack}>
+            <Text className="font-bold text-black dark:text-white">← Back</Text>
+          </TouchableOpacity>
+          <SaveDraftButton onPress={onSaveDraft} saving={savingDraft} />
+        </View>
 
         <Text className="mt-6 text-3xl font-bold text-black dark:text-white">
           Choose from menu

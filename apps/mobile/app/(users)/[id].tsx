@@ -30,11 +30,17 @@ import {
 } from "phosphor-react-native";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useMemo, useState } from "react";
-import { Animated, ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import CreatorLevelBadge from "@/components/profile/CreatorLevelBadge";
+import ProfileTagBadge from "@/components/profile/ProfileTagBadge";
 
 export default function UserProfileScreen() {
   const { id } = useLocalSearchParams();
@@ -46,7 +52,10 @@ export default function UserProfileScreen() {
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [scrollY] = useState(() => new Animated.Value(0));
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
   const {
     profile: user,
     setProfile: setUser,
@@ -138,9 +147,12 @@ export default function UserProfileScreen() {
   if (loading) {
     return (
       <ScrollView
-        className="flex-1 bg-canvas dark:bg-black"
+        style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingBottom: 40,
+          backgroundColor: isDark ? "#000" : "#FFF",
+        }}
       >
         <SkeletonPulse>
           <View className="relative">
@@ -188,16 +200,16 @@ export default function UserProfileScreen() {
   }
 
   return (
-    <View className="flex-1 bg-canvas dark:bg-black">
+    <View style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}>
       <Animated.ScrollView
-        className="flex-1"
+        style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{
+          paddingBottom: 40,
+          backgroundColor: isDark ? "#000" : "#FFF",
+        }}
         scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true },
-        )}
+        onScroll={scrollHandler}
       >
         <View className="relative">
           <ParallaxProfileCover uri={user.coverUrl} scrollY={scrollY} />
@@ -228,7 +240,10 @@ export default function UserProfileScreen() {
           </SafeAreaView>
         </View>
 
-        <View className="-mt-7 rounded-t-[30px] bg-white dark:bg-black">
+        <View
+          className="-mt-7 rounded-t-[30px]"
+          style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+        >
           <View className="-mt-12 items-center px-5">
             <TouchableOpacity
               activeOpacity={user.avatarUrl ? 0.8 : 1}
@@ -242,12 +257,17 @@ export default function UserProfileScreen() {
             </TouchableOpacity>
           </View>
         <View className="items-center px-5">
-          <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
-            {user.displayName || user.username}
-          </Text>
+          <View className="mt-2 flex-row items-center justify-center gap-2 px-5">
+            <Text className="shrink text-2xl font-bold text-black dark:text-white">
+              {user.displayName || user.username}
+            </Text>
+            <ProfileDetails profile={user} />
+          </View>
           <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
             @{user.username}
           </Text>
+          <CreatorLevelBadge score={user.creatorScore} />
+          <ProfileTagBadge tag={user.selectedProfileTag} />
 
           <View className="w-full">
             <ProfileManagedRestaurants memberships={user.restaurantMemberships} />
@@ -256,8 +276,6 @@ export default function UserProfileScreen() {
           {!!user.bio && (
             <Text className="mt-4 text-center text-base text-black dark:text-white">{user.bio}</Text>
           )}
-
-          <ProfileDetails profile={user} />
 
           <View className="mt-5 w-full flex-row">
             <View className="flex-1">

@@ -78,15 +78,20 @@ function openPushData(data?: Record<string, unknown>) {
   const postId = stringPushValue(data.postId);
   const commentId = stringPushValue(data.commentId);
   const restaurantId = stringPushValue(data.restaurantId);
+  const placeListId = stringPushValue(data.placeListId);
+  const type = stringPushValue(data.type);
   const actorId = stringPushValue(data.actorId);
 
-  if (conversationId) router.push(`/chats/${conversationId}`);
+  if (type === "PROFILE_TAG_UNLOCKED") router.push("/settings/profile-tags");
+  else if (conversationId) router.push(`/chats/${conversationId}`);
   else if (postId)
     router.push({
       pathname: "/(posts)/[id]",
       params: { id: postId, ...(commentId ? { commentId } : {}) },
     });
   else if (restaurantId) router.push(`/restaurants/${restaurantId}`);
+  else if (type === "PLACE_LIST_INVITE") router.push("/saved-lists");
+  else if (placeListId) router.push(`/saved-lists/${placeListId}`);
   else if (actorId)
     router.push({ pathname: "/(users)/[id]", params: { id: actorId } });
 }

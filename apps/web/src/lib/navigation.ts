@@ -1,0 +1,70 @@
+import { useSyncExternalStore } from "react";
+import type {
+  AdminDashboardSection,
+  BusinessDashboardSection,
+} from "@findeat/types";
+
+export const businessPaths: Record<BusinessDashboardSection, string> = {
+  overview: "/home",
+  dashboard: "/dashboard",
+  menu: "/menu",
+  reviews: "/reviews",
+  messages: "/messages",
+  notifications: "/home",
+  profile: "/restaurant-profile",
+  support: "/support",
+  admin: "/admin/claims",
+};
+
+export const adminPaths: Record<AdminDashboardSection, string> = {
+  claims: "/admin/claims",
+  addresses: "/admin/address-requests",
+  moderation: "/admin/moderation",
+  ownership: "/admin/ownership",
+  support: "/admin/support",
+  updates: "/admin/whats-new",
+  admins: "/admin/admins",
+};
+
+function normalizedPath(pathname: string) {
+  if (pathname === "/") return pathname;
+  return pathname.replace(/\/+$/, "") || "/";
+}
+
+export function businessSectionFromPath(
+  pathname: string,
+): BusinessDashboardSection | null {
+  const path = normalizedPath(pathname);
+  const match = Object.entries(businessPaths).find(
+    ([section, route]) => section !== "notifications" && route === path,
+  );
+  return (match?.[0] as BusinessDashboardSection | undefined) ?? null;
+}
+
+export function adminSectionFromPath(
+  pathname: string,
+): AdminDashboardSection | null {
+  const path = normalizedPath(pathname);
+  const match = Object.entries(adminPaths).find(([, route]) => route === path);
+  return (match?.[0] as AdminDashboardSection | undefined) ?? null;
+}
+
+function subscribe(callback: () => void) {
+  window.addEventListener("popstate", callback);
+  return () => window.removeEventListener("popstate", callback);
+}
+
+function currentPathname() {
+  return window.location.pathname;
+}
+
+export function usePathname() {
+  return useSyncExternalStore(subscribe, currentPathname, () => "/");
+}
+
+export function navigateTo(path: string, replace = false) {
+  const nextPath = normalizedPath(path);
+  if (normalizedPath(window.location.pathname) === nextPath) return;
+  window.history[replace ? "replaceState" : "pushState"]({}, "", nextPath);
+  window.dispatchEvent(new PopStateEvent("popstate"));
+}

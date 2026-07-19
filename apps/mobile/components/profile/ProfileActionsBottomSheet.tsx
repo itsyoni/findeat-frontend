@@ -4,6 +4,7 @@ import { BottomSheetView } from "@gorhom/bottom-sheet";
 import {
   CameraIcon,
   FlagIcon,
+  InfoIcon,
   NotePencilIcon,
   ProhibitIcon,
   StorefrontIcon,
@@ -19,6 +20,7 @@ type Props = {
   onClaim?: () => void;
   onCreateReview?: () => void;
   onCreateContent?: () => void;
+  onAbout?: () => void;
   onBlock?: () => void;
   onReport?: () => void;
 };
@@ -31,6 +33,7 @@ export default function ProfileActionsBottomSheet({
   onClaim,
   onCreateReview,
   onCreateContent,
+  onAbout,
   onBlock,
   onReport,
 }: Props) {
@@ -41,7 +44,7 @@ export default function ProfileActionsBottomSheet({
     <AppBottomSheet
       open={open}
       onClose={onClose}
-      snapPoints={[isRestaurant ? (canClaim ? "62%" : "52%") : "38%"]}
+      snapPoints={[isRestaurant ? (canClaim ? "72%" : "62%") : "38%"]}
     >
       <BottomSheetView className="flex-1 px-5 pb-7 pt-1">
         <Text className="text-xl font-bold text-black dark:text-white">
@@ -50,6 +53,24 @@ export default function ProfileActionsBottomSheet({
 
         {isRestaurant && (
           <View className="mt-5 gap-3">
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={onAbout}
+              className="flex-row items-center rounded-2xl border border-gray-200 bg-white px-4 py-4 dark:border-gray-700 dark:bg-gray-900"
+            >
+              <View className="h-11 w-11 items-center justify-center rounded-full bg-blue-50 dark:bg-blue-950/40">
+                <InfoIcon size={22} color="#3B82F6" weight="fill" />
+              </View>
+              <View className="ml-3 flex-1">
+                <Text className="font-bold text-black dark:text-white">
+                  {t("restaurants:about")}
+                </Text>
+                <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                  {t("restaurants:aboutHint")}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
             <TouchableOpacity
               activeOpacity={0.75}
               onPress={onCreateReview}

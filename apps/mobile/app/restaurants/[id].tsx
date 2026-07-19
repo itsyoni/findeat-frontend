@@ -16,7 +16,11 @@ import type { Restaurant, RestaurantPostSection } from "@findeat/types";
 import { getErrorMessage } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
-import { Animated, ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from "react-native-reanimated";
 import {
   BookmarkSimpleIcon,
   CheckCircleIcon,
@@ -24,18 +28,27 @@ import {
 } from "phosphor-react-native";
 import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAppTheme } from "@/contexts/ThemeContext";
+import { useSaveToLists } from "@/contexts/SaveToListsContext";
+import RestaurantAboutBottomSheet from "@/components/restaurants/RestaurantAboutBottomSheet";
 
 type RestaurantTab = RestaurantPostSection | "MENU";
 
 export default function RestaurantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation(["restaurants", "common"]);
+  const { isDark } = useAppTheme();
+  const { openSaveToLists } = useSaveToLists();
   const queryClient = useQueryClient();
   const { restaurant, setRestaurant, loading } = useRestaurant(id);
   const [activeTab, setActiveTab] = useState<RestaurantTab>("OFFICIAL");
   const [optionsOpen, setOptionsOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [scrollY] = useState(() => new Animated.Value(0));
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
   const postSection: RestaurantPostSection =
     activeTab === "MENU" ? "OFFICIAL" : activeTab;
   const sectionPosts = useRestaurantPosts(
@@ -174,39 +187,25 @@ export default function RestaurantScreen() {
     if (!restaurant) return;
     const isWantToTry = restaurant.userRestaurant?.wantToTry === true;
     const isVisited = restaurant.userRestaurant?.visited === true;
+    const isFavorite = restaurant.userRestaurant?.favorite === true;
 
-    const applyChange = async () => {
-      try {
-        if (isWantToTry) {
-          await api.restaurants.removeWantToTry(restaurant.id);
-          updateRestaurantStatus({ wantToTry: false });
-        } else {
-          await api.restaurants.wantToTry(restaurant.id);
-          updateRestaurantStatus({
-            wantToTry: true,
-            visited: false,
-            favorite: false,
-          });
-        }
-      } catch (error) {
-        console.error(error);
-        Alert.alert(
-          t("restaurants:visitedLockedTitle"),
-          t("restaurants:cannotRemoveVisitedWithReview"),
-        );
-      }
-    };
-
-    if (!isWantToTry && isVisited) {
-      confirmStatusChange(
-        t("restaurants:confirmWantToTryTitle"),
-        t("restaurants:confirmWantToTryBody"),
-        applyChange,
-      );
+    if (isWantToTry || isVisited || isFavorite) {
+      openSaveToLists(restaurant.id);
       return;
     }
 
-    await applyChange();
+    try {
+      await api.restaurants.wantToTry(restaurant.id);
+      updateRestaurantStatus({
+        wantToTry: true,
+        visited: false,
+        favorite: false,
+      });
+      openSaveToLists(restaurant.id);
+    } catch (error) {
+      console.error(error);
+      Alert.alert(t("common:somethingWentWrong"));
+    }
   }
 
   async function toggleFavorite() {
@@ -288,7 +287,10 @@ export default function RestaurantScreen() {
 
   if (loading) {
     return (
-      <ScrollView className="flex-1 bg-canvas dark:bg-black">
+      <ScrollView
+        style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+        contentContainerStyle={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+      >
         <RestaurantHeader restaurant={null} loading scrollY={scrollY} onToggleFollow={() => undefined} onOpenOptions={() => undefined} />
         <SkeletonPulse>
           <View className="flex-row gap-3 bg-surface px-5 pb-5 pt-2 dark:bg-black">
@@ -314,12 +316,10 @@ export default function RestaurantScreen() {
   return (
     <>
       <Animated.ScrollView
-        className="flex-1 bg-canvas dark:bg-black"
+        style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
+        contentContainerStyle={{ backgroundColor: isDark ? "#000" : "#FFF" }}
         scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true },
-        )}
+        onScroll={scrollHandler}
       >
       <RestaurantHeader
         restaurant={restaurant}
@@ -361,6 +361,7 @@ export default function RestaurantScreen() {
               weight={restaurant.userRestaurant?.visited ? "fill" : "regular"}
             />
             <Text
+              numberOfLines={1}
               className={`mt-1 text-center text-xs font-bold ${
                 restaurant.userRestaurant?.visited
                   ? "text-white"
@@ -388,6 +389,7 @@ export default function RestaurantScreen() {
               weight={restaurant.userRestaurant?.favorite ? "fill" : "regular"}
             />
             <Text
+              numberOfLines={1}
               className={`mt-1 text-center text-xs font-bold ${
                 restaurant.userRestaurant?.favorite
                   ? "text-white"
@@ -418,7 +420,10 @@ export default function RestaurantScreen() {
         ]}
       />
 
-      <View className="px-6 pb-10">
+      <View
+        className="px-6 pb-10"
+        style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+      >
         {activeTab !== "MENU" && (
           <RestaurantPostsSection
             posts={visiblePosts}
@@ -465,10 +470,19 @@ export default function RestaurantScreen() {
         onClaim={() => void claimRestaurant()}
         onCreateReview={() => openCreateFlow("/create/review")}
         onCreateContent={() => openCreateFlow("/create/content")}
+        onAbout={() => {
+          setOptionsOpen(false);
+          setAboutOpen(true);
+        }}
         onReport={() => {
           setOptionsOpen(false);
           setTimeout(() => setReportOpen(true), 250);
         }}
+      />
+      <RestaurantAboutBottomSheet
+        restaurant={restaurant}
+        open={aboutOpen}
+        onClose={() => setAboutOpen(false)}
       />
       <ReportBottomSheet
         open={reportOpen}

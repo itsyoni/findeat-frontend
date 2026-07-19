@@ -5,15 +5,20 @@ import { FlatList, View } from "react-native";
 import Text from "../common/AppText";
 import ChatRow from "./ChatRow";
 import { Skeleton, SkeletonPulse } from "../common";
+import type { ChatDraft } from "@/lib/chatDrafts";
 
 type Props = {
   chats: Chat[];
   refreshing: boolean;
   onRefresh: () => void;
   loading?: boolean;
+  drafts?: Record<string, ChatDraft>;
+  onLongPressChat?: (chat: Chat) => void;
+  emptyTitle?: string;
+  emptyDescription?: string;
 };
 
-export default function ChatList({ chats, refreshing, onRefresh, loading = false }: Props) {
+export default function ChatList({ chats, refreshing, onRefresh, loading = false, drafts = {}, onLongPressChat, emptyTitle, emptyDescription }: Props) {
   const { t } = useTranslation("chat");
 
   if (loading) {
@@ -42,7 +47,13 @@ export default function ChatList({ chats, refreshing, onRefresh, loading = false
       onRefresh={onRefresh}
       data={chats}
       keyExtractor={(item) => item.id}
-      renderItem={({ item }) => <ChatRow chat={item} />}
+      renderItem={({ item }) => (
+        <ChatRow
+          chat={item}
+          draft={drafts[item.id]}
+          onLongPress={() => onLongPressChat?.(item)}
+        />
+      )}
       contentContainerStyle={
         chats.length === 0
           ? { flexGrow: 1 }
@@ -54,10 +65,10 @@ export default function ChatList({ chats, refreshing, onRefresh, loading = false
             <ChatCircleIcon size={36} color="#9CA3AF" weight="fill" />
           </View>
           <Text className="mt-5 text-xl font-bold text-black dark:text-white">
-            {t("noConversations")}
+            {emptyTitle ?? t("noConversations")}
           </Text>
           <Text className="mt-2 text-center leading-5 text-gray-500">
-            {t("noConversationsDescription")}
+            {emptyDescription ?? t("noConversationsDescription")}
           </Text>
         </View>
       }

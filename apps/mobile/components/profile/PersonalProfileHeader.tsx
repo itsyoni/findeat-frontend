@@ -2,38 +2,50 @@ import Avatar from "@/components/common/Avatar";
 import FullScreenImageViewer from "@/components/common/FullScreenImageViewer";
 import { Profile } from "@findeat/types/profile";
 import { router } from "expo-router";
-import { Animated, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import type { SharedValue } from "react-native-reanimated";
 import Text from "../common/AppText";
 import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 import ProfileDetails from "./ProfileDetails";
 import { useTranslation } from "react-i18next";
-import { GearSixIcon } from "phosphor-react-native";
+import {
+  FolderSimpleIcon,
+  GearSixIcon,
+  PencilSimpleIcon,
+} from "phosphor-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { Skeleton, SkeletonPulse } from "../common";
 import ParallaxProfileCover from "./ParallaxProfileCover";
+import { useAppTheme } from "@/contexts/ThemeContext";
+import CreatorLevelBadge from "./CreatorLevelBadge";
+import ProfileTagBadge from "./ProfileTagBadge";
 
 type Props = {
   profile?: Profile | null;
   loading?: boolean;
-  scrollY: Animated.Value;
+  scrollY: SharedValue<number>;
 };
 
 export default function PersonalProfileHeader({ profile, loading = false, scrollY }: Props) {
   const { t } = useTranslation(["common", "profile"]);
+  const { isDark } = useAppTheme();
   const [avatarOpen, setAvatarOpen] = useState(false);
 
   if (loading || !profile) {
     return (
       <SkeletonPulse>
-        <View className="bg-white dark:bg-black">
+        <View style={{ backgroundColor: isDark ? "#000" : "#FFF" }}>
           <View className="relative">
             <Skeleton height={240} radius={0} />
             <SafeAreaView edges={["top"]} style={{ position: "absolute", left: 0, right: 0, top: 0 }}>
               <View className="items-end px-4 pt-2"><Skeleton width={44} height={44} circle /></View>
             </SafeAreaView>
           </View>
-          <View className="-mt-7 items-center rounded-t-[30px] bg-white pb-5 dark:bg-black">
+          <View
+            className="-mt-7 items-center rounded-t-[30px] pb-5"
+            style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+          >
             <Skeleton width={112} height={112} circle style={{ marginTop: -48 }} />
             <Skeleton width="46%" height={22} radius={8} style={{ marginTop: 12 }} />
             <Skeleton width="27%" height={13} radius={6} style={{ marginTop: 8 }} />
@@ -47,7 +59,7 @@ export default function PersonalProfileHeader({ profile, loading = false, scroll
     );
   }
   return (
-    <View className="bg-white dark:bg-black">
+    <View style={{ backgroundColor: isDark ? "#000" : "#FFF" }}>
       <View className="relative">
         <ParallaxProfileCover uri={profile.coverUrl} scrollY={scrollY} />
         <SafeAreaView
@@ -66,7 +78,10 @@ export default function PersonalProfileHeader({ profile, loading = false, scroll
         </SafeAreaView>
       </View>
 
-      <View className="-mt-7 items-center rounded-t-[30px] bg-white pb-5 dark:bg-black">
+      <View
+        className="-mt-7 items-center rounded-t-[30px] pb-5"
+        style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+      >
         <TouchableOpacity
           activeOpacity={profile.avatarUrl ? 0.8 : 1}
           disabled={!profile.avatarUrl}
@@ -78,12 +93,20 @@ export default function PersonalProfileHeader({ profile, loading = false, scroll
           <Avatar uri={profile.avatarUrl} username={profile.username} size={100} />
         </TouchableOpacity>
 
-        <Text className="mt-2 text-2xl font-bold text-black dark:text-white">
-          {profile.displayName || profile.username}
-        </Text>
+        <View className="mt-2 flex-row items-center justify-center gap-2 px-5">
+          <Text className="shrink text-2xl font-bold text-black dark:text-white">
+            {profile.displayName || profile.username}
+          </Text>
+          <ProfileDetails profile={profile} />
+        </View>
         <Text className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
           @{profile.username}
         </Text>
+        <CreatorLevelBadge
+          score={profile.creatorScore}
+          onPress={() => router.push("/settings/creator-levels")}
+        />
+        <ProfileTagBadge tag={profile.selectedProfileTag} />
 
         <View className="w-full">
           <ProfileManagedRestaurants
@@ -96,8 +119,6 @@ export default function PersonalProfileHeader({ profile, loading = false, scroll
             {profile.bio}
           </Text>
         )}
-
-        <ProfileDetails profile={profile} />
 
         <View className="mt-5 w-full flex-row">
           <View className="flex-1">
@@ -144,14 +165,30 @@ export default function PersonalProfileHeader({ profile, loading = false, scroll
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity
-          className="mt-5 w-40 rounded-lg bg-[#F5F4F5] py-2 dark:bg-gray-800"
-          onPress={() => router.push("/(profile)/edit-profile")}
-        >
-          <Text className="text-center text-black dark:text-white">
-            {t("profile:editProfile")}
-          </Text>
-        </TouchableOpacity>
+        <View className="mt-5 w-full flex-row gap-2 px-5">
+          <TouchableOpacity
+            className="flex-1 flex-row items-center justify-center rounded-xl bg-[#F5F4F5] py-2.5 dark:bg-gray-800"
+            onPress={() => router.push("/(profile)/edit-profile")}
+          >
+            <PencilSimpleIcon
+              size={18}
+              color={isDark ? "#FFF" : "#171717"}
+              weight="bold"
+            />
+            <Text className="ml-2 text-center font-bold text-black dark:text-white">
+              {t("profile:editProfile")}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            className="flex-1 flex-row items-center justify-center rounded-xl bg-amber-100 py-2.5 dark:bg-amber-950"
+            onPress={() => router.push("/saved-lists")}
+          >
+            <FolderSimpleIcon size={18} color="#D97706" weight="fill" />
+            <Text className="ml-2 text-center font-bold text-amber-800 dark:text-amber-200">
+              {t("common:myLists")}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <FullScreenImageViewer
         uri={profile.avatarUrl}

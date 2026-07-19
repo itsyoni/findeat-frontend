@@ -1,15 +1,18 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Chat } from "@findeat/types/chat";
 import { router } from "expo-router";
-import { UsersThreeIcon } from "phosphor-react-native";
+import { PushPinIcon, UsersThreeIcon } from "phosphor-react-native";
 import { TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import Avatar from "../common/Avatar";
 import { useTranslation } from "react-i18next";
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
+import type { ChatDraft } from "@/lib/chatDrafts";
 
 type Props = {
   chat: Chat;
+  draft?: ChatDraft;
+  onLongPress?: () => void;
 };
 
 function formatChatTime(value?: string | null) {
@@ -43,7 +46,7 @@ function formatChatTime(value?: string | null) {
   });
 }
 
-export default function ChatRow({ chat }: Props) {
+export default function ChatRow({ chat, draft, onLongPress }: Props) {
   const { user } = useAuth();
   const { t } = useTranslation("chat");
 
@@ -81,7 +84,7 @@ export default function ChatRow({ chat }: Props) {
   const lastMessageText = chat.lastMessage
     ? `${isMine ? `${t("you")}: ` : ""}${chat.lastMessage}`
     : subtitle;
-  const lastMessageTime = formatChatTime(chat.lastMessageAt);
+  const lastMessageTime = formatChatTime(draft?.updatedAt ?? chat.lastMessageAt);
 
   return (
     <TouchableOpacity
@@ -95,6 +98,8 @@ export default function ChatRow({ chat }: Props) {
           },
         })
       }
+      onLongPress={onLongPress}
+      delayLongPress={350}
     >
       <View className="relative">
         {isGroupChat && !imageUrl ? (
@@ -139,8 +144,24 @@ export default function ChatRow({ chat }: Props) {
             numberOfLines={1}
             className={`min-w-0 flex-1 text-sm ${hasUnread ? "font-semibold text-black dark:text-white" : "text-gray-500 dark:text-gray-400"}`}
           >
-            {lastMessageText}
+            {draft ? (
+              <>
+                <Text className="font-bold text-red-500">{t("draft")}: </Text>
+                {draft.content}
+              </>
+            ) : (
+              lastMessageText
+            )}
           </Text>
+
+          {chat.pinned ? (
+            <PushPinIcon
+              size={16}
+              color="#D97706"
+              weight="fill"
+              style={{ marginLeft: 10 }}
+            />
+          ) : null}
 
           {hasUnread ? (
             <View className="ml-3 h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5">

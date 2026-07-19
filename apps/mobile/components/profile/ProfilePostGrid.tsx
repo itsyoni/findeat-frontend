@@ -36,7 +36,13 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
 
   if (loading) {
     return (
-      <SkeletonPulse style={{ flexDirection: "row", flexWrap: "wrap" }}>
+      <SkeletonPulse
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          backgroundColor: isDark ? "#000" : "#FFF",
+        }}
+      >
         {Array.from({ length: 9 }, (_, index) => (
           <View key={index} className="aspect-square w-1/3 border-[0.5px] border-line dark:border-gray-900">
             <Skeleton height={160} radius={0} />
@@ -51,7 +57,10 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
     const Icon = isReview ? StarIcon : ImagesSquareIcon;
 
     return (
-      <View className="min-h-80 items-center justify-center px-10 pb-16 pt-14">
+      <View
+        className="min-h-80 items-center justify-center px-10 pb-16 pt-14"
+        style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+      >
         <View className="h-20 w-20 items-center justify-center rounded-full border-2 border-gray-200 dark:border-gray-700">
           <Icon size={36} color={isDark ? "#FFF" : "#111"} />
         </View>
@@ -79,7 +88,10 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
   }
 
   return (
-    <View className="flex-row flex-wrap">
+    <View
+      className="flex-row flex-wrap"
+      style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
       {posts.map((post) => {
         const imageUrl = getPostImage(post);
         const text = getPostText(post);
@@ -88,7 +100,8 @@ export default function ProfilePostGrid({ posts, type, onPressPost, onCreatePost
           <Pressable
             key={post.id}
             onPress={() => onPressPost(post.id)}
-            className="aspect-square w-1/3 border-[0.5px] border-line bg-gray-200 dark:border-gray-900"
+            className="aspect-square w-1/3 border-[0.5px] border-line dark:border-gray-900"
+            style={{ backgroundColor: isDark ? "#111827" : "#E5E7EB" }}
           >
             {imageUrl ? (
               <>

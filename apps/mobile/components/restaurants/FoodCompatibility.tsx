@@ -6,7 +6,8 @@ import {
   WarningCircleIcon,
 } from "phosphor-react-native";
 import { useTranslation } from "react-i18next";
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
+import { AppAlert as Alert } from "@/lib/appAlert";
 
 function humanizeTag(value: string) {
   return value
@@ -36,56 +37,70 @@ export function RestaurantCompatibilitySummary({
     compatibility.cuisineMatches.length > 0;
   if (!hasWarnings && !hasMatches) return null;
 
+  function showAllergenDetails() {
+    const allergens = compatibility!.allergenWarnings
+      .map((match) => tagLabel(match.tag))
+      .join(", ");
+    Alert.alert(
+      t("allergenWarningTitle"),
+      `${t("restaurantAllergenWarning", { allergens })}\n\n${t("allergenDisclaimer")}`,
+      [{ text: t("common:ok") }],
+      { tone: "warning" },
+    );
+  }
+
+  function showMatchDetails() {
+    const details = [
+      ...compatibility!.dietaryMatches.map((match) =>
+        t("hasOptions", { tag: tagLabel(match.tag) }),
+      ),
+      ...compatibility!.cuisineMatches.map((match) =>
+        t("cuisineMatch", { tag: tagLabel(match.tag) }),
+      ),
+    ];
+    Alert.alert(t("matchesYourProfile"), details.join("\n"), [
+      { text: t("common:ok") },
+    ], { tone: "success" });
+  }
+
   return (
-    <View className="bg-surface px-5 pb-5 dark:bg-black">
+    <View className="flex-row gap-3 bg-surface px-5 pb-5 dark:bg-black">
       {hasWarnings && (
-        <View className="rounded-2xl border border-red-200 bg-red-50 p-4 dark:border-red-900 dark:bg-red-950/40">
-          <View className="flex-row items-center gap-2">
+        <TouchableOpacity
+          activeOpacity={0.78}
+          accessibilityRole="button"
+          onPress={showAllergenDetails}
+          className="min-w-0 flex-1 flex-row items-center rounded-2xl border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/40"
+        >
+          <View className="h-9 w-9 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/60">
             <WarningCircleIcon size={21} color="#DC2626" weight="fill" />
-            <Text className="flex-1 font-bold text-red-900 dark:text-red-100">
-              {t("allergenWarningTitle")}
-            </Text>
           </View>
-          <Text className="mt-2 text-sm leading-5 text-red-800 dark:text-red-200">
-            {t("restaurantAllergenWarning", {
-              allergens: compatibility.allergenWarnings
-                .map((match) => tagLabel(match.tag))
-                .join(", "),
-            })}
+          <Text
+            numberOfLines={2}
+            className="ml-2 min-w-0 flex-1 text-sm font-bold text-red-900 dark:text-red-100"
+          >
+            {t("allergenWarningTitle")}
           </Text>
-          <Text className="mt-2 text-xs leading-4 text-red-700/80 dark:text-red-300/80">
-            {t("allergenDisclaimer")}
-          </Text>
-        </View>
+        </TouchableOpacity>
       )}
 
       {hasMatches && (
-        <View className={`${hasWarnings ? "mt-3" : ""} rounded-2xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-900 dark:bg-emerald-950/35`}>
-          <View className="flex-row items-center gap-2">
+        <TouchableOpacity
+          activeOpacity={0.78}
+          accessibilityRole="button"
+          onPress={showMatchDetails}
+          className="relative min-w-0 flex-1 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-950/35"
+        >
+          <View className="absolute left-3 h-9 w-9 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/60">
             <SparkleIcon size={19} color="#15803D" weight="fill" />
-            <Text className="font-bold text-emerald-900 dark:text-emerald-100">
-              {t("matchesYourProfile")}
-            </Text>
           </View>
-          <View className="mt-3 flex-row flex-wrap gap-2">
-            {compatibility.dietaryMatches.map((match) => (
-              <View key={`diet-${match.tag}`} className="flex-row items-center gap-1 rounded-full bg-white px-3 py-2 dark:bg-emerald-950">
-                <CheckCircleIcon size={14} color="#16A34A" weight="fill" />
-                <Text className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
-                  {t("hasOptions", { tag: tagLabel(match.tag) })}
-                </Text>
-              </View>
-            ))}
-            {compatibility.cuisineMatches.map((match) => (
-              <View key={`cuisine-${match.tag}`} className="flex-row items-center gap-1 rounded-full bg-white px-3 py-2 dark:bg-emerald-950">
-                <SparkleIcon size={13} color="#16A34A" weight="fill" />
-                <Text className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
-                  {t("cuisineMatch", { tag: tagLabel(match.tag) })}
-                </Text>
-              </View>
-            ))}
-          </View>
-        </View>
+          <Text
+            numberOfLines={2}
+            className="px-10 text-center text-sm font-bold text-emerald-900 dark:text-emerald-100"
+          >
+            {t("matchesYourProfile")}
+          </Text>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -110,19 +125,26 @@ export function DishCompatibilityChips({
   if (!warningLabels.length && !matchTags.length) return null;
 
   return (
-    <View className={detailed ? "mt-5 gap-3" : "mt-2 flex-row flex-wrap gap-1.5"}>
+    <View className={detailed ? "mt-5 gap-3" : "mt-2 min-w-0 flex-row flex-wrap gap-1.5"}>
       {!!warningLabels.length && (
-        <View className={`${detailed ? "p-4" : "px-2 py-1"} flex-row items-center gap-1.5 rounded-2xl bg-red-100 dark:bg-red-950/60`}>
+        <View className={`${detailed ? "p-4" : "max-w-full px-2 py-1"} min-w-0 flex-row items-center gap-1.5 rounded-2xl bg-red-100 dark:bg-red-950/60`}>
           <WarningCircleIcon size={detailed ? 20 : 13} color="#DC2626" weight="fill" />
-          <Text className={`${detailed ? "flex-1 text-sm" : "text-xs"} font-bold text-red-800 dark:text-red-200`}>
+          <Text
+            numberOfLines={detailed ? undefined : 2}
+            ellipsizeMode="tail"
+            className={`${detailed ? "text-sm" : "text-xs"} min-w-0 flex-shrink font-bold text-red-800 dark:text-red-200`}
+          >
             {t("dishContainsAllergens", { allergens: warningLabels.join(", ") })}
           </Text>
         </View>
       )}
       {matchTags.slice(0, detailed ? undefined : 2).map((tag) => (
-        <View key={tag} className={`${detailed ? "px-3 py-2" : "px-2 py-1"} flex-row items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60`}>
+        <View key={tag} className={`${detailed ? "px-3 py-2" : "max-w-full px-2 py-1"} min-w-0 flex-row items-center gap-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60`}>
           <CheckCircleIcon size={detailed ? 15 : 12} color="#16A34A" weight="fill" />
-          <Text className="text-xs font-bold text-emerald-800 dark:text-emerald-200">
+          <Text
+            numberOfLines={detailed ? undefined : 1}
+            className="min-w-0 flex-shrink text-xs font-bold text-emerald-800 dark:text-emerald-200"
+          >
             {tagLabel(tag)}
           </Text>
         </View>

@@ -6,6 +6,7 @@ export default function ProfileLayout() {
       <Stack.Screen name="content-feed" options={{ headerShown: false }} />
       <Stack.Screen name="reviews-feed" options={{ headerShown: false }} />
       <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+      <Stack.Screen name="statistics" options={{ headerShown: false }} />
     </Stack>
   );
 }

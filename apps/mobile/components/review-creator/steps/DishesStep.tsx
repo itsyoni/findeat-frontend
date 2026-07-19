@@ -3,6 +3,7 @@ import { ReviewDishDraft } from "@findeat/types/review";
 import { ScrollView, TouchableOpacity, View } from "react-native";
 import { ThemedSafeAreaView } from "@/components/common";
 import DishCard from "../components/DishCard";
+import SaveDraftButton from "@/components/posts/SaveDraftButton";
 
 type Props = {
   items: ReviewDishDraft[];
@@ -11,6 +12,8 @@ type Props = {
   onAddMenuDish: () => void;
   onRemoveDish: (id: string) => void;
   onNext: () => void;
+  onSaveDraft: () => void;
+  savingDraft?: boolean;
 };
 
 export default function DishesStep({
@@ -20,6 +23,8 @@ export default function DishesStep({
   onAddMenuDish,
   onRemoveDish,
   onNext,
+  onSaveDraft,
+  savingDraft,
 }: Props) {
   return (
     <ThemedSafeAreaView>
@@ -34,7 +39,10 @@ export default function DishesStep({
           <TouchableOpacity onPress={onBack}>
             <Text className="font-bold text-black dark:text-white">← Back</Text>
           </TouchableOpacity>
-          <Text className="text-sm font-semibold text-gray-400">3 of 4</Text>
+          <View className="flex-row items-center gap-2">
+            <SaveDraftButton onPress={onSaveDraft} saving={savingDraft} />
+            <Text className="text-sm font-semibold text-gray-400">3 of 4</Text>
+          </View>
         </View>
 
         <Text className="mt-6 text-3xl font-bold text-black dark:text-white">

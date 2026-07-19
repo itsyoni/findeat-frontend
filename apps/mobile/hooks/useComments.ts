@@ -1,16 +1,31 @@
 import { api } from "@/lib/api";
-import type { Comment } from "@findeat/types";
+import type { Comment, CommentContext, PostPoll } from "@findeat/types";
 import { useCallback, useEffect, useRef, useState } from "react";
+
+export const MAX_PINNED_COMMENTS = 3;
+export const COMMENT_PIN_LIMIT_ERROR = "COMMENT_PIN_LIMIT";
 
 export function useComments(postId?: string | null) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadedPostId, setLoadedPostId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [canCreateAuthorNote, setCanCreateAuthorNote] = useState(false);
+  const [isPostAuthor, setIsPostAuthor] = useState(false);
+  const [canCreatePoll, setCanCreatePoll] = useState(false);
+  const [poll, setPoll] = useState<PostPoll | null>(null);
 
   const requestIdRef = useRef(0);
   const likingIdsRef = useRef(new Set<string>());
   const pinningRef = useRef(false);
+  const votingRef = useRef(false);
+
+  const applyCommentContext = useCallback((context: CommentContext) => {
+    setCanCreateAuthorNote(context.canCreateAuthorNote);
+    setIsPostAuthor(context.isPostAuthor);
+    setCanCreatePoll(context.canCreatePoll);
+    setPoll(context.poll);
+  }, []);
 
   const refresh = useCallback(async () => {
     if (!postId) return;
@@ -20,11 +35,15 @@ export function useComments(postId?: string | null) {
     try {
       setLoading(true);
 
-      const nextComments = await api.posts.comments(postId);
+      const [nextComments, context] = await Promise.all([
+        api.posts.comments(postId),
+        api.posts.commentContext(postId),
+      ]);
 
       if (requestId !== requestIdRef.current) return;
 
       setComments(nextComments);
+      applyCommentContext(context);
       setLoadedPostId(postId);
     } catch (error) {
       console.error("Failed to load comments", error);
@@ -33,7 +52,7 @@ export function useComments(postId?: string | null) {
         setLoading(false);
       }
     }
-  }, [postId]);
+  }, [applyCommentContext, postId]);
 
   const addComment = useCallback(
     async (content: string, replyToId?: string): Promise<void> => {
@@ -63,6 +82,72 @@ export function useComments(postId?: string | null) {
     [postId],
   );
 
+  const addAuthorNote = useCallback(
+    async (content: string) => {
+      const trimmedContent = content.trim();
+      if (!postId || !trimmedContent || !canCreateAuthorNote) return;
+
+      try {
+        setSubmitting(true);
+        const note = await api.posts.addAuthorNote(postId, trimmedContent);
+        setComments((current) => [note, ...current]);
+        setCanCreateAuthorNote(false);
+        setLoadedPostId(postId);
+      } catch (error) {
+        await refresh();
+        throw error;
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [canCreateAuthorNote, postId, refresh],
+  );
+
+  const addPoll = useCallback(
+    async (title: string, options: string[]) => {
+      if (!postId || !canCreatePoll) return;
+      const context = await api.posts.addPoll(postId, title, options);
+      applyCommentContext(context);
+    },
+    [applyCommentContext, canCreatePoll, postId],
+  );
+
+  const updateAuthorNote = useCallback(
+    async (content: string) => {
+      const trimmedContent = content.trim();
+      if (!postId || !trimmedContent || !isPostAuthor) return;
+
+      try {
+        setSubmitting(true);
+        const note = await api.posts.updateAuthorNote(postId, trimmedContent);
+        setComments((current) =>
+          current.map((comment) => (comment.id === note.id ? note : comment)),
+        );
+        setLoadedPostId(postId);
+      } catch (error) {
+        await refresh();
+        throw error;
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [isPostAuthor, postId, refresh],
+  );
+
+  const voteOnPoll = useCallback(
+    async (optionId: string) => {
+      if (!postId || votingRef.current) return;
+      votingRef.current = true;
+      try {
+        const context = await api.posts.voteOnPoll(postId, optionId);
+        applyCommentContext(context);
+      } finally {
+        votingRef.current = false;
+      }
+    },
+    [applyCommentContext, postId],
+  );
+
   useEffect(() => {
     if (!postId) return;
 
@@ -72,13 +157,17 @@ export function useComments(postId?: string | null) {
 
     async function fetchComments() {
       try {
-        const nextComments = await api.posts.comments(currentPostId);
+        const [nextComments, context] = await Promise.all([
+          api.posts.comments(currentPostId),
+          api.posts.commentContext(currentPostId),
+        ]);
 
         if (cancelled || requestId !== requestIdRef.current) {
           return;
         }
 
         setComments(nextComments);
+        applyCommentContext(context);
         setLoadedPostId(currentPostId);
       } catch (error) {
         if (!cancelled) {
@@ -92,7 +181,7 @@ export function useComments(postId?: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [postId]);
+  }, [applyCommentContext, postId]);
 
   const toggleCommentLike = useCallback(
     async (comment: Comment) => {
@@ -141,7 +230,28 @@ export function useComments(postId?: string | null) {
           (item) => item.id !== comment.id && item.parentId !== comment.id,
         ),
       );
+      if (comment.isAuthorNote) setCanCreateAuthorNote(true);
       return result;
+    },
+    [postId],
+  );
+
+  const updateComment = useCallback(
+    async (comment: Comment, content: string) => {
+      const trimmedContent = content.trim();
+      if (!postId || !trimmedContent || !comment.canDelete) return;
+
+      const updatedComment = await api.posts.updateComment(
+        postId,
+        comment.id,
+        trimmedContent,
+      );
+      setComments((current) =>
+        current.map((item) =>
+          item.id === updatedComment.id ? updatedComment : item,
+        ),
+      );
+      setLoadedPostId(postId);
     },
     [postId],
   );
@@ -149,19 +259,41 @@ export function useComments(postId?: string | null) {
   const togglePinnedComment = useCallback(
     async (comment: Comment) => {
       if (!postId || !comment.canPin || pinningRef.current) return;
-      pinningRef.current = true;
       const wasPinned = comment.isPinned;
+
+      if (
+        !wasPinned &&
+        comments.filter((item) => !item.parentId && item.isPinned).length >=
+          MAX_PINNED_COMMENTS
+      ) {
+        throw new Error(COMMENT_PIN_LIMIT_ERROR);
+      }
+
+      pinningRef.current = true;
+      const optimisticPinnedAt = new Date().toISOString();
       setComments((current) =>
-        current.map((item) => ({
-          ...item,
-          isPinned: wasPinned ? false : item.id === comment.id,
-        })),
+        current.map((item) =>
+          item.id === comment.id
+            ? {
+                ...item,
+                isPinned: !wasPinned,
+                pinnedAt: wasPinned ? null : optimisticPinnedAt,
+              }
+            : item,
+        ),
       );
       try {
         if (wasPinned) {
           await api.posts.unpinComment(postId, comment.id);
         } else {
-          await api.posts.pinComment(postId, comment.id);
+          const result = await api.posts.pinComment(postId, comment.id);
+          setComments((current) =>
+            current.map((item) =>
+              item.id === comment.id
+                ? { ...item, pinnedAt: result.pinnedAt }
+                : item,
+            ),
+          );
         }
       } catch (error) {
         setComments((current) =>
@@ -175,7 +307,7 @@ export function useComments(postId?: string | null) {
         pinningRef.current = false;
       }
     },
-    [postId, refresh],
+    [comments, postId, refresh],
   );
 
   const visibleComments = postId && loadedPostId === postId ? comments : [];
@@ -184,10 +316,20 @@ export function useComments(postId?: string | null) {
     comments: visibleComments,
     loading,
     submitting,
+    canCreateAuthorNote:
+      !!postId && loadedPostId === postId && canCreateAuthorNote,
+    isPostAuthor: !!postId && loadedPostId === postId && isPostAuthor,
+    canCreatePoll: !!postId && loadedPostId === postId && canCreatePoll,
+    poll: postId && loadedPostId === postId ? poll : null,
     refresh,
     addComment,
+    addAuthorNote,
+    updateAuthorNote,
+    addPoll,
+    voteOnPoll,
     toggleCommentLike,
     deleteComment,
+    updateComment,
     togglePinnedComment,
   };
 }

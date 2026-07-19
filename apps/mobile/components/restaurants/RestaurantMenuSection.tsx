@@ -5,11 +5,12 @@ import {
   MagnifyingGlassIcon,
   XIcon,
 } from "phosphor-react-native";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ScrollView, TextInput, TouchableOpacity, View } from "react-native";
 import Text from "../common/AppText";
 import DishCard from "./DishCard";
+import { subscribeToDishFavoriteChanges } from "@/lib/dishFavorites";
 
 type Props = {
   restaurant: Restaurant;
@@ -24,6 +25,20 @@ export default function RestaurantMenuSection({
   const { t } = useTranslation("restaurants");
   const [query, setQuery] = useState("");
   const [selectedMenuId, setSelectedMenuId] = useState("ALL");
+  const [favoriteOverrides, setFavoriteOverrides] = useState<
+    Record<string, boolean>
+  >({});
+
+  useEffect(
+    () =>
+      subscribeToDishFavoriteChanges(({ dishId, isFavorite }) => {
+        setFavoriteOverrides((current) => ({
+          ...current,
+          [dishId]: isFavorite,
+        }));
+      }),
+    [],
+  );
 
   const availableCount = useMemo(
     () =>
@@ -70,6 +85,7 @@ export default function RestaurantMenuSection({
             ...(item.allergens ?? []),
             ...(item.dietaryTags ?? []),
             ...(item.cuisineTags ?? []),
+            ...(item.dishTags ?? []),
           ]
             .filter(Boolean)
             .some((value) => value!.toLocaleLowerCase().includes(cleanQuery));
@@ -85,14 +101,14 @@ export default function RestaurantMenuSection({
 
   if (restaurant.menus.length === 0) {
     return (
-      <View className="items-center justify-center py-16">
-        <View className="h-16 w-16 items-center justify-center rounded-full bg-gray-100 dark:bg-gray-900">
+      <View
+        className="items-center justify-center py-16"
+        style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+      >
+        <View className="h-16 w-16 items-center justify-center rounded-full border-2 border-gray-200 dark:border-gray-700">
           <BookOpenIcon size={28} color={isDark ? "#FFF" : "#111"} />
         </View>
-        <Text className="mt-4 text-lg font-bold text-black dark:text-white">
-          {t("noMenuTitle")}
-        </Text>
-        <Text className="mt-1 max-w-[260px] text-center leading-5 text-gray-500">
+        <Text className="mt-4 text-center text-gray-500">
           {t("noMenu")}
         </Text>
       </View>
@@ -203,6 +219,7 @@ export default function RestaurantMenuSection({
                 key={`featured-${item.id}`}
                 item={item}
                 popular={popularIds.has(item.id)}
+                isFavorite={favoriteOverrides[item.id] ?? item.isFavorite}
               />
             ))}
           </View>
@@ -217,7 +234,12 @@ export default function RestaurantMenuSection({
             {t("popularDishesHint")}
           </Text>
           {popularItems.map((item) => (
-            <DishCard key={`popular-${item.id}`} item={item} popular />
+            <DishCard
+              key={`popular-${item.id}`}
+              item={item}
+              popular
+              isFavorite={favoriteOverrides[item.id] ?? item.isFavorite}
+            />
           ))}
         </View>
       )}
@@ -266,6 +288,7 @@ export default function RestaurantMenuSection({
                   key={item.id}
                   item={item}
                   popular={popularIds.has(item.id)}
+                  isFavorite={favoriteOverrides[item.id] ?? item.isFavorite}
                 />
               ))
             )}

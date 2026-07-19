@@ -49,9 +49,23 @@ export const CUISINE_OPTIONS = [
   "GREEK",
 ] as const;
 
+export const DISH_TAG_OPTIONS = [
+  "SPICY",
+  "SWEET",
+  "DESSERT",
+  "BRUNCH",
+  "SUSHI",
+  "BURGER",
+  "PASTA",
+  "COFFEE",
+  "STREET_FOOD",
+  "COMFORT_FOOD",
+] as const;
+
 export type DishAllergen = (typeof ALLERGEN_OPTIONS)[number];
 export type DishDietaryTag = (typeof DISH_DIETARY_OPTIONS)[number];
 export type DishCuisineTag = (typeof CUISINE_OPTIONS)[number];
+export type DishTag = (typeof DISH_TAG_OPTIONS)[number];
 
 export type DishCompatibility = {
   allergenWarnings: string[];
@@ -71,11 +85,14 @@ export type Dish = {
   allergens: string[];
   dietaryTags: string[];
   cuisineTags: string[];
+  dishTags: string[];
   compatibility?: DishCompatibility;
   createdAt?: string;
   reviewsCount?: number;
   averageRating?: number | null;
   isNew?: boolean;
+  isFavorite?: boolean;
+  favoriteCount?: number;
 };
 
 type DishReview = {

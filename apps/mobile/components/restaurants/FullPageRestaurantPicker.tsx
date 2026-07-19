@@ -11,7 +11,7 @@ import {
   StorefrontIcon,
 } from "phosphor-react-native";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ActivityIndicator,
@@ -26,12 +26,14 @@ type Props = {
   selectedRestaurant: SelectedRestaurant | null;
   onSelect: (restaurant: SelectedRestaurant) => void;
   onBack: () => void;
+  headerRight?: ReactNode;
 };
 
 export default function FullPageRestaurantPicker({
   selectedRestaurant,
   onSelect,
   onBack,
+  headerRight,
 }: Props) {
   const { t } = useTranslation(["create", "restaurants"]);
   const { isDark } = useAppTheme();
@@ -108,6 +110,7 @@ export default function FullPageRestaurantPicker({
             {t("create:chooseRestaurantBody")}
           </Text>
         </View>
+        {headerRight}
       </View>
 
       <View className="px-5 py-3">

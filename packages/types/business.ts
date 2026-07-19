@@ -20,6 +20,7 @@ export type BusinessDashboardSection =
 
 export type AdminDashboardSection =
   | "claims"
+  | "addresses"
   | "moderation"
   | "ownership"
   | "support"

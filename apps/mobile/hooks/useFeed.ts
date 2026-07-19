@@ -29,6 +29,41 @@ export function useFeed(type: PostType, enabled = true) {
   });
 }
 
+export function useAreaFeed(
+  type: PostType,
+  area: {
+    id: string;
+    latitude: number;
+    longitude: number;
+    radiusKm?: number;
+  } | null,
+) {
+  return useInfiniteQuery({
+    queryKey: [
+      "feed",
+      "area",
+      area?.id,
+      type,
+      area?.latitude,
+      area?.longitude,
+      area?.radiusKm ?? 25,
+    ],
+    queryFn: ({ pageParam }) =>
+      api.posts.feed(type, {
+        cursor: pageParam,
+        limit: feedPageSize,
+        latitude: area?.latitude,
+        longitude: area?.longitude,
+        radiusKm: area?.radiusKm ?? 25,
+      }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+    enabled: area !== null,
+    staleTime: 2 * 60 * 1_000,
+    gcTime: 30 * 60 * 1_000,
+  });
+}
+
 export function updatePostInFeedCache(
   queryClient: QueryClient,
   updatePost: (post: Post) => Post | null,

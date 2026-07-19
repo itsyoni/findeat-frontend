@@ -12,14 +12,15 @@ type Props = {
   value?: string;
   onPress: () => void;
   destructive?: boolean;
+  valueEmphasis?: boolean;
 };
 
-export default function SettingsRow({ icon, title, subtitle, value, onPress, destructive }: Props) {
+export default function SettingsRow({ icon, title, subtitle, value, onPress, destructive, valueEmphasis }: Props) {
   const { isDark } = useAppTheme();
   const { rowStyle, textStyle } = useSettingsDirection();
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.65} className="flex-row items-center px-5 py-4" style={rowStyle}>
+    <TouchableOpacity accessibilityRole="button" onPress={onPress} activeOpacity={0.65} className="flex-row items-center px-5 py-4" style={rowStyle}>
       <View className="h-10 w-10 items-center justify-center rounded-full bg-soft dark:bg-gray-900" style={{ marginEnd: 16 }}>{icon}</View>
       <View className="flex-1">
         <Text
@@ -31,7 +32,6 @@ export default function SettingsRow({ icon, title, subtitle, value, onPress, des
         {subtitle ? (
           <Text
             className="mt-0.5 text-sm text-gray-500"
-            numberOfLines={2}
             style={textStyle}
           >
             {subtitle}
@@ -39,7 +39,7 @@ export default function SettingsRow({ icon, title, subtitle, value, onPress, des
         ) : null}
       </View>
       {value ? (
-        <Text className="text-sm text-gray-500" style={[textStyle, { marginEnd: 8 }]}>
+        <Text className={`text-sm font-bold ${valueEmphasis ? 'text-blue-500' : 'text-gray-500'}`} style={[textStyle, { marginEnd: 8 }]}>
           {value}
         </Text>
       ) : null}

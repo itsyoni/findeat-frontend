@@ -5,18 +5,31 @@ import SettingsSection from '@/components/settings/SettingsSection';
 import Text from '@/components/common/AppText';
 import { useAuth } from '@/contexts/AuthContext';
 import { useAppTheme } from '@/contexts/ThemeContext';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import Constants from 'expo-constants';
-import { ArchiveIcon, BellIcon, DeviceMobileIcon, FileTextIcon, HeadsetIcon, LockKeyIcon, MoonIcon, ShieldCheckIcon, SignOutIcon, SparkleIcon } from 'phosphor-react-native';
+import { ArchiveIcon, BellIcon, BookmarkSimpleIcon, ChartLineUpIcon, DeviceMobileIcon, FileTextIcon, HeadsetIcon, LockKeyIcon, MoonIcon, PersonArmsSpreadIcon, ShieldCheckIcon, SignOutIcon, SparkleIcon, TagIcon, TrophyIcon } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { ScrollView } from 'react-native';
+import { useCallback, useState } from 'react';
+import { api } from '@/lib/api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen() {
   const { t } = useTranslation(['settings', 'common', 'profile']);
   const { isDark } = useAppTheme();
   const { logout } = useAuth();
+  const [hasNewProfileTags, setHasNewProfileTags] = useState(false);
   const color = isDark ? '#FFF' : '#111';
+
+  useFocusEffect(useCallback(() => {
+    let active = true;
+    void api.profileTags.status()
+      .then((status) => {
+        if (active) setHasNewProfileTags(status.hasUnseen);
+      })
+      .catch((error) => console.error('Could not load profile tag status', error));
+    return () => { active = false; };
+  }, []));
 
   function confirmLogout() {
     Alert.alert(t('common:logout'), t('profile:logoutConfirmation'), [
@@ -32,10 +45,15 @@ export default function SettingsScreen() {
         <SettingsSection title={t('settings:yourAccount')}>
           <SettingsRow icon={<LockKeyIcon size={23} color={color} />} title={t('settings:passwordSecurity')} subtitle={t('settings:passwordSecuritySubtitle')} onPress={() => router.push('/settings/security')} />
           <SettingsRow icon={<ArchiveIcon size={23} color={color} weight="fill" />} title={t('settings:archivedPosts')} subtitle={t('settings:archivedPostsSubtitle')} onPress={() => router.push('/settings/archived-posts')} />
+          <SettingsRow icon={<BookmarkSimpleIcon size={23} color="#D1A928" weight="fill" />} title={t('settings:savedPosts')} subtitle={t('settings:savedPostsSubtitle')} onPress={() => router.push('/settings/saved-posts')} />
+          <SettingsRow icon={<ChartLineUpIcon size={23} color={color} weight="bold" />} title={t('profile:creatorInsights')} subtitle={t('profile:creatorInsightsSubtitle')} onPress={() => router.push('/(profile)/statistics')} />
+          <SettingsRow icon={<TrophyIcon size={23} color="#D97706" weight="fill" />} title={t('settings:creatorLevels')} subtitle={t('settings:creatorLevelsSubtitle')} onPress={() => router.push('/settings/creator-levels')} />
+          <SettingsRow icon={<TagIcon size={23} color="#D97706" weight="fill" />} title={t('settings:profileTagCollection')} subtitle={t('settings:profileTagCollectionSubtitle')} value={hasNewProfileTags ? t('settings:newTag') : undefined} valueEmphasis={hasNewProfileTags} onPress={() => router.push('/settings/profile-tags')} />
         </SettingsSection>
         <SettingsSection title={t('settings:howYouUseFindEat')}>
           <SettingsRow icon={<BellIcon size={23} color={color} />} title={t('settings:notifications')} subtitle={t('settings:notificationsSubtitle')} onPress={() => router.push('/settings/notifications')} />
           <SettingsRow icon={<DeviceMobileIcon size={23} color={color} />} title={t('settings:appPermissions')} subtitle={t('settings:appPermissionsSubtitle')} onPress={() => router.push('/settings/permissions')} />
+          <SettingsRow icon={<PersonArmsSpreadIcon size={23} color={color} weight="fill" />} title={t('settings:accessibility')} subtitle={t('settings:accessibilitySubtitle')} onPress={() => router.push('/settings/accessibility')} />
           <SettingsRow icon={<ShieldCheckIcon size={23} color={color} />} title={t('settings:privacy')} subtitle={t('settings:privacySubtitle')} onPress={() => router.push('/settings/privacy')} />
           <SettingsRow icon={<MoonIcon size={23} color={color} />} title={t('settings:appearanceLanguage')} subtitle={t('settings:appearanceLanguageSubtitle')} onPress={() => router.push('/settings/appearance')} />
         </SettingsSection>

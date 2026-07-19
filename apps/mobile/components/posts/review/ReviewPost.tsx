@@ -37,6 +37,7 @@ import PostDate from "@/components/posts/PostDate";
 import { isRtlText } from "@/lib/textDirection";
 import PostConnectionCard from "@/components/posts/PostConnectionCard";
 import ExpandablePostCaption from "@/components/posts/ExpandablePostCaption";
+import { useSaveToLists } from "@/contexts/SaveToListsContext";
 
 type Props = {
   post: Post;
@@ -109,6 +110,7 @@ export default function ReviewPost({
   onOpenSharePost,
   onOpenPostOptions,
 }: Props) {
+  const { openSaveToLists } = useSaveToLists();
   const { isDark } = useAppTheme();
   const { t } = useTranslation("restaurants");
   const { t: tCommon, i18n } = useTranslation("common");
@@ -231,15 +233,11 @@ export default function ReviewPost({
   function handleWantToTry() {
     if (!post.restaurant?.id) return;
 
-    if (isVisited) {
-      router.push({
-        pathname: "/restaurants/[id]",
-        params: { id: post.restaurant.id },
-      });
-      return;
+    if (!isWantToTry && !isVisited && !isFavorite) {
+      onToggleWantToTry(post.id, post.restaurant.id, false);
     }
 
-    onToggleWantToTry(post.id, post.restaurant.id, isWantToTry);
+    openSaveToLists(post.restaurant.id);
   }
 
   const bookmarkLabelKey = getPlaceStatusLabelKey(

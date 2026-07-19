@@ -2,18 +2,27 @@ import Text from "@/components/common/AppText";
 
 import Avatar from "@/components/common/Avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import { api, API_URL } from "@/lib/api";
+import {
+  clearChatDraft,
+  loadChatDraft,
+  saveChatDraft,
+} from "@/lib/chatDrafts";
 import { Chat, Message } from "@findeat/types/chat";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import {
   ChecksIcon,
+  CheckIcon,
   PaperPlaneTiltIcon,
+  StarIcon,
   XIcon,
 } from "phosphor-react-native";
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  AppState,
   FlatList,
   KeyboardAvoidingView,
   Platform,
@@ -145,8 +154,10 @@ function TypingDots() {
 
 export default function ChatScreen() {
   const { user } = useAuth();
+  const currentUserId = user?.id;
   const { t } = useTranslation("chat");
   const { isDark } = useAppTheme();
+  const { showToast } = useToast();
 
   const params = useLocalSearchParams<{
     id: string;
@@ -155,6 +166,7 @@ export default function ChatScreen() {
     restaurantId?: string;
     title?: string;
     imageUrl?: string;
+    messageId?: string;
   }>();
 
   const { id } = params;
@@ -178,14 +190,28 @@ export default function ChatScreen() {
   const [sending, setSending] = useState(false);
   const [animateNewMessages, setAnimateNewMessages] = useState(false);
   const [conversationId, setConversationId] = useState(id);
+  const unresolvedDraftKey =
+    params.type === "DIRECT"
+      ? `new-direct-${params.targetUserId ?? "unknown"}`
+      : `new-restaurant-${params.restaurantId ?? "unknown"}`;
+  const draftKey = conversationId.startsWith("new-")
+    ? unresolvedDraftKey
+    : conversationId;
+  const [draftReadyKey, setDraftReadyKey] = useState<string | null>(null);
   const [typingUserIds, setTypingUserIds] = useState<string[]>([]);
   const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [editingMessage, setEditingMessage] = useState<Message | null>(null);
   const [seenByMessageId, setSeenByMessageId] = useState<string | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesListRef = useRef<FlatList<ChatMessage>>(null);
   const composerBaseContentHeightRef = useRef<number | null>(null);
+  const composerInputRef = useRef<RNTextInput>(null);
+  const editingSnapshotRef = useRef<{
+    content: string;
+    replyingTo: Message | null;
+  } | null>(null);
   const typingStopTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   );
@@ -199,6 +225,13 @@ export default function ChatScreen() {
   const readReceiptBufferRef = useRef(
     new Map<string, { userId: string; readAt: string }[]>(),
   );
+  const previousDraftKeyRef = useRef<string | null>(null);
+  const draftSnapshotRef = useRef<{
+    userId: string;
+    key: string;
+    content: string;
+  } | null>(null);
+  const handledTargetMessageRef = useRef<string | null>(null);
 
   function withBufferedReadReceipts(message: Message): Message {
     const bufferedReceipts = readReceiptBufferRef.current.get(message.id);
@@ -324,6 +357,14 @@ export default function ChatScreen() {
   const handleContentChange = useCallback(
     (nextContent: string) => {
       setContent(nextContent);
+      if (editingMessage) return;
+      if (currentUserId) {
+        draftSnapshotRef.current = {
+          userId: currentUserId,
+          key: draftKey,
+          content: nextContent,
+        };
+      }
 
       const socket = socketRef.current;
       if (isNewChat || !socket?.connected) return;
@@ -348,7 +389,73 @@ export default function ChatScreen() {
         typingStopTimerRef.current = null;
       }, 1_500);
     },
-    [conversationId, isNewChat, stopTyping],
+    [conversationId, currentUserId, draftKey, editingMessage, isNewChat, stopTyping],
+  );
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const userId = user.id;
+    let active = true;
+    const previousKey = previousDraftKeyRef.current;
+    const previousContent = draftSnapshotRef.current?.content ?? "";
+    previousDraftKeyRef.current = draftKey;
+
+    async function restoreOrMigrateDraft() {
+      if (previousKey && previousKey !== draftKey && previousContent.trim()) {
+        await saveChatDraft(userId, draftKey, previousContent);
+        await clearChatDraft(userId, previousKey);
+        if (active) {
+          setContent(previousContent);
+          setDraftReadyKey(draftKey);
+        }
+        return;
+      }
+
+      const savedDraft = await loadChatDraft(userId, draftKey);
+      if (!active) return;
+      setContent((current) => current || savedDraft?.content || "");
+      setDraftReadyKey(draftKey);
+    }
+
+    void restoreOrMigrateDraft().catch((error) => {
+      console.error("Could not restore chat draft", error);
+      if (active) setDraftReadyKey(draftKey);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [draftKey, user?.id]);
+
+  useEffect(() => {
+    if (!user?.id || draftReadyKey !== draftKey || editingMessage) return;
+    draftSnapshotRef.current = { userId: user.id, key: draftKey, content };
+    const timer = setTimeout(() => {
+      void saveChatDraft(user.id, draftKey, content).catch((error) =>
+        console.error("Could not save chat draft", error),
+      );
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [content, draftKey, draftReadyKey, editingMessage, user?.id]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (state) => {
+      const snapshot = draftSnapshotRef.current;
+      if (state !== "active" && snapshot) {
+        void saveChatDraft(snapshot.userId, snapshot.key, snapshot.content);
+      }
+    });
+    return () => subscription.remove();
+  }, []);
+
+  useEffect(
+    () => () => {
+      const snapshot = draftSnapshotRef.current;
+      if (snapshot) {
+        void saveChatDraft(snapshot.userId, snapshot.key, snapshot.content);
+      }
+    },
+    [],
   );
 
   const loadChat = useCallback(async () => {
@@ -534,6 +641,36 @@ export default function ChatScreen() {
       },
     );
 
+    socket.on("message_edited", (editedMessage: Message) => {
+      setMessages((current) =>
+        current.map((message) =>
+          message.id === editedMessage.id
+            ? {
+                ...message,
+                ...editedMessage,
+                renderKey: message.renderKey,
+                starred: message.starred,
+                starredAt: message.starredAt,
+              }
+            : message.replyTo?.id === editedMessage.id
+              ? {
+                  ...message,
+                  replyTo: {
+                    ...message.replyTo,
+                    content: editedMessage.content,
+                    editedAt: editedMessage.editedAt,
+                  },
+                }
+              : message,
+        ),
+      );
+      setSelectedMessage((current) =>
+        current?.id === editedMessage.id
+          ? { ...current, ...editedMessage }
+          : current,
+      );
+    });
+
     socket.on(
       "typing_changed",
       (event: {
@@ -580,6 +717,7 @@ export default function ChatScreen() {
       socket.off("receive_message");
       socket.off("messages_read");
       socket.off("message_deleted");
+      socket.off("message_edited");
       socket.off("typing_changed");
       socket.disconnect();
       if (socketRef.current === socket) socketRef.current = null;
@@ -598,7 +736,12 @@ export default function ChatScreen() {
     const trimmedContent = content.trim();
     if (!trimmedContent || sending || !user) return;
 
-    const optimisticId = `pending-${Date.now()}`;
+    if (editingMessage) {
+      await saveEditedMessage(editingMessage, trimmedContent);
+      return;
+    }
+
+    const optimisticId = `pending-${new Date().getTime()}`;
     const optimisticMessage: ChatMessage = {
       id: optimisticId,
       renderKey: optimisticId,
@@ -629,6 +772,8 @@ export default function ChatScreen() {
     stopTyping();
     scheduleScrollToEnd(hasPositionedAtBottomRef.current);
     setMessages((current) => [...current, optimisticMessage]);
+    draftSnapshotRef.current = null;
+    void clearChatDraft(user.id, draftKey);
     setContent("");
     const replyToId = replyingTo?.id;
     setReplyingTo(null);
@@ -709,6 +854,100 @@ export default function ChatScreen() {
     }
   }
 
+  function startEditingMessage(message: Message) {
+    if (!message.content) return;
+    editingSnapshotRef.current = { content, replyingTo };
+    stopTyping();
+    setEditingMessage(message);
+    setReplyingTo(null);
+    setContent(message.content);
+    requestAnimationFrame(() => composerInputRef.current?.focus());
+  }
+
+  function finishEditingMessage() {
+    const snapshot = editingSnapshotRef.current;
+    editingSnapshotRef.current = null;
+    setEditingMessage(null);
+    setContent(snapshot?.content ?? "");
+    setReplyingTo(snapshot?.replyingTo ?? null);
+    setComposerHeight(42);
+  }
+
+  async function saveEditedMessage(message: Message, nextContent: string) {
+    const previousContent = message.content;
+    const optimisticEditedAt = new Date().toISOString();
+    setSending(true);
+    setMessages((current) =>
+      current.map((item) =>
+        item.id === message.id
+          ? { ...item, content: nextContent, editedAt: optimisticEditedAt }
+          : item.replyTo?.id === message.id
+            ? {
+                ...item,
+                replyTo: {
+                  ...item.replyTo,
+                  content: nextContent,
+                  editedAt: optimisticEditedAt,
+                },
+              }
+            : item,
+      ),
+    );
+
+    try {
+      const updated = await api.chats.editMessage(
+        conversationId,
+        message.id,
+        nextContent,
+      );
+      setMessages((current) =>
+        current.map((item) =>
+          item.id === updated.id
+            ? {
+                ...item,
+                ...updated,
+                renderKey: item.renderKey,
+                starred: item.starred,
+                starredAt: item.starredAt,
+              }
+            : item.replyTo?.id === updated.id
+              ? {
+                  ...item,
+                  replyTo: {
+                    ...item.replyTo,
+                    content: updated.content,
+                    editedAt: updated.editedAt,
+                  },
+                }
+              : item,
+        ),
+      );
+      finishEditingMessage();
+      showToast(t("messageEdited"));
+    } catch (error) {
+      console.error("Could not edit message", error);
+      setMessages((current) =>
+        current.map((item) =>
+          item.id === message.id
+            ? { ...item, content: previousContent, editedAt: message.editedAt }
+            : item.replyTo?.id === message.id
+              ? {
+                  ...item,
+                  replyTo: {
+                    ...item.replyTo,
+                    content: previousContent,
+                    editedAt: message.editedAt,
+                  },
+                }
+              : item,
+        ),
+      );
+      showToast(t("messageEditFailed"), { kind: "error" });
+    } finally {
+      setSending(false);
+    }
+  }
+
   async function deleteMessage(
     message: Message,
     scope: "me" | "everyone",
@@ -770,12 +1009,27 @@ export default function ChatScreen() {
     return message.sentAsRestaurant?.name ?? message.sender.displayName ?? message.sender.username;
   }
 
-  function scrollToMessage(messageId: string) {
+  const scrollToMessage = useCallback((messageId: string) => {
     const index = messages.findIndex((message) => message.id === messageId);
     if (index >= 0) {
       messagesListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 });
     }
-  }
+  }, [messages]);
+
+  useEffect(() => {
+    const targetMessageId = params.messageId;
+    if (
+      !targetMessageId ||
+      loading ||
+      !isThreadReady ||
+      handledTargetMessageRef.current === targetMessageId
+    ) {
+      return;
+    }
+    if (!messages.some((message) => message.id === targetMessageId)) return;
+    handledTargetMessageRef.current = targetMessageId;
+    requestAnimationFrame(() => scrollToMessage(targetMessageId));
+  }, [isThreadReady, loading, messages, params.messageId, scrollToMessage]);
 
   function receiptLabel(message: Message) {
     const viewers = seenByViewers(message);
@@ -843,34 +1097,31 @@ export default function ChatScreen() {
     return t("lastSeenRecently");
   }
 
-  function openChatProfile() {
+  function openChatInfo() {
     if (isNewChat) return;
-
-    if (isGroupChat) {
-      router.push({
-        pathname: "/chats/group/[id]",
-        params: { id: conversationId },
-      });
-      return;
-    }
-
-    if (isRestaurantChat && chat?.restaurant?.id) {
-      router.push({
-        pathname: "/restaurants/[id]",
-        params: { id: chat.restaurant.id },
-      });
-      return;
-    }
-
-    if (!otherUser?.id) return;
-
     router.push({
-      pathname: "/(users)/[id]",
-      params: { id: otherUser.id },
+      pathname: "/chats/info/[id]",
+      params: { id: conversationId },
     });
   }
 
+  async function toggleMessageStar(message: Message) {
+    const starred = !message.starred;
+    await api.chats.setMessageStarred(conversationId, message.id, starred);
+    setMessages((current) =>
+      current.map((item) =>
+        item.id === message.id ? { ...item, starred } : item,
+      ),
+    );
+    setSelectedMessage((current) =>
+      current?.id === message.id ? { ...current, starred } : current,
+    );
+  }
+
   const statusText = loading ? "" : getStatusText();
+  const canSubmitComposer =
+    !!content.trim() &&
+    (!editingMessage || content.trim() !== editingMessage.content?.trim());
 
   return (
     <>
@@ -897,7 +1148,7 @@ export default function ChatScreen() {
                 </Pressable>
 
                 {loading ? <ChatHeaderSkeleton /> : <Pressable
-                  onPress={openChatProfile}
+                  onPress={openChatInfo}
                   disabled={isNewChat}
                   className="min-w-0 flex-1 flex-row items-center py-2"
                 >
@@ -1172,15 +1423,26 @@ export default function ChatScreen() {
                         />
                       )}
 
-                      <Text
-                        className={`mt-1 self-end text-[10px] ${
+                      <View className="mt-1 flex-row items-center self-end">
+                        {item.starred ? (
+                          <StarIcon
+                            size={10}
+                            color={isMine ? "#A16207" : "#D97706"}
+                            weight="fill"
+                            style={{ marginRight: 3 }}
+                          />
+                        ) : null}
+                        <Text
+                          className={`text-[10px] ${
                           isMine
                             ? "text-black/50"
                             : "text-gray-400 dark:text-gray-500"
-                        }`}
-                      >
-                        {formatMessageTime(item.createdAt)}
-                      </Text>
+                          }`}
+                        >
+                          {item.editedAt && !item.deletedAt ? `${t("edited")} · ` : ""}
+                          {formatMessageTime(item.createdAt)}
+                        </Text>
+                      </View>
                     </Pressable>
                   </Animated.View>
                   {seenLabel ? (
@@ -1221,7 +1483,22 @@ export default function ChatScreen() {
           ) : null}
 
           <View className="border-t border-line bg-white px-3 py-2 dark:border-gray-900 dark:bg-[#0F0F10]">
-            {replyingTo ? (
+            {editingMessage ? (
+              <View className="mb-2 flex-row items-center overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#1B1B1D]">
+                <View className="h-full w-1 bg-brand" />
+                <View className="min-w-0 flex-1 px-3 py-2">
+                  <Text className="text-xs font-bold text-amber-700 dark:text-amber-400">
+                    {t("editingMessage")}
+                  </Text>
+                  <Text numberOfLines={1} className="mt-0.5 text-sm text-gray-500 dark:text-gray-400">
+                    {editingMessage.content}
+                  </Text>
+                </View>
+                <TouchableOpacity onPress={finishEditingMessage} hitSlop={8} className="h-11 w-11 items-center justify-center">
+                  <XIcon size={20} color={isDark ? "#D1D5DB" : "#6B7280"} weight="bold" />
+                </TouchableOpacity>
+              </View>
+            ) : replyingTo ? (
               <View className="mb-2 flex-row items-center overflow-hidden rounded-2xl bg-gray-100 dark:bg-[#1B1B1D]">
                 <View className="h-full w-1 bg-brand" />
                 <View className="min-w-0 flex-1 px-3 py-2">
@@ -1244,6 +1521,7 @@ export default function ChatScreen() {
             />
             <View className="flex-row items-end">
             <RNTextInput
+              ref={composerInputRef}
               className="flex-1 rounded-3xl border border-line bg-soft px-4 text-ink dark:border-gray-800 dark:bg-[#1B1B1D] dark:text-white"
               placeholder={t("messagePlaceholder")}
               placeholderTextColor="#9CA3AF"
@@ -1291,18 +1569,22 @@ export default function ChatScreen() {
             />
 
             <TouchableOpacity
-              className={`ml-2 h-10 w-10 items-center justify-center rounded-full ${content.trim() && !sending ? "bg-brand" : "bg-gray-200 dark:bg-gray-800"}`}
+              className={`ml-2 h-10 w-10 items-center justify-center rounded-full ${canSubmitComposer && !sending ? "bg-brand" : "bg-gray-200 dark:bg-gray-800"}`}
               onPress={sendMessage}
-              disabled={!content.trim() || sending}
+              disabled={!canSubmitComposer || sending}
             >
               {sending ? (
                 <ActivityIndicator color={isDark ? "white" : "#111"} />
               ) : (
-                <PaperPlaneTiltIcon
-                  size={21}
-                  color={content.trim() ? "#FFF" : "#9CA3AF"}
-                  weight="fill"
-                />
+                editingMessage ? (
+                  <CheckIcon size={21} color={canSubmitComposer ? "#FFF" : "#9CA3AF"} weight="bold" />
+                ) : (
+                  <PaperPlaneTiltIcon
+                    size={21}
+                    color={canSubmitComposer ? "#FFF" : "#9CA3AF"}
+                    weight="fill"
+                  />
+                )
               )}
             </TouchableOpacity>
             </View>
@@ -1315,7 +1597,9 @@ export default function ChatScreen() {
         isMine={selectedMessage?.senderId === user?.id}
         onClose={() => setSelectedMessage(null)}
         onReply={(message) => setReplyingTo(message)}
+        onEdit={startEditingMessage}
         onDelete={deleteMessage}
+        onToggleStar={toggleMessageStar}
       />
       <SeenByBottomSheet
         open={!!seenByMessageId}

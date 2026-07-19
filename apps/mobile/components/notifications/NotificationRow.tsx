@@ -3,7 +3,7 @@ import { useAppTheme } from '@/contexts/ThemeContext';
 import type { AppNotification } from '@findeat/types';
 import { useTranslation } from 'react-i18next';
 import { GestureResponderEvent, Image, Text, TouchableOpacity, View } from 'react-native';
-import { ImagesSquareIcon } from 'phosphor-react-native';
+import { ImagesSquareIcon, TagIcon } from 'phosphor-react-native';
 import {
   notificationText,
   relativeNotificationTime,
@@ -38,7 +38,13 @@ export default function NotificationRow({
       className="flex-row items-center px-5 py-3"
       style={{ backgroundColor: item.readAt ? 'transparent' : isDark ? '#172033' : '#F2F7FF' }}
     >
-      <Avatar uri={item.actor?.avatarUrl} size={48} />
+      {item.type === 'PROFILE_TAG_UNLOCKED' ? (
+        <View className="h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-950">
+          <TagIcon size={24} color="#D97706" weight="fill" />
+        </View>
+      ) : (
+        <Avatar uri={item.actor?.avatarUrl} size={48} />
+      )}
       <View className="ml-3 flex-1">
         <Text className="text-[15px] text-black dark:text-white">
           {notificationText(item, t)}

@@ -4,13 +4,19 @@ import Text from "../common/AppText";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { DishCompatibilityChips } from "./FoodCompatibility";
+import { HeartIcon } from "phosphor-react-native";
 
 type Props = {
   item: Restaurant["menus"][number]["items"][number];
   popular?: boolean;
+  isFavorite?: boolean;
 };
 
-export default function DishCard({ item, popular = false }: Props) {
+export default function DishCard({
+  item,
+  popular = false,
+  isFavorite = item.isFavorite === true,
+}: Props) {
   const { t } = useTranslation("restaurants");
   const isUnavailable = item.isAvailable === false;
 
@@ -20,9 +26,13 @@ export default function DishCard({ item, popular = false }: Props) {
       onPress={() =>
         router.push({ pathname: "/menu-items/[id]", params: { id: item.id } })
       }
-      className="mt-3 rounded-3xl border border-[#D8D3CA] bg-white p-3 dark:border-gray-700 dark:bg-gray-900"
+      className={`mt-3 rounded-3xl border p-3 ${
+        isFavorite
+          ? "border-rose-200 bg-rose-50 dark:border-rose-900 dark:bg-rose-950/35"
+          : "border-[#D8D3CA] bg-white dark:border-gray-700 dark:bg-gray-900"
+      }`}
       style={{
-        shadowColor: "#171717",
+        shadowColor: isFavorite ? "#E11D48" : "#171717",
         shadowOpacity: 0.07,
         shadowRadius: 10,
         shadowOffset: { width: 0, height: 4 },
@@ -30,19 +40,34 @@ export default function DishCard({ item, popular = false }: Props) {
       }}
     >
       <View className="flex-row gap-3">
-        {item.imageUrl ? (
-          <Image
-            source={{ uri: item.imageUrl }}
-            className="h-28 w-36 rounded-2xl bg-gray-100 dark:bg-gray-800"
-            resizeMode="cover"
-          />
-        ) : (
-          <View className="h-28 w-36 items-center justify-center rounded-2xl bg-[#E9E4DC] dark:bg-gray-800">
-            <Text className="text-2xl">🍽️</Text>
-          </View>
-        )}
+        <View className="relative h-28 w-36">
+          {item.imageUrl ? (
+            <Image
+              source={{ uri: item.imageUrl }}
+              className="h-28 w-36 rounded-2xl bg-gray-100 dark:bg-gray-800"
+              resizeMode="cover"
+            />
+          ) : (
+            <View className="h-28 w-36 items-center justify-center rounded-2xl bg-[#E9E4DC] dark:bg-gray-800">
+              <Text className="text-2xl">🍽️</Text>
+            </View>
+          )}
+          {isFavorite && (
+            <View
+              pointerEvents="none"
+              className="absolute inset-0 items-center justify-center rounded-2xl"
+              style={{ backgroundColor: "rgba(225, 29, 72, 0.24)" }}
+            >
+              <HeartIcon
+                size={42}
+                color="rgba(225, 29, 72, 0.78)"
+                weight="fill"
+              />
+            </View>
+          )}
+        </View>
 
-        <View className="flex-1">
+        <View className="min-w-0 flex-1">
           <View className="flex-row justify-between gap-3">
             <Text className="flex-1 font-bold text-black dark:text-white">
               {item.name}

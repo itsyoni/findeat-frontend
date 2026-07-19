@@ -6,9 +6,18 @@ import FullPageRestaurantPicker from "@/components/restaurants/FullPageRestauran
 import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import PostVisibilitySelector from "@/components/posts/PostVisibilitySelector";
 import PostConnectionPicker from "@/components/posts/PostConnectionPicker";
+import SaveDraftButton from "@/components/posts/SaveDraftButton";
 import { useAppTheme } from "@/contexts/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/contexts/ToastContext";
 import { prependPostToFeedCache } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
+import {
+  clearPostDraft,
+  type ContentPostDraft,
+  loadContentPostDraft,
+  saveContentPostDraft,
+} from "@/lib/postDrafts";
 import type { PostVisibility, SelectedRestaurant } from "@findeat/types";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { CameraView, useCameraPermissions } from "expo-camera";
@@ -25,11 +34,35 @@ import {
 import DirectionalIcon from "@/components/common/icons/DirectionalIcon";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ActivityIndicator, Image, KeyboardAvoidingView, Linking, Platform, ScrollView, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, AppState, Image, KeyboardAvoidingView, Linking, Platform, ScrollView, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useQueryClient } from "@tanstack/react-query";
 
 type Step = "CAMERA" | "DETAILS" | "RESTAURANT";
+
+const CAMERA_CAPTURE_QUALITY = 0.72;
+const TARGET_CAMERA_PIXELS = 1920 * 1080;
+
+function selectFastPictureSize(sizes: string[]) {
+  if (sizes.includes("1920x1080")) return "1920x1080";
+
+  const numericSizes = sizes
+    .map((size) => {
+      const match = /^(\d+)x(\d+)$/.exec(size);
+      if (!match) return null;
+      const width = Number(match[1]);
+      const height = Number(match[2]);
+      return { size, pixels: width * height };
+    })
+    .filter((value): value is { size: string; pixels: number } => value !== null)
+    .filter(({ pixels }) => pixels >= 1280 * 720);
+
+  return numericSizes.sort(
+    (a, b) =>
+      Math.abs(a.pixels - TARGET_CAMERA_PIXELS) -
+      Math.abs(b.pixels - TARGET_CAMERA_PIXELS),
+  )[0]?.size;
+}
 
 export default function CreateContentScreen() {
   const { restaurantId, linkedPostId: initialLinkedPostId } =
@@ -37,6 +70,8 @@ export default function CreateContentScreen() {
   const { t } = useTranslation("create");
   const { isDark } = useAppTheme();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
   const [step, setStep] = useState<Step>("CAMERA");
@@ -48,11 +83,121 @@ export default function CreateContentScreen() {
   );
   const [selectedRestaurant, setSelectedRestaurant] =
     useState<SelectedRestaurant | null>(null);
+  const [cameraReady, setCameraReady] = useState(false);
+  const [pictureSize, setPictureSize] = useState<string>();
   const [capturing, setCapturing] = useState(false);
+  const [showCaptureProgress, setShowCaptureProgress] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [draftHydrated, setDraftHydrated] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const draftSnapshotRef = useRef<Omit<ContentPostDraft, "updatedAt"> | null>(null);
 
   useEffect(() => {
-    if (!restaurantId) return;
+    if (!user?.id) return;
+    let cancelled = false;
+
+    void loadContentPostDraft(user.id)
+      .then((savedDraft) => {
+        if (cancelled) return;
+        if (!savedDraft) {
+          setDraftHydrated(true);
+          return;
+        }
+
+        Alert.alert(t("draftFoundTitle"), t("contentDraftFoundBody"), [
+          {
+            text: t("discardDraft"),
+            style: "destructive",
+            onPress: () => {
+              void clearPostDraft(user.id, "content");
+              setDraftHydrated(true);
+            },
+          },
+          {
+            text: t("continueDraft"),
+            onPress: () => {
+              setImageUri(savedDraft.imageUri);
+              setDescription(savedDraft.description);
+              setVisibility(savedDraft.visibility);
+              setLinkedPostId(savedDraft.linkedPostId);
+              setSelectedRestaurant(savedDraft.selectedRestaurant);
+              setStep(savedDraft.step === "CAMERA" ? "DETAILS" : savedDraft.step);
+              setDraftHydrated(true);
+            },
+          },
+        ]);
+      })
+      .catch((error) => {
+        console.error("Could not restore content draft", error);
+        if (!cancelled) setDraftHydrated(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [t, user?.id]);
+
+  useEffect(() => {
+    if (!draftHydrated || !user?.id || !imageUri || publishing) return;
+    const timer = setTimeout(() => {
+      void saveContentPostDraft(user.id, {
+        step,
+        imageUri,
+        description,
+        visibility,
+        linkedPostId,
+        selectedRestaurant,
+      }).catch((error) => console.error("Could not save content draft", error));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [
+    description,
+    draftHydrated,
+    imageUri,
+    linkedPostId,
+    publishing,
+    selectedRestaurant,
+    step,
+    user?.id,
+    visibility,
+  ]);
+
+  useEffect(() => {
+    draftSnapshotRef.current =
+      draftHydrated && imageUri && !publishing
+        ? {
+            step,
+            imageUri,
+            description,
+            visibility,
+            linkedPostId,
+            selectedRestaurant,
+          }
+        : null;
+  }, [
+    description,
+    draftHydrated,
+    imageUri,
+    linkedPostId,
+    publishing,
+    selectedRestaurant,
+    step,
+    visibility,
+  ]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const subscription = AppState.addEventListener("change", (state) => {
+      const snapshot = draftSnapshotRef.current;
+      if (state !== "active" && snapshot) {
+        void saveContentPostDraft(user.id, snapshot);
+      }
+    });
+    return () => subscription.remove();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!draftHydrated || !restaurantId || selectedRestaurant) return;
     let cancelled = false;
 
     void api.restaurants
@@ -67,27 +212,47 @@ export default function CreateContentScreen() {
     return () => {
       cancelled = true;
     };
-  }, [restaurantId]);
+  }, [draftHydrated, restaurantId, selectedRestaurant]);
 
-  async function selectPhoto(uri: string) {
+  function selectPhoto(uri: string) {
+    setImageUri(uri);
+    setStep("DETAILS");
+  }
+
+  function openCamera() {
+    setCameraReady(false);
+    setShowCaptureProgress(false);
+    setStep("CAMERA");
+  }
+
+  async function handleCameraReady() {
+    if (!cameraRef.current) return;
     try {
-      setCapturing(true);
-      setImageUri(uri);
-      setStep("DETAILS");
+      const sizes = await cameraRef.current.getAvailablePictureSizesAsync();
+      setPictureSize((current) => current ?? selectFastPictureSize(sizes));
+    } catch (error) {
+      console.warn("Could not configure camera picture size", error);
     } finally {
-      setCapturing(false);
+      setCameraReady(true);
     }
   }
 
   async function takePhoto() {
-    if (!cameraRef.current || capturing) return;
+    if (!cameraRef.current || !cameraReady || capturing) return;
 
+    let progressTimer: ReturnType<typeof setTimeout> | undefined;
     try {
       setCapturing(true);
-      const photo = await cameraRef.current.takePictureAsync({ quality: 0.9 });
-      await selectPhoto(photo.uri);
+      progressTimer = setTimeout(() => setShowCaptureProgress(true), 350);
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: CAMERA_CAPTURE_QUALITY,
+      });
+      selectPhoto(photo.uri);
     } catch (error) {
       console.error("camera capture failed", error);
+    } finally {
+      if (progressTimer) clearTimeout(progressTimer);
+      setShowCaptureProgress(false);
       setCapturing(false);
     }
   }
@@ -104,7 +269,7 @@ export default function CreateContentScreen() {
         forceJpg: true,
         cropperToolbarTitle: t("cropContentPhoto"),
       });
-      await selectPhoto(image.path);
+      selectPhoto(image.path);
     } catch (error) {
       if ((error as { code?: string }).code !== "E_PICKER_CANCELLED") {
         console.error("content image picker failed", error);
@@ -122,7 +287,6 @@ export default function CreateContentScreen() {
     const restaurant = await api.restaurants.fromGoogle({
       name: selectedRestaurant.name,
       address: selectedRestaurant.address,
-      city: selectedRestaurant.city,
       latitude: selectedRestaurant.latitude,
       longitude: selectedRestaurant.longitude,
       googlePlaceId: selectedRestaurant.googlePlaceId,
@@ -145,6 +309,8 @@ export default function CreateContentScreen() {
         visibility,
         linkedPostId,
       });
+      draftSnapshotRef.current = null;
+      if (user?.id) await clearPostDraft(user.id, "content");
 
       prependPostToFeedCache(queryClient, createdPost);
       const openFeed = () =>
@@ -180,6 +346,28 @@ export default function CreateContentScreen() {
     }
   }
 
+  async function handleSaveDraft() {
+    if (!user?.id || !imageUri || savingDraft) return;
+    try {
+      setSavingDraft(true);
+      await saveContentPostDraft(user.id, {
+        step,
+        imageUri,
+        description,
+        visibility,
+        linkedPostId,
+        selectedRestaurant,
+      });
+      showToast(t("draftSaved"));
+      router.back();
+    } catch (error) {
+      console.error("Could not save content draft", error);
+      showToast(t("draftSaveError"), { kind: "error" });
+    } finally {
+      setSavingDraft(false);
+    }
+  }
+
   const selectedPlace =
     selectedRestaurant?.source === "FINDEAT"
       ? selectedRestaurant.restaurant
@@ -188,6 +376,15 @@ export default function CreateContentScreen() {
     selectedRestaurant?.source === "FINDEAT"
       ? selectedRestaurant.restaurant.logoUrl
       : null;
+
+  if (!draftHydrated) {
+    return (
+      <View className="flex-1 items-center justify-center bg-black">
+        <Stack.Screen options={{ headerShown: false }} />
+        <ActivityIndicator color="white" size="large" />
+      </View>
+    );
+  }
 
   if (step === "CAMERA") {
     const permissionGranted = permission?.granted;
@@ -202,6 +399,9 @@ export default function CreateContentScreen() {
               ref={cameraRef}
               style={{ position: "absolute", inset: 0 }}
               facing="back"
+              mode="picture"
+              pictureSize={pictureSize}
+              onCameraReady={() => void handleCameraReady()}
             />
             <SafeAreaView
               style={{
@@ -211,12 +411,20 @@ export default function CreateContentScreen() {
                 paddingBottom: 32,
               }}
             >
-              <TouchableOpacity
-                onPress={() => router.back()}
-                className="h-11 w-11 items-center justify-center rounded-full bg-black/45"
-              >
-                <XIcon size={24} color="white" weight="bold" />
-              </TouchableOpacity>
+              <View className="flex-row items-center justify-between">
+                <TouchableOpacity
+                  onPress={() => router.back()}
+                  className="h-11 w-11 items-center justify-center rounded-full bg-black/45"
+                >
+                  <XIcon size={24} color="white" weight="bold" />
+                </TouchableOpacity>
+                <SaveDraftButton
+                  darkSurface
+                  disabled={!imageUri}
+                  saving={savingDraft}
+                  onPress={() => void handleSaveDraft()}
+                />
+              </View>
 
               <View className="flex-row items-center justify-between px-2">
                 <TouchableOpacity
@@ -227,9 +435,11 @@ export default function CreateContentScreen() {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  disabled={capturing}
+                  disabled={!cameraReady || capturing}
                   onPress={() => void takePhoto()}
-                  className="h-20 w-20 items-center justify-center rounded-full border-4 border-white"
+                  className={`h-20 w-20 items-center justify-center rounded-full border-4 border-white ${
+                    !cameraReady ? "opacity-50" : ""
+                  }`}
                 >
                   <View className="h-16 w-16 rounded-full bg-white" />
                 </TouchableOpacity>
@@ -315,7 +525,7 @@ export default function CreateContentScreen() {
             </View>
           </SafeAreaView>
         )}
-        {capturing && (
+        {showCaptureProgress && (
           <View className="absolute inset-0 items-center justify-center bg-black/30">
             <ActivityIndicator color="white" size="large" />
           </View>
@@ -344,6 +554,12 @@ export default function CreateContentScreen() {
             setStep("DETAILS");
           }}
           onBack={() => setStep("DETAILS")}
+          headerRight={
+            <SaveDraftButton
+              saving={savingDraft}
+              onPress={() => void handleSaveDraft()}
+            />
+          }
         />
       </>
     );
@@ -358,7 +574,7 @@ export default function CreateContentScreen() {
       <SafeAreaView className="flex-1">
         <View className="flex-row items-center px-4 py-2">
           <TouchableOpacity
-            onPress={() => setStep("CAMERA")}
+            onPress={openCamera}
             className="h-11 w-11 items-center justify-center rounded-full"
           >
             <DirectionalIcon direction="back" size={25} color={isDark ? "#FFF" : "#171717"} weight="bold" />
@@ -366,6 +582,10 @@ export default function CreateContentScreen() {
           <Text className="ml-2 flex-1 text-xl font-bold text-black dark:text-white">
             {t("quickPost")}
           </Text>
+          <SaveDraftButton
+            saving={savingDraft}
+            onPress={() => void handleSaveDraft()}
+          />
           <TouchableOpacity
             disabled={!selectedRestaurant || publishing}
             onPress={() => void publish()}
@@ -403,7 +623,7 @@ export default function CreateContentScreen() {
               />
 
               <TouchableOpacity
-                onPress={() => setStep("CAMERA")}
+                onPress={openCamera}
                 className="absolute bottom-4 right-4 flex-row items-center rounded-full border border-white/25 px-4 py-2.5"
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.62)" }}
               >

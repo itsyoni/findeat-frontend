@@ -2,10 +2,14 @@ import { AppAlert as Alert } from "@/lib/appAlert";
 import { api } from "@/lib/api";
 import { getErrorMessage, uploadImage } from "@findeat/utils";
 import { Dish } from "@findeat/types";
-import { CreateReviewDraft, CreateReviewStep } from "@findeat/types/review";
+import {
+  CreateReviewDraft,
+  CreateReviewStep,
+  ReviewDishFormDraft,
+} from "@findeat/types/review";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { AppState, View } from "react-native";
 import AddDishDetailsStep from "./steps/AddDishDetailsStep";
 import CoverStep from "./steps/CoverStep";
 import DishesStep from "./steps/DishesStep";
@@ -19,6 +23,13 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
+import { useToast } from "@/contexts/ToastContext";
+import {
+  clearPostDraft,
+  loadReviewPostDraft,
+  type ReviewPostDraft,
+  saveReviewPostDraft,
+} from "@/lib/postDrafts";
 
 const initialDraft: CreateReviewDraft = {
   visibility: "PUBLIC",
@@ -35,18 +46,120 @@ export default function ReviewCreator({
   initialLinkedPostId?: string;
 }) {
   const queryClient = useQueryClient();
-  const { refreshUser } = useAuth();
+  const { refreshUser, user } = useAuth();
   const { t } = useTranslation("create");
+  const { showToast } = useToast();
   const [step, setStep] = useState<CreateReviewStep>("RESTAURANT");
   const [draft, setDraft] = useState<CreateReviewDraft>(initialDraft);
   const [loading, setLoading] = useState(false);
   const [selectedMenuDish, setSelectedMenuDish] = useState<Dish | null>(null);
+  const [pendingDish, setPendingDish] = useState<ReviewDishFormDraft | null>(null);
   const [initializingRestaurant, setInitializingRestaurant] = useState(
     !!initialRestaurantId,
   );
+  const [draftHydrated, setDraftHydrated] = useState(false);
+  const [resumedDraft, setResumedDraft] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const draftSnapshotRef = useRef<Omit<ReviewPostDraft, "updatedAt"> | null>(null);
 
   useEffect(() => {
-    if (!initialRestaurantId) return;
+    if (!user?.id) return;
+    let cancelled = false;
+
+    void loadReviewPostDraft(user.id)
+      .then((savedDraft) => {
+        if (cancelled) return;
+        if (!savedDraft) {
+          setDraftHydrated(true);
+          return;
+        }
+
+        Alert.alert(t("draftFoundTitle"), t("reviewDraftFoundBody"), [
+          {
+            text: t("discardDraft"),
+            style: "destructive",
+            onPress: () => {
+              void clearPostDraft(user.id, "review");
+              setDraftHydrated(true);
+            },
+          },
+          {
+            text: t("continueDraft"),
+            onPress: () => {
+              setDraft(savedDraft.draft);
+              setSelectedMenuDish(savedDraft.selectedMenuDish ?? null);
+              setPendingDish(savedDraft.pendingDish ?? null);
+              setStep(savedDraft.step);
+              setInitializingRestaurant(false);
+              setResumedDraft(true);
+              setDraftHydrated(true);
+            },
+          },
+        ]);
+      })
+      .catch((error) => {
+        console.error("Could not restore review draft", error);
+        if (!cancelled) setDraftHydrated(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [t, user?.id]);
+
+  useEffect(() => {
+    if (!draftHydrated || !user?.id || loading) return;
+    const hasDraftContent =
+      draft.restaurant !== null ||
+      !!draft.coverImageUri ||
+      !!draft.summary.trim() ||
+      draft.items.length > 0 ||
+      draft.overallRating !== undefined ||
+      draft.atmosphereRating !== undefined ||
+      draft.serviceRating !== undefined ||
+      draft.valueRating !== undefined;
+    if (!hasDraftContent) return;
+
+    const timer = setTimeout(() => {
+      void saveReviewPostDraft(user.id, {
+        step,
+        draft,
+        selectedMenuDish,
+        pendingDish,
+      }).catch((error) => console.error("Could not save review draft", error));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [draft, draftHydrated, loading, pendingDish, selectedMenuDish, step, user?.id]);
+
+  useEffect(() => {
+    const hasDraftContent =
+      draft.restaurant !== null ||
+      !!draft.coverImageUri ||
+      !!draft.summary.trim() ||
+      draft.items.length > 0 ||
+      draft.overallRating !== undefined ||
+      draft.atmosphereRating !== undefined ||
+      draft.serviceRating !== undefined ||
+      draft.valueRating !== undefined;
+    draftSnapshotRef.current =
+      draftHydrated && hasDraftContent && !loading
+        ? { step, draft, selectedMenuDish, pendingDish }
+        : null;
+  }, [draft, draftHydrated, loading, pendingDish, selectedMenuDish, step]);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    const subscription = AppState.addEventListener("change", (state) => {
+      const snapshot = draftSnapshotRef.current;
+      if (state !== "active" && snapshot) {
+        void saveReviewPostDraft(user.id, snapshot);
+      }
+    });
+    return () => subscription.remove();
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!draftHydrated || !initialRestaurantId || resumedDraft) return;
     let cancelled = false;
 
     void api.restaurants
@@ -71,7 +184,7 @@ export default function ReviewCreator({
     return () => {
       cancelled = true;
     };
-  }, [initialLinkedPostId, initialRestaurantId]);
+  }, [draftHydrated, initialLinkedPostId, initialRestaurantId, resumedDraft]);
 
   function updateDraft(update: Partial<CreateReviewDraft>) {
     setDraft((current) => ({
@@ -107,7 +220,6 @@ export default function ReviewCreator({
     const restaurant = await api.restaurants.fromGoogle({
       name: draft.restaurant.name,
       address: draft.restaurant.address,
-      city: draft.restaurant.city,
       latitude: draft.restaurant.latitude,
       longitude: draft.restaurant.longitude,
       googlePlaceId: draft.restaurant.googlePlaceId,
@@ -164,6 +276,8 @@ export default function ReviewCreator({
         linkedPostId: draft.linkedPostId,
         items: uploadedItems,
       });
+      draftSnapshotRef.current = null;
+      if (user?.id) await clearPostDraft(user.id, "review");
 
       updateRestaurantStatusInFeedCache(queryClient, restaurantId, {
         visited: true,
@@ -214,7 +328,27 @@ export default function ReviewCreator({
     }
   }
 
-  if (initializingRestaurant) {
+  async function handleSaveDraft() {
+    if (!user?.id || savingDraft) return;
+    try {
+      setSavingDraft(true);
+      await saveReviewPostDraft(user.id, {
+        step,
+        draft,
+        selectedMenuDish,
+        pendingDish,
+      });
+      showToast(t("draftSaved"));
+      router.back();
+    } catch (error) {
+      console.error("Could not save review draft", error);
+      showToast(t("draftSaveError"), { kind: "error" });
+    } finally {
+      setSavingDraft(false);
+    }
+  }
+
+  if (!draftHydrated || initializingRestaurant) {
     return <RestaurantStep selectedRestaurant={null} loading onSelect={() => undefined} onBack={() => router.back()} />;
   }
 
@@ -229,6 +363,8 @@ export default function ReviewCreator({
             setStep("COVER");
           }}
           onBack={() => router.back()}
+          onSaveDraft={() => void handleSaveDraft()}
+          savingDraft={savingDraft}
         />
       )}
 
@@ -242,6 +378,8 @@ export default function ReviewCreator({
             setStep("RESTAURANT");
           }}
           onNext={() => setStep("DISHES")}
+          onSaveDraft={() => void handleSaveDraft()}
+          savingDraft={savingDraft}
         />
       )}
 
@@ -251,6 +389,7 @@ export default function ReviewCreator({
           onBack={() => setStep("COVER")}
           onAddCustomDish={() => {
             setSelectedMenuDish(null);
+            setPendingDish(null);
             setStep("ADD_DISH_DETAILS");
           }}
           onAddMenuDish={() => setStep("SELECT_MENU_DISH")}
@@ -263,6 +402,8 @@ export default function ReviewCreator({
             }))
           }
           onNext={() => setStep("PREVIEW")}
+          onSaveDraft={() => void handleSaveDraft()}
+          savingDraft={savingDraft}
         />
       )}
 
@@ -276,18 +417,26 @@ export default function ReviewCreator({
           onBack={() => setStep("DISHES")}
           onSelect={(dish) => {
             setSelectedMenuDish(dish);
+            setPendingDish(null);
             setStep("ADD_DISH_DETAILS");
           }}
           onAddCustom={() => {
             setSelectedMenuDish(null);
+            setPendingDish(null);
             setStep("ADD_DISH_DETAILS");
           }}
+          onSaveDraft={() => void handleSaveDraft()}
+          savingDraft={savingDraft}
         />
       )}
 
       {step === "ADD_DISH_DETAILS" && (
         <AddDishDetailsStep
           selectedDish={selectedMenuDish}
+          initialDraft={pendingDish}
+          onDraftChange={setPendingDish}
+          onSaveDraft={() => void handleSaveDraft()}
+          savingDraft={savingDraft}
           onBack={() =>
             selectedMenuDish
               ? setStep("SELECT_MENU_DISH")
@@ -307,6 +456,7 @@ export default function ReviewCreator({
             }));
 
             setSelectedMenuDish(null);
+            setPendingDish(null);
             setStep("DISHES");
           }}
         />
@@ -320,6 +470,8 @@ export default function ReviewCreator({
           onPublish={publishReview}
           onVisibilityChange={(visibility) => updateDraft({ visibility })}
           onLinkedPostChange={(linkedPostId) => updateDraft({ linkedPostId })}
+          onSaveDraft={() => void handleSaveDraft()}
+          savingDraft={savingDraft}
         />
       )}
     </View>

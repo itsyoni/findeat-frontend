@@ -1,3 +1,5 @@
+import type { ProfileTagKey } from "./profile-tags";
+
 export type Language = "EN" | "HE";
 
 export type User = {
@@ -12,6 +14,8 @@ export type User = {
   language: Language;
   showActivityStatus?: boolean;
   showWhatsNewPopups?: boolean;
+  creatorScore?: number;
+  selectedProfileTag?: ProfileTagKey | null;
   isPrivate?: boolean;
   phoneNumber?: string | null;
   birthday?: string | null;
@@ -58,6 +62,7 @@ export type UserRestaurant = {
   visited: boolean;
   favorite: boolean;
   savedFromPostId?: string | null;
+  recommendedByUserId?: string | null;
   visitedAt?: string | null;
   favoritedAt?: string | null;
 };

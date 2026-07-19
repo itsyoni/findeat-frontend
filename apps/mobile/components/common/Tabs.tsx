@@ -1,3 +1,4 @@
+import { useAppTheme } from "@/contexts/ThemeContext";
 import { TouchableOpacity, View } from "react-native";
 import Text from "./AppText";
 
@@ -17,8 +18,13 @@ export default function Tabs<T extends string>({
   activeTab,
   onChange,
 }: Props<T>) {
+  const { isDark } = useAppTheme();
+
   return (
-    <View className="flex-row border-b border-line bg-surface dark:border-gray-800 dark:bg-black">
+    <View
+      className="flex-row border-b border-line dark:border-gray-800"
+      style={{ backgroundColor: isDark ? "#000" : "#FFF" }}
+    >
       {tabs.map((tab) => {
         const isActive = activeTab === tab.value;
 

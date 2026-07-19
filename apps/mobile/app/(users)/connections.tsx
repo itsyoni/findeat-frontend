@@ -11,7 +11,6 @@ import { ConnectionItem, UserRelationship } from "@findeat/types";
 import {
   getNextRelationshipAfterToggle,
   getRelationshipButtonColor,
-  getRelationshipButtonText,
   isFriendRelationship,
   shouldRemoveFollowRelationship,
 } from "@findeat/utils";
@@ -19,15 +18,12 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, TouchableOpacity, View } from "react-native";
 import { DirectionalBackIcon } from "@/components/common/icons/DirectionalIcon";
-import { useAuth } from "@/contexts/AuthContext";
-import { AppAlert as Alert } from "@/lib/appAlert";
 import { useTranslation } from "react-i18next";
 
 type ConnectionsTab = "followers" | "following" | "friends";
 
 export default function ConnectionsScreen() {
-  const { user: currentUser } = useAuth();
-  const { t } = useTranslation(["profile", "common"]);
+  const { t } = useTranslation(["profile", "common", "notifications"]);
   const { id, type } = useLocalSearchParams<{
     id: string;
     type?: ConnectionsTab;
@@ -39,33 +35,11 @@ export default function ConnectionsScreen() {
   const [items, setItems] = useState<ConnectionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const isOwnProfile = currentUser?.id === id;
 
   async function onRefresh() {
     setRefreshing(true);
     await loadConnections();
     setRefreshing(false);
-  }
-
-  function confirmRemoveFollower(userId: string, name: string) {
-    Alert.alert(
-      t("profile:removeFollowerTitle", { name }),
-      t("profile:removeFollowerDescription"),
-      [
-        { text: t("common:cancel"), style: "cancel" },
-        {
-          text: t("profile:remove"),
-          style: "destructive",
-          onPress: () => {
-            void api.users.removeFollower(userId).then(() => {
-              setItems((current) =>
-                current.filter((item) => item.follower?.id !== userId),
-              );
-            });
-          },
-        },
-      ],
-    );
   }
 
   const loadConnections = useCallback(async () => {
@@ -129,6 +103,21 @@ export default function ConnectionsScreen() {
     return item.follower;
   }
 
+  function getRelationshipText(relationship?: UserRelationship) {
+    switch (relationship) {
+      case "FRIENDS":
+        return t("notifications:friends");
+      case "FOLLOWING":
+        return t("notifications:following");
+      case "FOLLOWED_BY":
+        return t("notifications:followBack");
+      case "REQUESTED":
+        return t("notifications:requested");
+      default:
+        return t("notifications:follow");
+    }
+  }
+
   useEffect(() => {
     loadConnections();
   }, [loadConnections]);
@@ -175,7 +164,7 @@ export default function ConnectionsScreen() {
 
           const relationship = user.relationship;
 
-          const buttonText = getRelationshipButtonText(relationship);
+          const buttonText = getRelationshipText(relationship);
 
           return (
             <TouchableOpacity
@@ -204,22 +193,7 @@ export default function ConnectionsScreen() {
                 </View>
               </View>
 
-              {activeTab === "followers" && isOwnProfile ? (
-                <TouchableOpacity
-                  className="items-center rounded-xl bg-gray-200 px-4 py-2 dark:bg-gray-800"
-                  onPress={(event) => {
-                    event.stopPropagation();
-                    confirmRemoveFollower(
-                      user.id,
-                      user.displayName?.trim() || user.username,
-                    );
-                  }}
-                >
-                  <Text className="font-bold text-black dark:text-white">
-                    {t("profile:remove")}
-                  </Text>
-                </TouchableOpacity>
-              ) : <TouchableOpacity
+              <TouchableOpacity
                 className={`w-30 items-center rounded-xl px-4 py-2 ${getRelationshipButtonColor(
                   relationship,
                 )}`}
@@ -240,7 +214,6 @@ export default function ConnectionsScreen() {
                   {buttonText}
                 </Text>
               </TouchableOpacity>
-              }
             </TouchableOpacity>
           );
         }}

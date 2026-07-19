@@ -22,6 +22,7 @@ export function DishEditorModal({ dish, onClose, onSaved }: DishEditorModalProps
   const [allergens, setAllergens] = useState(dish.allergens ?? []);
   const [dietaryTags, setDietaryTags] = useState(dish.dietaryTags ?? []);
   const [cuisineTags, setCuisineTags] = useState(dish.cuisineTags ?? []);
+  const [dishTags, setDishTags] = useState(dish.dishTags ?? []);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState(dish.imageUrl || "");
   const [removeImage, setRemoveImage] = useState(false);
@@ -73,6 +74,7 @@ export function DishEditorModal({ dish, onClose, onSaved }: DishEditorModalProps
           allergens,
           dietaryTags,
           cuisineTags,
+          dishTags,
           ...(uploadedImage ? { imageUrl: uploadedImage } : removeImage ? { imageUrl: null } : {}),
         }),
       });
@@ -115,9 +117,11 @@ export function DishEditorModal({ dish, onClose, onSaved }: DishEditorModalProps
                 allergens={allergens}
                 dietaryTags={dietaryTags}
                 cuisineTags={cuisineTags}
+                dishTags={dishTags}
                 onAllergensChange={setAllergens}
                 onDietaryTagsChange={setDietaryTags}
                 onCuisineTagsChange={setCuisineTags}
+                onDishTagsChange={setDishTags}
                 compact
               />
             </div>

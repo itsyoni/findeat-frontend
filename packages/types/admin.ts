@@ -1,5 +1,9 @@
 import type { BusinessAccount } from "./business";
-import type { ManagedRestaurant, RestaurantStatus } from "./restaurant";
+import type {
+  ManagedRestaurant,
+  RestaurantAddressChangeRequest,
+  RestaurantStatus,
+} from "./restaurant";
 
 export type RestaurantClaim = {
   id: string;
@@ -47,3 +51,12 @@ export type RestaurantOwnershipRecord = {
     user: RestaurantOwnershipUser;
   }[];
 };
+
+export type AdminRestaurantAddressChangeRequest =
+  RestaurantAddressChangeRequest & {
+    restaurant: Pick<
+      ManagedRestaurant,
+      "id" | "name" | "address" | "city" | "logoUrl"
+    >;
+    requestedBy: RestaurantOwnershipUser;
+  };

@@ -23,6 +23,22 @@ export function createMenuApi(api: AxiosInstance) {
       return data;
     },
 
+    async favoriteDish(dishId: string) {
+      const { data } = await api.post<{
+        isFavorite: true;
+        favoriteCount: number;
+      }>(`/menu-items/${dishId}/favorite`);
+      return data;
+    },
+
+    async unfavoriteDish(dishId: string) {
+      const { data } = await api.delete<{
+        isFavorite: false;
+        favoriteCount: number;
+      }>(`/menu-items/${dishId}/favorite`);
+      return data;
+    },
+
     async updateMenu(
       id: string,
       payload: { title?: string; description?: string | null },
@@ -50,6 +66,7 @@ export function createMenuApi(api: AxiosInstance) {
         allergens?: string[];
         dietaryTags?: string[];
         cuisineTags?: string[];
+        dishTags?: string[];
       },
     ) {
       const { data } = await api.post<Dish>(
@@ -73,6 +90,7 @@ export function createMenuApi(api: AxiosInstance) {
         allergens?: string[];
         dietaryTags?: string[];
         cuisineTags?: string[];
+        dishTags?: string[];
       },
     ) {
       const { data } = await api.patch<Dish>(

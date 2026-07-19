@@ -11,6 +11,7 @@ type Props = {
   snapPoints?: string[];
   onClose: () => void;
   children: ReactNode;
+  stackBehavior?: "push" | "switch" | "replace";
   footerComponent?: (
     props: BottomSheetFooterProps,
   ) => React.ReactElement | null;
@@ -22,6 +23,7 @@ export default function AppBottomSheet({
   children,
   footerComponent,
   snapPoints,
+  stackBehavior,
 }: Props) {
   if (!open) return null;
 
@@ -30,6 +32,7 @@ export default function AppBottomSheet({
       onClose={onClose}
       footerComponent={footerComponent}
       snapPoints={snapPoints}
+      stackBehavior={stackBehavior}
     >
       {children}
     </PresentedBottomSheet>
@@ -41,6 +44,7 @@ function PresentedBottomSheet({
   children,
   footerComponent,
   snapPoints,
+  stackBehavior,
 }: Omit<Props, "open">) {
   const { isDark } = useAppTheme();
   const modalRef = useRef<BottomSheetModal>(null);
@@ -81,6 +85,7 @@ function PresentedBottomSheet({
       onDismiss={onClose}
       backdropComponent={renderBackdrop}
       footerComponent={footerComponent}
+      stackBehavior={stackBehavior}
       backgroundStyle={{
         backgroundColor: isDark ? "#111827" : "white",
         borderRadius: 28,

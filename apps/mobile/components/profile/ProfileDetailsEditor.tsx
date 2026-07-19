@@ -1,9 +1,7 @@
 import Text from "@/components/common/AppText";
 import { DirectionalForwardIcon } from "@/components/common/icons/DirectionalIcon";
 import { useAppTheme } from "@/contexts/ThemeContext";
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from "@react-native-community/datetimepicker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { CalendarBlankIcon, XCircleIcon } from "phosphor-react-native";
 import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
@@ -94,9 +92,9 @@ export default function ProfileDetailsEditor({ value, onChange }: Props) {
     setBirthdayPickerOpen(true);
   }
 
-  function handleAndroidDate(event: DateTimePickerEvent, date?: Date) {
+  function handleAndroidDate(date: Date) {
     setBirthdayPickerOpen(false);
-    if (event.type === "set" && date) update("birthday", isoFromDate(date));
+    update("birthday", isoFromDate(date));
   }
 
   return (
@@ -176,7 +174,8 @@ export default function ProfileDetailsEditor({ value, onChange }: Props) {
           mode="date"
           maximumDate={new Date()}
           minimumDate={new Date(1900, 0, 1)}
-          onChange={handleAndroidDate}
+          onValueChange={(_, date) => handleAndroidDate(date)}
+          onDismiss={() => setBirthdayPickerOpen(false)}
         />
       )}
 
@@ -219,7 +218,7 @@ export default function ProfileDetailsEditor({ value, onChange }: Props) {
                 maximumDate={new Date()}
                 minimumDate={new Date(1900, 0, 1)}
                 themeVariant={isDark ? "dark" : "light"}
-                onChange={(_, date) => date && setPendingBirthday(date)}
+                onValueChange={(_, date) => setPendingBirthday(date)}
                 style={{ alignSelf: "stretch", marginTop: 12 }}
               />
               </View>

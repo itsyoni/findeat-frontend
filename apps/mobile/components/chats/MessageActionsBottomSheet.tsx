@@ -5,8 +5,8 @@ import { useToast } from '@/contexts/ToastContext';
 import type { Message } from '@findeat/types';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import * as Clipboard from 'expo-clipboard';
-import { ArrowBendUpLeftIcon, CopyIcon, TrashIcon, UserMinusIcon, UsersIcon } from 'phosphor-react-native';
-import { useState } from 'react';
+import { ArrowBendUpLeftIcon, CopyIcon, PencilSimpleIcon, StarIcon, TrashIcon, UserMinusIcon, UsersIcon } from 'phosphor-react-native';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
@@ -16,21 +16,70 @@ type Props = {
   isMine: boolean;
   onClose: () => void;
   onReply: (message: Message) => void;
+  onEdit: (message: Message) => void;
   onDelete: (message: Message, scope: 'me' | 'everyone') => Promise<void>;
+  onToggleStar: (message: Message) => Promise<void>;
 };
 
-export default function MessageActionsBottomSheet({ message, isMine, onClose, onReply, onDelete }: Props) {
+const EDIT_WINDOW_MS = 2 * 60 * 60 * 1000;
+
+export default function MessageActionsBottomSheet({ message, isMine, onClose, onReply, onEdit, onDelete, onToggleStar }: Props) {
   const { t } = useTranslation('chat');
   const { isDark } = useAppTheme();
   const { showToast } = useToast();
   const [showDeleteChoices, setShowDeleteChoices] = useState(false);
   const [deleting, setDeleting] = useState<'me' | 'everyone' | null>(null);
+  const [starring, setStarring] = useState(false);
+  const [withinEditWindow, setWithinEditWindow] = useState(false);
   const iconColor = isDark ? '#FFF' : '#171717';
+  const canEdit =
+    !!message &&
+    isMine &&
+    !message.id.startsWith('pending-') &&
+    !message.deletedAt &&
+    (!message.type || message.type === 'TEXT') &&
+    !!message.content &&
+    withinEditWindow;
+
+  useEffect(() => {
+    let expiryTimeout: ReturnType<typeof setTimeout> | null = null;
+    const availabilityTimeout = setTimeout(() => {
+      if (!message) {
+        setWithinEditWindow(false);
+        return;
+      }
+      const remaining =
+        new Date(message.createdAt).getTime() + EDIT_WINDOW_MS - Date.now();
+      setWithinEditWindow(remaining > 0);
+      if (remaining > 0) {
+        expiryTimeout = setTimeout(() => setWithinEditWindow(false), remaining + 50);
+      }
+    }, 0);
+
+    return () => {
+      clearTimeout(availabilityTimeout);
+      if (expiryTimeout) clearTimeout(expiryTimeout);
+    };
+  }, [message]);
 
   function close() {
     setShowDeleteChoices(false);
     setDeleting(null);
+    setStarring(false);
     onClose();
+  }
+
+  async function toggleStar() {
+    if (!message || starring) return;
+    setStarring(true);
+    try {
+      await onToggleStar(message);
+      close();
+      showToast(t(message.starred ? 'messageUnstarred' : 'messageStarred'));
+    } catch {
+      showToast(t('messageStarError'), { kind: 'error' });
+      setStarring(false);
+    }
   }
 
   async function copy() {
@@ -59,7 +108,7 @@ export default function MessageActionsBottomSheet({ message, isMine, onClose, on
   }
 
   return (
-    <AppBottomSheet open={!!message} onClose={close} snapPoints={[showDeleteChoices ? '36%' : '44%']}>
+    <AppBottomSheet open={!!message} onClose={close} snapPoints={[showDeleteChoices ? '36%' : '55%']}>
       <BottomSheetView className="flex-1 px-4 pb-6 pt-1">
         {showDeleteChoices ? <>
           <Text className="px-2 pb-3 text-center text-xl font-bold text-black dark:text-white">{t('deleteMessage')}</Text>
@@ -71,6 +120,8 @@ export default function MessageActionsBottomSheet({ message, isMine, onClose, on
         </> : <>
           <Text className="px-2 pb-3 text-center text-xl font-bold text-black dark:text-white">{t('messageOptions')}</Text>
           <ActionRow icon={<ArrowBendUpLeftIcon size={23} color={iconColor} weight="duotone" />} title={t('reply')} onPress={() => { if (message) onReply(message); close(); }} />
+          {canEdit ? <ActionRow icon={<PencilSimpleIcon size={23} color={iconColor} weight="duotone" />} title={t('editMessage')} onPress={() => { onEdit(message); close(); }} /> : null}
+          {message && !message.id.startsWith('pending-') ? <ActionRow icon={<StarIcon size={23} color="#D97706" weight={message.starred ? "fill" : "duotone"} />} title={t(message.starred ? 'unstarMessage' : 'starMessage')} loading={starring} onPress={() => void toggleStar()} /> : null}
           {message?.content ? <ActionRow icon={<CopyIcon size={23} color={iconColor} weight="duotone" />} title={t('copy')} onPress={() => void copy()} /> : null}
           <ActionRow icon={<TrashIcon size={23} color="#EF4444" weight="duotone" />} title={t('deleteMessage')} destructive onPress={() => setShowDeleteChoices(true)} />
         </>}

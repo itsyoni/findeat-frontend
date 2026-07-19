@@ -35,6 +35,8 @@
     "POLL_CREATED": "{{name}} יצר/ה סקר",
     "POLL_ENDED": "הסקר הסתיים",
     "RESTAURANT_CLAIM_APPROVED": "הבקשה שלך למסעדה אושרה",
-    "RESTAURANT_CLAIM_REJECTED": "הבקשה שלך למסעדה נדחתה"
+    "RESTAURANT_CLAIM_REJECTED": "הבקשה שלך למסעדה נדחתה",
+    "PLACE_LIST_INVITE": "{{name}} הזמין/ה אותך לרשימה משותפת",
+    "PROFILE_TAG_UNLOCKED": "פתחת תג פרופיל חדש"
   }
 }

@@ -17,9 +17,9 @@ export default function ProfileDetails({ profile }: Props) {
     .join(" · ");
 
   return (
-    <View className="mt-4 flex-row items-center gap-1.5 rounded-full bg-gray-100 px-3 py-2 dark:bg-gray-900">
-      <UserCircleIcon size={15} color="#6B7280" />
-      <Text className="text-sm text-gray-700 dark:text-gray-200">
+    <View className="max-w-40 shrink flex-row items-center gap-1 rounded-full bg-gray-100 px-2.5 py-1.5 dark:bg-gray-900">
+      <UserCircleIcon size={14} color="#6B7280" />
+      <Text numberOfLines={1} className="shrink text-xs text-gray-700 dark:text-gray-200">
         {pronouns}
       </Text>
     </View>

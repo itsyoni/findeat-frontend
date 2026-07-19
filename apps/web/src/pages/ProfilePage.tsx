@@ -3,8 +3,13 @@ import type { FormEvent } from "react";
 import {
   RESTAURANT_CATEGORY_OPTIONS,
   type ManagedRestaurant,
+  type RestaurantOpeningHours,
 } from "@findeat/types";
 import { request, uploadImage } from "../lib/api";
+import {
+  OpeningHoursEditor,
+  normalizeOpeningHours,
+} from "../components/OpeningHoursEditor";
 
 export function ProfilePage({
   restaurant,
@@ -17,19 +22,29 @@ export function ProfilePage({
 }) {
   const [form, setForm] = useState({
     name: restaurant.name,
-    address: restaurant.address || "",
-    city: restaurant.city || "",
     phone: restaurant.phone || "",
     website: restaurant.website || "",
     instagram: restaurant.instagram || "",
     bio: restaurant.bio || "",
   });
   const [categoryNames, setCategoryNames] = useState(restaurant.categories || []);
+  const [openingHours, setOpeningHours] = useState<RestaurantOpeningHours | null>(() =>
+    restaurant.openingHours
+      ? normalizeOpeningHours(restaurant.openingHours)
+      : null,
+  );
   const [status, setStatus] = useState("");
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState(restaurant.logoUrl || "");
   const [coverPreview, setCoverPreview] = useState(restaurant.coverUrl || "");
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [proposedAddress, setProposedAddress] = useState("");
+  const [addressReason, setAddressReason] = useState("");
+  const [requestingAddress, setRequestingAddress] = useState(false);
+  const requiredSetupFields = restaurant.missingSetupFields.filter(
+    (field) => field !== "city" && field !== "phone",
+  );
 
   function selectImage(file: File | undefined, type: "logo" | "cover") {
     if (!file) return;
@@ -64,6 +79,7 @@ export function ProfilePage({
         body: JSON.stringify({
           ...form,
           categoryNames,
+          openingHours,
           ...(logoUrl ? { logoUrl } : {}),
           ...(coverUrl ? { coverUrl } : {}),
         }),
@@ -74,6 +90,32 @@ export function ProfilePage({
       setStatus("Saved");
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Could not save");
+    }
+  }
+
+  async function requestAddressChange() {
+    if (!proposedAddress.trim() || requestingAddress) return;
+    setRequestingAddress(true);
+    setStatus("Verifying address…");
+    try {
+      await request(`/restaurants/me/${restaurant.id}/address-change-requests`, {
+        method: "POST",
+        body: JSON.stringify({
+          address: proposedAddress.trim(),
+          reason: addressReason.trim() || undefined,
+        }),
+      });
+      setRequestOpen(false);
+      setProposedAddress("");
+      setAddressReason("");
+      await onSaved();
+      setStatus("Address change request sent");
+    } catch (error) {
+      setStatus(
+        error instanceof Error ? error.message : "Could not send request",
+      );
+    } finally {
+      setRequestingAddress(false);
     }
   }
 
@@ -92,9 +134,9 @@ export function ProfilePage({
               ? "Your claim was approved. Complete the restaurant information before opening the management dashboard."
               : "Keep the information customers use to find and contact you accurate."}
           </p>
-          {setupMode && restaurant.missingSetupFields.length > 0 && (
+          {setupMode && requiredSetupFields.length > 0 && (
             <p className="setup-missing">
-              Still needed: {restaurant.missingSetupFields.join(", ")}.
+              Still needed: {requiredSetupFields.join(", ")}.
             </p>
           )}
         </div>
@@ -185,32 +227,92 @@ export function ProfilePage({
             })}
           </div>
         </fieldset>
-        <label>
-          City
+        <OpeningHoursEditor value={openingHours} onChange={setOpeningHours} />
+        <label className="full">
+          Restaurant address
           <input
-            value={form.city}
-            onChange={(event) => setForm({ ...form, city: event.target.value })}
-            required
+            value={restaurant.address || "No verified address"}
+            readOnly
+            aria-readonly="true"
           />
+          <small>
+            The address is locked after ownership is approved. City and map
+            location are managed from this verified address.
+          </small>
         </label>
+        <section className="address-change-box full">
+          {restaurant.pendingAddressChangeRequest ? (
+            <div className="address-request-pending">
+              <div>
+                <strong>Address change pending review</strong>
+                <p>{restaurant.pendingAddressChangeRequest.proposedAddress}</p>
+              </div>
+              <span>Pending</span>
+            </div>
+          ) : requestOpen ? (
+            <div className="address-request-form">
+              <div>
+                <strong>Request an address change</strong>
+                <p>An admin will verify the new location before it goes live.</p>
+              </div>
+              <label>
+                Proposed address
+                <input
+                  value={proposedAddress}
+                  onChange={(event) => setProposedAddress(event.target.value)}
+                  placeholder="Enter the complete street address"
+                />
+              </label>
+              <label>
+                Reason for the change <span className="muted">(optional)</span>
+                <textarea
+                  value={addressReason}
+                  onChange={(event) => setAddressReason(event.target.value)}
+                  placeholder="For example: we moved to a new location"
+                  rows={3}
+                />
+              </label>
+              <div className="address-request-actions">
+                <button
+                  type="button"
+                  className="secondary"
+                  onClick={() => setRequestOpen(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="primary"
+                  disabled={!proposedAddress.trim() || requestingAddress}
+                  onClick={() => void requestAddressChange()}
+                >
+                  {requestingAddress ? "Verifying…" : "Send request"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="address-change-locked">
+              <div>
+                <strong>Need to correct or change the address?</strong>
+                <p>Send a verified change request to FindEat administration.</p>
+              </div>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => setRequestOpen(true)}
+              >
+                Request change
+              </button>
+            </div>
+          )}
+        </section>
         <label>
-          Address
-          <input
-            value={form.address}
-            onChange={(event) =>
-              setForm({ ...form, address: event.target.value })
-            }
-            required
-          />
-        </label>
-        <label>
-          Phone
+          Phone <span className="muted">(optional)</span>
           <input
             value={form.phone}
             onChange={(event) =>
               setForm({ ...form, phone: event.target.value })
             }
-            required
           />
         </label>
         <label>

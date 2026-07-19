@@ -29,6 +29,9 @@ export default function ExpandablePostCaption({
   const directionStyle: TextStyle = {
     textAlign: "auto",
     writingDirection: isRtl ? "rtl" : "ltr",
+    // Keep single-line captions on the same baseline and height. Emoji glyphs
+    // otherwise report slightly taller font metrics and shift nearby content.
+    lineHeight: 22,
     ...textStyle,
   };
   const fullWidthStyle: TextStyle = {
@@ -106,7 +109,10 @@ export default function ExpandablePostCaption({
       ) : (
         <View
           className="flex-row items-center gap-2"
-          style={{ flexDirection: isRtl ? "row-reverse" : "row" }}
+          style={{
+            flexDirection: isRtl ? "row-reverse" : "row",
+            minHeight: 22,
+          }}
         >
           <Text
             numberOfLines={1}

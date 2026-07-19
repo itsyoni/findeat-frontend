@@ -8,6 +8,32 @@ export function createChatsApi(api: AxiosInstance) {
       return data;
     },
 
+    async archived() {
+      const { data } = await api.get<Chat[]>("/chats/archived");
+      return data;
+    },
+
+    async archivedCount() {
+      const { data } = await api.get<{ count: number }>("/chats/archived/count");
+      return data.count;
+    },
+
+    async setPinned(id: string, pinned: boolean) {
+      const { data } = await api.patch<{
+        conversationId: string;
+        pinned: boolean;
+      }>(`/chats/${id}/pin`, { pinned });
+      return data;
+    },
+
+    async setArchived(id: string, archived: boolean) {
+      const { data } = await api.patch<{
+        conversationId: string;
+        archived: boolean;
+      }>(`/chats/${id}/archive`, { archived });
+      return data;
+    },
+
     async findRestaurantConversation(restaurantId: string) {
       const { data } = await api.get<Chat[]>("/chats");
       return (
@@ -59,10 +85,38 @@ export function createChatsApi(api: AxiosInstance) {
       return data;
     },
 
+    async starredMessages(id: string) {
+      const { data } = await api.get<Message[]>(`/chats/${id}/starred-messages`);
+      return data;
+    },
+
+    async searchMessages(id: string, query: string) {
+      const { data } = await api.get<Message[]>(`/chats/${id}/messages/search`, {
+        params: { q: query },
+      });
+      return data;
+    },
+
+    async setMessageStarred(id: string, messageId: string, starred: boolean) {
+      const { data } = await api.patch<{ messageId: string; starred: boolean }>(
+        `/chats/${id}/messages/${messageId}/star`,
+        { starred },
+      );
+      return data;
+    },
+
     async sendMessage(id: string, payload: SendMessagePayload) {
       const { data } = await api.post<Message>(
         `/chats/${id}/messages`,
         payload,
+      );
+      return data;
+    },
+
+    async editMessage(id: string, messageId: string, content: string) {
+      const { data } = await api.patch<Message>(
+        `/chats/${id}/messages/${messageId}`,
+        { content },
       );
       return data;
     },

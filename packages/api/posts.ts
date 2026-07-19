@@ -1,4 +1,11 @@
-import type { Comment, FeedPage, Post, PostType, PostVisibility } from "@findeat/types";
+import type {
+  Comment,
+  CommentContext,
+  FeedPage,
+  Post,
+  PostType,
+  PostVisibility,
+} from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
 export function createPostsApi(api: AxiosInstance) {
@@ -89,13 +96,22 @@ export function createPostsApi(api: AxiosInstance) {
 
     async feed(
       type?: PostType,
-      options?: { cursor?: string; limit?: number },
+      options?: {
+        cursor?: string;
+        limit?: number;
+        latitude?: number;
+        longitude?: number;
+        radiusKm?: number;
+      },
     ) {
       const { data } = await api.get<FeedPage>("/posts/feed", {
         params: {
           ...(type ? { type } : {}),
           ...(options?.cursor ? { cursor: options.cursor } : {}),
           ...(options?.limit ? { limit: options.limit } : {}),
+          ...(options?.latitude !== undefined ? { latitude: options.latitude } : {}),
+          ...(options?.longitude !== undefined ? { longitude: options.longitude } : {}),
+          ...(options?.radiusKm ? { radiusKm: options.radiusKm } : {}),
         },
       });
 
@@ -174,6 +190,24 @@ export function createPostsApi(api: AxiosInstance) {
       return data;
     },
 
+    async addAuthorNote(id: string, content: string) {
+      const { data } = await api.post<Comment>(
+        `/posts/${id}/comments/author-note`,
+        { content },
+      );
+      commentsCache.delete(id);
+      return data;
+    },
+
+    async updateAuthorNote(id: string, content: string) {
+      const { data } = await api.patch<Comment>(
+        `/posts/${id}/comments/author-note`,
+        { content },
+      );
+      commentsCache.delete(id);
+      return data;
+    },
+
     async comments(id: string) {
       const cached = commentsCache.get(id);
 
@@ -188,6 +222,28 @@ export function createPostsApi(api: AxiosInstance) {
         expiresAt: Date.now() + commentsCacheTtlMs,
       });
 
+      return data;
+    },
+
+    async commentContext(id: string) {
+      const { data } = await api.get<CommentContext>(
+        `/posts/${id}/comments/context`,
+      );
+      return data;
+    },
+
+    async addPoll(id: string, title: string, options: string[]) {
+      const { data } = await api.post<CommentContext>(
+        `/posts/${id}/comments/poll`,
+        { title, options },
+      );
+      return data;
+    },
+
+    async voteOnPoll(id: string, optionId: string) {
+      const { data } = await api.post<CommentContext>(
+        `/posts/${id}/comments/poll/options/${optionId}/vote`,
+      );
       return data;
     },
 
@@ -217,6 +273,15 @@ export function createPostsApi(api: AxiosInstance) {
         removedByPostAuthor: boolean;
         removedUserId: string;
       }>(`/posts/${id}/comments/${commentId}`);
+      commentsCache.delete(id);
+      return data;
+    },
+
+    async updateComment(id: string, commentId: string, content: string) {
+      const { data } = await api.patch<Comment>(
+        `/posts/${id}/comments/${commentId}`,
+        { content },
+      );
       commentsCache.delete(id);
       return data;
     },

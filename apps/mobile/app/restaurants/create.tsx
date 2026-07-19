@@ -1,7 +1,9 @@
 import { AppAlert as Alert } from "@/lib/appAlert";
 import { TextInput } from "@/components/common";
 import Text from "@/components/common/AppText";
+import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import { api } from "@/lib/api";
+import type { SelectedAddress } from "@findeat/types";
 import { uploadImage } from "@findeat/utils";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
@@ -10,8 +12,7 @@ import { Image, ScrollView, TouchableOpacity } from "react-native";
 
 export default function CreateRestaurantScreen() {
   const [name, setName] = useState("");
-  const [city, setCity] = useState("");
-  const [address, setAddress] = useState("");
+  const [address, setAddress] = useState<SelectedAddress | null>(null);
   const [description, setDescription] = useState("");
 
   const [avatarUri, setAvatarUri] = useState<string>();
@@ -44,6 +45,10 @@ export default function CreateRestaurantScreen() {
       Alert.alert("Restaurant name is required");
       return;
     }
+    if (!address) {
+      Alert.alert("Restaurant address is required");
+      return;
+    }
 
     try {
       setLoading(true);
@@ -61,8 +66,7 @@ export default function CreateRestaurantScreen() {
 
       await api.restaurants.create({
         name,
-        city,
-        address,
+        address: address.address,
         description,
         avatarUrl,
         coverUrl,
@@ -116,19 +120,7 @@ export default function CreateRestaurantScreen() {
         onChangeText={setName}
       />
 
-      <TextInput
-        className="border rounded-2xl mt-4 p-4"
-        placeholder="City"
-        value={city}
-        onChangeText={setCity}
-      />
-
-      <TextInput
-        className="border rounded-2xl mt-4 p-4"
-        placeholder="Address"
-        value={address}
-        onChangeText={setAddress}
-      />
+      <AddressAutocomplete onSelect={setAddress} />
 
       <TextInput
         className="border rounded-2xl mt-4 p-4 h-32"

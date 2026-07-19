@@ -1,19 +1,40 @@
 import Tabs from "@/components/common/Tabs";
 import PersonalProfileHeader from "@/components/profile/PersonalProfileHeader";
 import ProfilePostGrid from "@/components/profile/ProfilePostGrid";
+import ProfileStatisticsTeaser from "@/components/profile/ProfileStatisticsTeaser";
+import { useAppTheme } from "@/contexts/ThemeContext";
 import { useMyProfile } from "@/hooks/useMyProfile";
+import {
+  dismissCreatorInsightsPromotion,
+  isCreatorInsightsPromotionDismissed,
+} from "@/lib/creatorInsightsPromotion";
 import { PostType } from "@findeat/types/post";
 import { filterPostsByType } from "@findeat/utils/posts";
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Animated } from "react-native";
+import Animated, {
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from "react-native-reanimated";
+
+const CREATOR_INSIGHTS_FOLLOWER_THRESHOLD = 1_000;
+
+type PromotionState = {
+  userId: string;
+  dismissed: boolean;
+};
 
 export default function ProfileScreen() {
   const { t } = useTranslation(["common", "profile"]);
+  const { isDark } = useAppTheme();
   const { profile, loading, refresh } = useMyProfile();
   const [activeFeed, setActiveFeed] = useState<PostType>("CONTENT");
-  const [scrollY] = useState(() => new Animated.Value(0));
+  const [promotionState, setPromotionState] = useState<PromotionState | null>(null);
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler((event) => {
+    scrollY.value = event.contentOffset.y;
+  });
 
   const posts = useMemo(
     () => filterPostsByType(profile?.posts, activeFeed),
@@ -26,18 +47,61 @@ export default function ProfileScreen() {
     }, [refresh]),
   );
 
+  useEffect(() => {
+    if (
+      !profile?.id ||
+      profile.followersCount < CREATOR_INSIGHTS_FOLLOWER_THRESHOLD
+    ) {
+      return;
+    }
+
+    let active = true;
+    void isCreatorInsightsPromotionDismissed(profile.id)
+      .then((dismissed) => {
+        if (active) {
+          setPromotionState({ userId: profile.id, dismissed });
+        }
+      })
+      .catch((error) => {
+        console.error("Could not read creator insights dismissal", error);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [profile?.followersCount, profile?.id]);
+
+  const showCreatorInsightsPromotion =
+    profile !== null &&
+    profile.followersCount >= CREATOR_INSIGHTS_FOLLOWER_THRESHOLD &&
+    promotionState?.userId === profile.id &&
+    !promotionState.dismissed;
+
+  function dismissCreatorInsights() {
+    if (!profile?.id) return;
+
+    setPromotionState({ userId: profile.id, dismissed: true });
+    void dismissCreatorInsightsPromotion(profile.id).catch((error) => {
+      console.error("Could not persist creator insights dismissal", error);
+    });
+  }
+
   return (
     <Animated.ScrollView
-      className="flex-1 bg-canvas dark:bg-black"
+      style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FFF" }}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 110 }}
+      contentContainerStyle={{
+        paddingBottom: 110,
+        backgroundColor: isDark ? "#000" : "#FFF",
+      }}
       scrollEventThrottle={16}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: true },
-      )}
+      onScroll={scrollHandler}
     >
       <PersonalProfileHeader profile={profile} loading={loading} scrollY={scrollY} />
+
+      {!loading && showCreatorInsightsPromotion ? (
+        <ProfileStatisticsTeaser onDismiss={dismissCreatorInsights} />
+      ) : null}
 
       <Tabs
         activeTab={activeFeed}

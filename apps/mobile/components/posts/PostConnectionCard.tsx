@@ -10,13 +10,14 @@ import {
   PlayIcon,
   SparkleIcon,
 } from "phosphor-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import Animated, {
-  FadeInDown,
-  FadeOutUp,
-  LinearTransition,
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 
 type Props = {
@@ -33,8 +34,32 @@ export default function PostConnectionCard({
   const { t } = useTranslation("common");
   const { isDark } = useAppTheme();
   const [expanded, setExpanded] = useState(false);
+  const [expandedContentHeight, setExpandedContentHeight] = useState(0);
+  const revealHeight = useSharedValue(0);
+  const revealOpacity = useSharedValue(0);
   const targets = linkedPosts.filter((post) => post.type !== sourceType);
   const target = targets[0];
+
+  useEffect(() => {
+    const easing = Easing.out(Easing.cubic);
+    revealHeight.set(
+      withTiming(expanded ? expandedContentHeight : 0, {
+        duration: 300,
+        easing,
+      }),
+    );
+    revealOpacity.set(
+      withTiming(expanded ? 1 : 0, {
+        duration: 220,
+        easing,
+      }),
+    );
+  }, [expanded, expandedContentHeight, revealHeight, revealOpacity]);
+
+  const revealStyle = useAnimatedStyle(() => ({
+    height: revealHeight.value,
+    opacity: revealOpacity.value,
+  }));
 
   if (!target) return null;
 
@@ -124,8 +149,7 @@ export default function PostConnectionCard({
   }
 
   return (
-    <Animated.View
-      layout={LinearTransition.springify().damping(18).stiffness(180)}
+    <View
       className={`mt-3 overflow-hidden rounded-2xl border ${containerClass}`}
     >
       <TouchableOpacity
@@ -167,11 +191,12 @@ export default function PostConnectionCard({
               count: targets.length,
             })}
           </Text>
-          {!expanded ? (
-            <Text className="mt-1 text-[11px] font-bold text-[#D0A62E]">
-              {t("tapToReveal")}
-            </Text>
-          ) : null}
+          <Text
+            className="mt-1 text-[11px] font-bold text-[#D0A62E]"
+            style={{ opacity: expanded ? 0 : 1 }}
+          >
+            {t("tapToReveal")}
+          </Text>
         </View>
 
         <View className="ml-2 h-8 w-8 items-center justify-center rounded-full bg-black/10 dark:bg-white/10">
@@ -183,11 +208,28 @@ export default function PostConnectionCard({
         </View>
       </TouchableOpacity>
 
-      {expanded ? (
-        <Animated.View
-          entering={FadeInDown.duration(190)}
-          exiting={FadeOutUp.duration(130)}
+      <Animated.View
+        pointerEvents={expanded ? "auto" : "none"}
+        accessibilityElementsHidden={!expanded}
+        importantForAccessibility={expanded ? "auto" : "no-hide-descendants"}
+        style={revealStyle}
+        className="overflow-hidden"
+      >
+        <View
+          collapsable={false}
+          onLayout={(event) => {
+            const nextHeight = event.nativeEvent.layout.height;
+            if (Math.abs(nextHeight - expandedContentHeight) > 0.5) {
+              setExpandedContentHeight(nextHeight);
+            }
+          }}
           className="border-t border-black/10 px-3 pb-3 pt-3 dark:border-white/10"
+          style={{
+            position: "absolute",
+            left: 0,
+            right: 0,
+            top: 0,
+          }}
         >
           {targets.length === 1 ? (
             renderConnectedPost(target)
@@ -200,8 +242,8 @@ export default function PostConnectionCard({
               {targets.map((post, index) => renderConnectedPost(post, index))}
             </ScrollView>
           )}
-        </Animated.View>
-      ) : null}
-    </Animated.View>
+        </View>
+      </Animated.View>
+    </View>
   );
 }

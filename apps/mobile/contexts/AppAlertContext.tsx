@@ -45,6 +45,43 @@ export function AppAlertProvider({ children }: { children: React.ReactNode }) {
   const cancelButton = buttons.find((button) => button.style === "cancel");
   const canDismissBackdrop = request?.options?.cancelable === true;
   const horizontalActions = buttons.length === 2;
+  const tone = request?.options?.tone ?? "default";
+  const alertBackgroundColor =
+    tone === "success"
+      ? isDark
+        ? "#10231A"
+        : "#F0FDF4"
+      : tone === "warning"
+        ? isDark
+          ? "#2A1216"
+          : "#FFF1F2"
+        : isDark
+          ? "#171717"
+          : "#FBFAF8";
+  const alertBorderColor =
+    tone === "success"
+      ? isDark
+        ? "#166534"
+        : "#BBF7D0"
+      : tone === "warning"
+        ? isDark
+          ? "#991B1B"
+          : "#FECDD3"
+        : isDark
+          ? "rgba(255,255,255,0.1)"
+          : "rgba(0,0,0,0.05)";
+  const titleColor =
+    tone === "success"
+      ? isDark
+        ? "#BBF7D0"
+        : "#166534"
+      : tone === "warning"
+        ? isDark
+          ? "#FECDD3"
+          : "#B91C1C"
+        : isDark
+          ? "#FFFFFF"
+          : "#171717";
 
   return (
     <>
@@ -68,9 +105,13 @@ export function AppAlertProvider({ children }: { children: React.ReactNode }) {
         >
           <Pressable
             accessibilityViewIsModal
-            className="w-full max-w-md overflow-hidden rounded-[28px] border border-black/5 bg-[#FBFAF8] p-5 shadow-2xl dark:border-white/10 dark:bg-[#171717]"
+            className="w-full max-w-md overflow-hidden rounded-[28px] border p-5 shadow-2xl"
             onPress={(event) => event.stopPropagation()}
-            style={{ direction: isRtl ? "rtl" : "ltr" }}
+            style={{
+              direction: isRtl ? "rtl" : "ltr",
+              backgroundColor: alertBackgroundColor,
+              borderColor: alertBorderColor,
+            }}
           >
             <View className="mb-5">
               <Text
@@ -79,6 +120,7 @@ export function AppAlertProvider({ children }: { children: React.ReactNode }) {
                 style={{
                   textAlign: "auto",
                   writingDirection: isRtl ? "rtl" : "ltr",
+                  color: titleColor,
                 }}
               >
                 {request?.title}
@@ -109,18 +151,24 @@ export function AppAlertProvider({ children }: { children: React.ReactNode }) {
                     ? isDark
                       ? "#292929"
                       : "#EEEAE4"
-                    : isDark
-                      ? "#F4B942"
-                      : "#171717";
+                    : tone === "success"
+                      ? "#15803D"
+                      : tone === "warning"
+                        ? "#DC2626"
+                        : isDark
+                          ? "#F4B942"
+                          : "#171717";
                 const textColor = destructive
                   ? "#FFFFFF"
                   : cancel
                     ? isDark
                       ? "#FFFFFF"
                       : "#171717"
-                    : isDark
-                      ? "#171717"
-                      : "#FFFFFF";
+                    : tone === "success" || tone === "warning"
+                      ? "#FFFFFF"
+                      : isDark
+                        ? "#171717"
+                        : "#FFFFFF";
 
                 return (
                   <Pressable

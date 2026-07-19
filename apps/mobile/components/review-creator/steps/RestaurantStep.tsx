@@ -3,12 +3,15 @@ import RestaurantSearch from "@/components/restaurants/RestaurantSearch";
 import { SelectedRestaurant } from "@findeat/types/restaurant";
 import { TouchableOpacity, View } from "react-native";
 import { Skeleton, SkeletonPulse, ThemedSafeAreaView } from "@/components/common";
+import SaveDraftButton from "@/components/posts/SaveDraftButton";
 
 type Props = {
   selectedRestaurant: SelectedRestaurant | null;
   onSelect: (restaurant: SelectedRestaurant | null) => void;
   onBack: () => void;
   loading?: boolean;
+  onSaveDraft?: () => void;
+  savingDraft?: boolean;
 };
 
 export default function RestaurantStep({
@@ -16,6 +19,8 @@ export default function RestaurantStep({
   onSelect,
   onBack,
   loading = false,
+  onSaveDraft,
+  savingDraft,
 }: Props) {
   return (
     <ThemedSafeAreaView
@@ -25,7 +30,10 @@ export default function RestaurantStep({
         <TouchableOpacity onPress={onBack} className="py-2 pr-4">
           <Text className="font-bold text-black dark:text-white">← Back</Text>
         </TouchableOpacity>
-        <Text className="text-sm font-semibold text-gray-400">1 of 4</Text>
+        <View className="flex-row items-center gap-2">
+          {onSaveDraft && <SaveDraftButton onPress={onSaveDraft} saving={savingDraft} />}
+          <Text className="text-sm font-semibold text-gray-400">1 of 4</Text>
+        </View>
       </View>
       <Text className="text-3xl font-bold text-black dark:text-white">
         Where did you eat?

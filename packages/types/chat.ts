@@ -16,6 +16,7 @@ type MessageReply = {
   id: string;
   type?: MessageType;
   content: string | null;
+  editedAt?: string | null;
   imageUrl?: string | null;
   deletedAt?: string | null;
   sender: UserSummary;
@@ -38,12 +39,14 @@ export type Chat = {
   unreadCount: number;
   pinned: boolean;
   muted: boolean;
+  archived?: boolean;
 
   participants: {
     userId: string;
     lastReadAt?: string | null;
     pinned?: boolean;
     muted?: boolean;
+    archivedAt?: string | null;
     role?: "ADMIN" | "MEMBER";
     user: UserSummary;
   }[];
@@ -62,6 +65,7 @@ export type Message = {
   restaurant?: Restaurant | null;
 
   createdAt: string;
+  editedAt?: string | null;
   deletedAt?: string | null;
   senderId: string;
   sender: UserSummary;
@@ -71,6 +75,8 @@ export type Message = {
   replyTo?: MessageReply | null;
   mentions?: { user: UserSummary }[];
   readReceipts?: { userId: string; readAt: string }[];
+  starred?: boolean;
+  starredAt?: string;
 };
 
 export type RestaurantConversation = {
@@ -87,6 +93,7 @@ export type RestaurantMessage = {
   content?: string | null;
   imageUrl?: string | null;
   createdAt: string;
+  editedAt?: string | null;
   senderId: string;
   sender: UserSummary;
   sentAsRestaurantId?: string | null;

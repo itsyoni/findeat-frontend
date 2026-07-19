@@ -1,5 +1,6 @@
 import type { Menu } from "./menu";
 import type { UserRestaurant, UserSummary } from "./user";
+import type { Post } from "./post";
 
 export type RestaurantStatus =
   | "PENDING"
@@ -9,6 +10,43 @@ export type RestaurantStatus =
   | "MERGED";
 
 export type RestaurantSource = "USER" | "MAPBOX" | "GOOGLE" | "OSM" | "ADMIN";
+
+export const RESTAURANT_WEEKDAYS = [
+  "MONDAY",
+  "TUESDAY",
+  "WEDNESDAY",
+  "THURSDAY",
+  "FRIDAY",
+  "SATURDAY",
+  "SUNDAY",
+] as const;
+
+export type RestaurantWeekday = (typeof RESTAURANT_WEEKDAYS)[number];
+
+export type RestaurantOpeningPeriod = {
+  open: string;
+  close: string;
+};
+
+export type RestaurantOpeningHours = {
+  timezone: string;
+  weekly: Record<RestaurantWeekday, RestaurantOpeningPeriod[]>;
+};
+
+export type RestaurantAddressChangeRequest = {
+  id: string;
+  restaurantId: string;
+  requestedById: string;
+  proposedAddress: string;
+  proposedCity: string;
+  proposedLatitude: number;
+  proposedLongitude: number;
+  reason?: string | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  rejectionReason?: string | null;
+  reviewedAt?: string | null;
+  createdAt: string;
+};
 
 export type RestaurantPostPreview = {
   id: string;
@@ -45,9 +83,11 @@ export type ManagedRestaurant = {
   website?: string | null;
   instagram?: string | null;
   bio?: string | null;
+  openingHours?: RestaurantOpeningHours | null;
   categories: string[];
   setupComplete: boolean;
   missingSetupFields: string[];
+  pendingAddressChangeRequest?: RestaurantAddressChangeRequest | null;
   followersCount?: number;
   averageRating?: number | null;
   reviewsCount?: number;
@@ -102,6 +142,7 @@ export type Restaurant = {
   phone?: string | null;
   website?: string | null;
   instagram?: string | null;
+  openingHours?: RestaurantOpeningHours | null;
 
   status?: RestaurantStatus;
   source?: RestaurantSource;
@@ -122,6 +163,15 @@ export type Restaurant = {
     dietaryMatches: Array<{ tag: string; dishCount: number }>;
     cuisineMatches: Array<{ tag: string; dishCount: number }>;
   };
+};
+
+export type SavedPostAttribution = {
+  id: string;
+  wantToTry: boolean;
+  visited: boolean;
+  favorite: boolean;
+  restaurant: Pick<Restaurant, "id" | "name" | "logoUrl" | "city">;
+  post: Post;
 };
 
 export type RestaurantMapFilter =

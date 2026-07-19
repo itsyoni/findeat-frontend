@@ -9,6 +9,7 @@ import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
 import { HeadsetIcon } from "@phosphor-icons/react/dist/csr/Headset";
 import { SparkleIcon } from "@phosphor-icons/react/dist/csr/Sparkle";
 import { FlagIcon } from "@phosphor-icons/react/dist/csr/Flag";
+import { MapPinLineIcon } from "@phosphor-icons/react/dist/csr/MapPinLine";
 import type {
   AdminDashboardSection,
   AdminUser,
@@ -21,6 +22,7 @@ import { SupportTicketsPanel } from "../components/SupportTicketsPanel";
 import { ProductUpdatesAdmin } from "../components/ProductUpdatesAdmin";
 import { UserIdentity } from "../components/UserIdentity";
 import { ModerationPanel } from "../components/ModerationPanel";
+import { AddressChangeRequestsPanel } from "../components/AddressChangeRequestsPanel";
 import { request } from "../lib/api";
 
 export function AdminPage({
@@ -29,6 +31,8 @@ export function AdminPage({
   account,
   reload,
   onLogout,
+  section,
+  onNavigate,
   onBackToBusiness,
 }: {
   claims: RestaurantClaim[];
@@ -36,9 +40,10 @@ export function AdminPage({
   account: BusinessAccount;
   reload: () => Promise<void>;
   onLogout: () => void;
+  section: AdminDashboardSection;
+  onNavigate: (section: AdminDashboardSection) => void;
   onBackToBusiness?: () => void;
 }) {
-  const [section, setSection] = useState<AdminDashboardSection>("claims");
   const [workingId, setWorkingId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
@@ -174,7 +179,7 @@ export function AdminPage({
           <button
             className={section === "claims" ? "active" : ""}
             onClick={() => {
-              setSection("claims");
+              onNavigate("claims");
               setError("");
             }}
           >
@@ -182,9 +187,18 @@ export function AdminPage({
             <small className="nav-count">{claims.length}</small>
           </button>
           <button
+            className={section === "addresses" ? "active" : ""}
+            onClick={() => {
+              onNavigate("addresses");
+              setError("");
+            }}
+          >
+            <MapPinLineIcon className="nav-icon" weight="duotone" /> Address requests
+          </button>
+          <button
             className={section === "moderation" ? "active" : ""}
             onClick={() => {
-              setSection("moderation");
+              onNavigate("moderation");
               setError("");
             }}
           >
@@ -193,7 +207,7 @@ export function AdminPage({
           <button
             className={section === "ownership" ? "active" : ""}
             onClick={() => {
-              setSection("ownership");
+              onNavigate("ownership");
               setError("");
             }}
           >
@@ -202,7 +216,7 @@ export function AdminPage({
           <button
             className={section === "support" ? "active" : ""}
             onClick={() => {
-              setSection("support");
+              onNavigate("support");
               setError("");
             }}
           >
@@ -211,7 +225,7 @@ export function AdminPage({
           <button
             className={section === "updates" ? "active" : ""}
             onClick={() => {
-              setSection("updates");
+              onNavigate("updates");
               setError("");
             }}
           >
@@ -220,7 +234,7 @@ export function AdminPage({
           <button
             className={section === "admins" ? "active" : ""}
             onClick={() => {
-              setSection("admins");
+              onNavigate("admins");
               setError("");
             }}
           >
@@ -329,6 +343,8 @@ export function AdminPage({
                 </div>
               )}
             </>
+          ) : section === "addresses" ? (
+            <AddressChangeRequestsPanel />
           ) : section === "moderation" ? (
             <ModerationPanel />
           ) : section === "ownership" ? (

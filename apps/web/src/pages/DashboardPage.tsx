@@ -20,6 +20,7 @@ import type {
   RestaurantReview,
 } from "@findeat/types";
 import { AccountAvatar } from "../components/AccountAvatar";
+import { AppLink } from "../components/AppLink";
 import { NotificationsPopover } from "../components/NotificationsPopover";
 import { useInboxSocket } from "../hooks/useInboxSocket";
 import { useRestaurantActivitySocket } from "../hooks/useRestaurantActivitySocket";
@@ -37,9 +38,34 @@ import { OverviewPage } from "./OverviewPage";
 import { ProfilePage } from "./ProfilePage";
 import { ReviewsPage } from "./ReviewsPage";
 import { OwnerSupportPage } from "./OwnerSupportPage";
+import {
+  adminPaths,
+  adminSectionFromPath,
+  businessPaths,
+  businessSectionFromPath,
+  navigateTo,
+  usePathname,
+} from "../lib/navigation";
 import "../App.css";
 
+function normalizeRestaurantSetup(restaurant: ManagedRestaurant) {
+  const missingSetupFields = [
+    !restaurant.name.trim() ? "name" : null,
+    !restaurant.bio?.trim() ? "description" : null,
+    !restaurant.logoUrl?.trim() ? "logo" : null,
+    !restaurant.coverUrl?.trim() ? "cover" : null,
+    !restaurant.address?.trim() ? "address" : null,
+    restaurant.categories.length === 0 ? "categories" : null,
+  ].filter((field): field is string => field !== null);
+  return {
+    ...restaurant,
+    missingSetupFields,
+    setupComplete: missingSetupFields.length === 0,
+  };
+}
+
 export function DashboardPage({ onLogout }: { onLogout: () => void }) {
+  const pathname = usePathname();
   const [account, setAccount] = useState<BusinessAccount | null>(null);
   const [restaurants, setRestaurants] = useState<ManagedRestaurant[]>([]);
   const [menus, setMenus] = useState<Menu[]>([]);
@@ -56,7 +82,6 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
   const [claims, setClaims] = useState<RestaurantClaim[]>([]);
   const [admins, setAdmins] = useState<AdminUser[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [section, setSection] = useState<BusinessDashboardSection>("overview");
   const [selectedRestaurantId, setSelectedRestaurantId] = useState<
     string | null
   >(() => localStorage.getItem("findeat-selected-restaurant"));
@@ -66,6 +91,13 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
     restaurants.find((item) => item.id === selectedRestaurantId) ??
     restaurants[0];
   const activeRestaurantId = restaurant?.id;
+  const routedBusinessSection = businessSectionFromPath(pathname);
+  const routedAdminSection = adminSectionFromPath(pathname);
+  const isAdminRoute = pathname.startsWith("/admin");
+  const section = routedBusinessSection ?? "overview";
+  const navigateSection = useCallback((next: BusinessDashboardSection) => {
+    navigateTo(businessPaths[next]);
+  }, []);
 
   const loadRestaurantConversations = useCallback(
     async (restaurantId: string) => {
@@ -94,7 +126,10 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
   );
 
   const refreshRestaurantSummary = useCallback(async () => {
-    setRestaurants(await request<ManagedRestaurant[]>("/restaurants/me"));
+    const nextRestaurants = await request<ManagedRestaurant[]>(
+      "/restaurants/me",
+    );
+    setRestaurants(nextRestaurants.map(normalizeRestaurantSetup));
   }, []);
 
   const handleLiveActivity = useCallback(
@@ -181,8 +216,9 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
         setAdmins([]);
       }
 
-      const nextRestaurants =
-        await request<ManagedRestaurant[]>("/restaurants/me");
+      const nextRestaurants = (
+        await request<ManagedRestaurant[]>("/restaurants/me")
+      ).map(normalizeRestaurantSetup);
       setRestaurants(nextRestaurants);
       if (nextRestaurants.length) {
         const incompleteRestaurant = nextRestaurants.find(
@@ -254,6 +290,33 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
     restaurant?.id,
   ]);
 
+  useEffect(() => {
+    if (loading || !account) return;
+    if (isAdminRoute && !isAdmin) {
+      navigateTo(businessPaths.overview, true);
+      return;
+    }
+    if (isAdmin && !restaurant && !isAdminRoute) {
+      navigateTo(adminPaths.claims, true);
+      return;
+    }
+    if (isAdminRoute && !routedAdminSection) {
+      navigateTo(adminPaths.claims, true);
+      return;
+    }
+    if (!isAdminRoute && !routedBusinessSection) {
+      navigateTo(businessPaths.overview, true);
+    }
+  }, [
+    account,
+    isAdmin,
+    isAdminRoute,
+    loading,
+    restaurant,
+    routedAdminSection,
+    routedBusinessSection,
+  ]);
+
   const itemCount = useMemo(
     () => menus.reduce((total, menu) => total + menu.items.length, 0),
     [menus],
@@ -318,7 +381,7 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
       </div>
     );
   if (!account) return <div className="loading">Loading your account…</div>;
-  if (isAdmin && (!restaurant || section === "admin"))
+  if (isAdmin && (!restaurant || isAdminRoute))
     return (
       <AdminPage
         claims={claims}
@@ -326,7 +389,9 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
         account={account}
         reload={load}
         onLogout={onLogout}
-        onBackToBusiness={restaurant ? () => setSection("overview") : undefined}
+        section={routedAdminSection ?? "claims"}
+        onNavigate={(next) => navigateTo(adminPaths[next])}
+        onBackToBusiness={restaurant ? () => navigateTo(businessPaths.overview) : undefined}
       />
     );
   if (!restaurant)
@@ -409,33 +474,33 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
           )}
         </label>
         <nav>
-          <button
+          <AppLink
+            to={businessPaths.overview}
             className={section === "overview" ? "active" : ""}
-            onClick={() => setSection("overview")}
           >
             <HouseIcon className="nav-icon" weight="duotone" /> Overview
-          </button>
-          <button
+          </AppLink>
+          <AppLink
+            to={businessPaths.dashboard}
             className={section === "dashboard" ? "active" : ""}
-            onClick={() => setSection("dashboard")}
           >
             <ChartLineUpIcon className="nav-icon" weight="duotone" /> Dashboard <small className="nav-premium">PRO</small>
-          </button>
-          <button
+          </AppLink>
+          <AppLink
+            to={businessPaths.menu}
             className={section === "menu" ? "active" : ""}
-            onClick={() => setSection("menu")}
           >
             <ListDashesIcon className="nav-icon" weight="duotone" /> Menu
-          </button>
-          <button
+          </AppLink>
+          <AppLink
+            to={businessPaths.reviews}
             className={section === "reviews" ? "active" : ""}
-            onClick={() => setSection("reviews")}
           >
             <StarIcon className="nav-icon" weight="duotone" /> Reviews
-          </button>
-          <button
+          </AppLink>
+          <AppLink
+            to={businessPaths.messages}
             className={section === "messages" ? "active" : ""}
-            onClick={() => setSection("messages")}
           >
             <ChatCircleDotsIcon className="nav-icon" weight="duotone" /> Messages{" "}
             {conversations.reduce(
@@ -449,27 +514,27 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
                 )}
               </small>
             )}
-          </button>
-          <button
+          </AppLink>
+          <AppLink
+            to={businessPaths.profile}
             className={section === "profile" ? "active" : ""}
-            onClick={() => setSection("profile")}
           >
             <StorefrontIcon className="nav-icon" weight="duotone" /> Restaurant profile
-          </button>
-          <button
+          </AppLink>
+          <AppLink
+            to={businessPaths.support}
             className={section === "support" ? "active" : ""}
-            onClick={() => setSection("support")}
           >
             <HeadsetIcon className="nav-icon" weight="duotone" /> Help and support
-          </button>
+          </AppLink>
           {isAdmin && (
-            <button
-              className={section === "admin" ? "active" : ""}
-              onClick={() => setSection("admin")}
+            <AppLink
+              to={adminPaths.claims}
+              className={isAdminRoute ? "active" : ""}
             >
               <ShieldCheckIcon className="nav-icon" weight="duotone" /> Admin{" "}
               <small className="nav-count">{claims.length}</small>
-            </button>
+            </AppLink>
           )}
         </nav>
         <div className="aside-footer">
@@ -511,7 +576,7 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
                   restaurant={restaurant}
                   notifications={restaurantNotifications}
                   loading={notificationsLoading}
-                  onNavigate={setSection}
+                  onNavigate={navigateSection}
                   onClose={() => setNotificationsOpen(false)}
                   onClear={clearRestaurantNotifications}
                 />
@@ -532,8 +597,8 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
             menuCount={menus.length}
             itemCount={itemCount}
             reviewCount={reviews.length}
-            onOpenMenu={() => setSection("menu")}
-            onOpenProfile={() => setSection("profile")}
+            onOpenMenu={() => navigateTo(businessPaths.menu)}
+            onOpenProfile={() => navigateTo(businessPaths.profile)}
           />
         )}
         {section === "dashboard" && (

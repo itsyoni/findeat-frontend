@@ -5,15 +5,18 @@ import { Image, ScrollView, TouchableOpacity, View } from "react-native";
 import { ThemedSafeAreaView, TextInput } from "@/components/common";
 import RatingPicker from "../components/RatingPicker";
 import { useTranslation } from "react-i18next";
+import SaveDraftButton from "@/components/posts/SaveDraftButton";
 
 type Props = {
   draft: CreateReviewDraft;
   onChange: (update: Partial<CreateReviewDraft>) => void;
   onBack: () => void;
   onNext: () => void;
+  onSaveDraft: () => void;
+  savingDraft?: boolean;
 };
 
-export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
+export default function CoverStep({ draft, onChange, onBack, onNext, onSaveDraft, savingDraft }: Props) {
   const { t } = useTranslation("create");
   const restaurantName =
     draft.restaurant?.source === "FINDEAT"
@@ -45,7 +48,10 @@ export default function CoverStep({ draft, onChange, onBack, onNext }: Props) {
           <TouchableOpacity onPress={onBack}>
             <Text className="font-bold text-black dark:text-white">← Back</Text>
           </TouchableOpacity>
-          <Text className="text-sm font-semibold text-gray-400">2 of 4</Text>
+          <View className="flex-row items-center gap-2">
+            <SaveDraftButton onPress={onSaveDraft} saving={savingDraft} />
+            <Text className="text-sm font-semibold text-gray-400">2 of 4</Text>
+          </View>
         </View>
 
         <Text className="mt-6 text-3xl font-bold text-black dark:text-white">

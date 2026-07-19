@@ -7,6 +7,7 @@ import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import PostVisibilitySelector from "@/components/posts/PostVisibilitySelector";
 import type { PostVisibility } from "@findeat/types";
 import PostConnectionPicker from "@/components/posts/PostConnectionPicker";
+import SaveDraftButton from "@/components/posts/SaveDraftButton";
 
 type Props = {
   draft: CreateReviewDraft;
@@ -15,6 +16,8 @@ type Props = {
   onPublish: () => void;
   onVisibilityChange: (visibility: PostVisibility) => void;
   onLinkedPostChange: (postId?: string) => void;
+  onSaveDraft: () => void;
+  savingDraft?: boolean;
 };
 
 export default function PreviewStep({
@@ -24,6 +27,8 @@ export default function PreviewStep({
   onPublish,
   onVisibilityChange,
   onLinkedPostChange,
+  onSaveDraft,
+  savingDraft,
 }: Props) {
   const restaurantName =
     draft.restaurant?.source === "FINDEAT"
@@ -43,7 +48,10 @@ export default function PreviewStep({
           <TouchableOpacity onPress={onBack}>
             <Text className="font-bold text-black dark:text-white">← Back</Text>
           </TouchableOpacity>
-          <Text className="text-sm font-semibold text-gray-400">4 of 4</Text>
+          <View className="flex-row items-center gap-2">
+            <SaveDraftButton onPress={onSaveDraft} saving={savingDraft} />
+            <Text className="text-sm font-semibold text-gray-400">4 of 4</Text>
+          </View>
         </View>
 
         <Text className="mt-6 text-3xl font-bold text-black dark:text-white">

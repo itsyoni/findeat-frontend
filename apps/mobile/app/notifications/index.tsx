@@ -77,6 +77,11 @@ export default function NotificationsScreen() {
   }, [queryClient]);
 
   function openActor(item: AppNotification) {
+    if (item.type === 'PLACE_LIST_INVITE' || item.placeListId) {
+      const href = notificationHref(item);
+      if (href) router.push(href);
+      return;
+    }
     if (item.actorId) {
       router.push({ pathname: '/(users)/[id]', params: { id: item.actorId } });
       return;
