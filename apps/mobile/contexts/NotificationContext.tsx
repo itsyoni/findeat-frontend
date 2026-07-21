@@ -9,10 +9,11 @@ import type { AppNotification, NotificationsPage } from "@findeat/types";
 import { InfiniteData, useQueryClient } from "@tanstack/react-query";
 import { router, usePathname } from "expo-router";
 import Constants from "expo-constants";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import React, { useEffect, useRef, useState } from "react";
-import { AppState, Platform, View } from "react-native";
+import { Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
@@ -22,6 +23,27 @@ const relationshipNotificationTypes = new Set<AppNotification["type"]>([
   "FOLLOW_BACK",
   "FRIEND",
 ]);
+
+const PUSH_TOKEN_CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+type CachedPushToken = {
+  token: string;
+  refreshedAt: number;
+};
+
+function readCachedPushToken(value: string | null): CachedPushToken | null {
+  if (!value) return null;
+  try {
+    const parsed = JSON.parse(value) as Partial<CachedPushToken>;
+    return typeof parsed.token === "string" &&
+      parsed.token.length > 0 &&
+      typeof parsed.refreshedAt === "number"
+      ? { token: parsed.token, refreshedAt: parsed.refreshedAt }
+      : null;
+  } catch {
+    return null;
+  }
+}
 
 function isSameNotification(
   current: AppNotification,
@@ -195,7 +217,16 @@ export function NotificationProvider({
     let registrationInFlight = false;
     let lastRegisteredToken: string | null = null;
 
-    async function registerPushToken(attempt = 0): Promise<void> {
+    const projectId =
+      Constants.expoConfig?.extra?.eas?.projectId ??
+      Constants.easConfig?.projectId;
+    if (typeof projectId !== "string") return;
+    const cacheKey = `findeat_expo_push_token:${userId}:${Platform.OS}:${projectId}`;
+
+    async function registerPushToken(
+      attempt = 0,
+      forceRefresh = false,
+    ): Promise<void> {
       if (registrationInFlight || cancelled) return;
       registrationInFlight = true;
 
@@ -229,25 +260,51 @@ export function NotificationProvider({
               });
         if (permission.status !== "granted" || cancelled) return;
 
-        const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-        if (typeof projectId !== "string") return;
+        if (!forceRefresh) {
+          const cached = readCachedPushToken(
+            await AsyncStorage.getItem(cacheKey),
+          );
+          if (
+            cached &&
+            Date.now() - cached.refreshedAt < PUSH_TOKEN_CACHE_MAX_AGE
+          ) {
+            if (cached.token !== lastRegisteredToken) {
+              await api.notifications.registerPushToken({
+                token: cached.token,
+                platform: Platform.OS === "ios" ? "IOS" : "ANDROID",
+                deviceId: Device.modelId || undefined,
+              });
+              lastRegisteredToken = cached.token;
+            }
+            return;
+          }
+        }
 
         const pushToken = await Notifications.getExpoPushTokenAsync({
           projectId,
         });
-        if (cancelled || pushToken.data === lastRegisteredToken) return;
-        await api.notifications.registerPushToken({
-          token: pushToken.data,
-          platform: Platform.OS === "ios" ? "IOS" : "ANDROID",
-          deviceId: Device.modelId || undefined,
-        });
+        if (cancelled) return;
+        if (pushToken.data !== lastRegisteredToken) {
+          await api.notifications.registerPushToken({
+            token: pushToken.data,
+            platform: Platform.OS === "ios" ? "IOS" : "ANDROID",
+            deviceId: Device.modelId || undefined,
+          });
+        }
         lastRegisteredToken = pushToken.data;
+        await AsyncStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            token: pushToken.data,
+            refreshedAt: Date.now(),
+          } satisfies CachedPushToken),
+        );
       } catch (error) {
         if (cancelled) return;
         if (attempt < 3) {
           const delays = [2_000, 5_000, 15_000];
           retryTimer = setTimeout(
-            () => void registerPushToken(attempt + 1),
+            () => void registerPushToken(attempt + 1, forceRefresh),
             delays[attempt],
           );
           return;
@@ -301,12 +358,11 @@ export function NotificationProvider({
         timer.current = setTimeout(() => setPopup(null), 4500);
       },
     );
-    const appStateSubscription = AppState.addEventListener(
-      "change",
-      (state) => {
-        if (state === "active") void registerPushToken();
-      },
-    );
+    const pushTokenSubscription = Notifications.addPushTokenListener(() => {
+      void AsyncStorage.removeItem(cacheKey).then(() => {
+        retryTimer = setTimeout(() => void registerPushToken(0, true), 250);
+      });
+    });
     void Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) openPushData(response.notification.request.content.data);
     });
@@ -316,7 +372,7 @@ export function NotificationProvider({
       if (retryTimer) clearTimeout(retryTimer);
       responseSubscription.remove();
       receivedSubscription.remove();
-      appStateSubscription.remove();
+      pushTokenSubscription.remove();
     };
   }, [userId]);
 

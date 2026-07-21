@@ -10,9 +10,8 @@ import ProfileActionsBottomSheet from "@/components/profile/ProfileActionsBottom
 import ReportBottomSheet from "@/components/moderation/ReportBottomSheet";
 import { useRestaurant } from "@/hooks/useRestaurant";
 import { useRestaurantPosts } from "@/hooks/useRestaurantPosts";
-import { updateRestaurantStatusInFeedCache } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
-import type { Restaurant, RestaurantPostSection } from "@findeat/types";
+import type { RestaurantPostSection } from "@findeat/types";
 import { getErrorMessage } from "@findeat/utils";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
@@ -21,16 +20,12 @@ import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
 } from "react-native-reanimated";
-import {
-  BookmarkSimpleIcon,
-  CheckCircleIcon,
-  HeartIcon,
-} from "phosphor-react-native";
+import { HeartIcon } from "phosphor-react-native";
 import { useTranslation } from "react-i18next";
-import { useQueryClient } from "@tanstack/react-query";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { useSaveToLists } from "@/contexts/SaveToListsContext";
 import RestaurantAboutBottomSheet from "@/components/restaurants/RestaurantAboutBottomSheet";
+import PlaceStatusBookmark, { getPlaceStatusLabelKey } from "@/components/restaurants/PlaceStatusBookmark";
 
 type RestaurantTab = RestaurantPostSection | "MENU";
 
@@ -38,8 +33,12 @@ export default function RestaurantScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t } = useTranslation(["restaurants", "common"]);
   const { isDark } = useAppTheme();
-  const { openSaveToLists } = useSaveToLists();
-  const queryClient = useQueryClient();
+  const {
+    openManageSavedPlace,
+    quickSavePlace,
+    savedListCounts,
+    statusOverrides,
+  } = useSaveToLists();
   const { restaurant, setRestaurant, loading } = useRestaurant(id);
   const [activeTab, setActiveTab] = useState<RestaurantTab>("OFFICIAL");
   const [optionsOpen, setOptionsOpen] = useState(false);
@@ -99,145 +98,6 @@ export default function RestaurantScreen() {
           : prev,
       );
     }
-  }
-
-  function updateRestaurantStatus(
-    nextStatus: Partial<NonNullable<Restaurant["userRestaurant"]>>,
-  ) {
-    if (!restaurant) return;
-
-    updateRestaurantStatusInFeedCache(queryClient, restaurant.id, nextStatus);
-
-    setRestaurant((prev) =>
-      prev
-        ? {
-            ...prev,
-            userRestaurant: {
-              id: prev.userRestaurant?.id ?? "",
-              wantToTry: prev.userRestaurant?.wantToTry ?? false,
-              visited: prev.userRestaurant?.visited ?? false,
-              favorite: prev.userRestaurant?.favorite ?? false,
-              ...nextStatus,
-            },
-          }
-        : prev,
-    );
-  }
-
-  function confirmStatusChange(
-    title: string,
-    message: string,
-    onConfirm: () => void | Promise<void>,
-    destructive = false,
-  ) {
-    Alert.alert(title, message, [
-      { text: t("common:cancel"), style: "cancel" },
-      {
-        text: t("restaurants:confirmStatusChange"),
-        style: destructive ? "destructive" : "default",
-        onPress: () => void onConfirm(),
-      },
-    ]);
-  }
-
-  async function toggleVisited() {
-    if (!restaurant) return;
-    const isVisited = restaurant.userRestaurant?.visited === true;
-
-    const applyChange = async () => {
-      try {
-        if (isVisited) {
-          await api.restaurants.removeVisited(restaurant.id);
-          updateRestaurantStatus({ visited: false, favorite: false });
-          return;
-        }
-
-        await api.restaurants.visited(restaurant.id);
-        updateRestaurantStatus({
-          visited: true,
-          wantToTry: false,
-        });
-      } catch (error) {
-        console.error(error);
-        Alert.alert(
-          t("restaurants:visitedLockedTitle"),
-          t("restaurants:cannotRemoveVisitedWithReview"),
-        );
-      }
-    };
-
-    if (isVisited) {
-      confirmStatusChange(
-        t("restaurants:confirmRemoveVisitedTitle"),
-        t(
-          restaurant.userRestaurant?.favorite
-            ? "restaurants:confirmRemoveVisitedFavoriteBody"
-            : "restaurants:confirmRemoveVisitedBody",
-        ),
-        applyChange,
-        true,
-      );
-      return;
-    }
-
-    await applyChange();
-  }
-
-  async function toggleWantToTry() {
-    if (!restaurant) return;
-    const isWantToTry = restaurant.userRestaurant?.wantToTry === true;
-    const isVisited = restaurant.userRestaurant?.visited === true;
-    const isFavorite = restaurant.userRestaurant?.favorite === true;
-
-    if (isWantToTry || isVisited || isFavorite) {
-      openSaveToLists(restaurant.id);
-      return;
-    }
-
-    try {
-      await api.restaurants.wantToTry(restaurant.id);
-      updateRestaurantStatus({
-        wantToTry: true,
-        visited: false,
-        favorite: false,
-      });
-      openSaveToLists(restaurant.id);
-    } catch (error) {
-      console.error(error);
-      Alert.alert(t("common:somethingWentWrong"));
-    }
-  }
-
-  async function toggleFavorite() {
-    if (!restaurant) return;
-
-    const isFavorite = restaurant.userRestaurant?.favorite === true;
-    const isVisited = restaurant.userRestaurant?.visited === true;
-
-    if (!isFavorite && !isVisited) return;
-
-    const applyChange = async () => {
-      if (isFavorite) {
-        await api.restaurants.removeFavorite(restaurant.id);
-        updateRestaurantStatus({ favorite: false });
-      } else {
-        await api.restaurants.favorite(restaurant.id);
-        updateRestaurantStatus({
-          favorite: true,
-        });
-      }
-    };
-
-    if (isFavorite) {
-      confirmStatusChange(
-        t("restaurants:confirmRemoveFavoriteTitle"),
-        t("restaurants:confirmRemoveFavoriteBody"),
-        applyChange,
-      );
-      return;
-    }
-
-    await applyChange();
   }
 
   async function claimRestaurant() {
@@ -313,6 +173,25 @@ export default function RestaurantScreen() {
     );
   }
 
+  const placeStatus = statusOverrides[restaurant.id] ?? restaurant.userRestaurant;
+  const isPlaceSaved = !!(
+    placeStatus?.wantToTry ||
+    placeStatus?.visited ||
+    placeStatus?.favorite
+  );
+  const savedListCount =
+    savedListCounts[restaurant.id] ?? restaurant.savedListCount ?? 0;
+  const statusLabel = getPlaceStatusLabelKey(
+    !!placeStatus?.wantToTry,
+    !!placeStatus?.visited,
+    !!placeStatus?.favorite,
+  );
+  const openSavedPlaceManager = () =>
+    openManageSavedPlace({
+      restaurantId: restaurant.id,
+      currentStatus: placeStatus,
+    });
+
   return (
     <>
       <Animated.ScrollView
@@ -331,67 +210,50 @@ export default function RestaurantScreen() {
       <View className="bg-surface px-5 pb-5 pt-2 dark:bg-black">
         <View className="flex-row gap-3">
           <TouchableOpacity
-            onPress={toggleWantToTry}
-            className={`flex-1 items-center justify-center rounded-xl px-2 py-3 ${restaurant.userRestaurant?.wantToTry ? "bg-amber-500" : "bg-gray-100 dark:bg-gray-800"}`}
+            onPress={() => {
+              if (isPlaceSaved || savedListCount > 0) openSavedPlaceManager();
+              else void quickSavePlace(restaurant.id);
+            }}
+            className={`flex-1 flex-row items-center justify-center rounded-xl px-4 py-3 ${isPlaceSaved || savedListCount > 0 ? "bg-amber-500" : "bg-gray-100 dark:bg-gray-800"}`}
           >
-            <BookmarkSimpleIcon
-              size={20}
-              color={restaurant.userRestaurant?.wantToTry ? "white" : "#6B7280"}
-              weight={restaurant.userRestaurant?.wantToTry ? "fill" : "regular"}
+            <PlaceStatusBookmark
+              wantToTry={!!placeStatus?.wantToTry}
+              visited={!!placeStatus?.visited}
+              favorite={!!placeStatus?.favorite}
+              size={22}
+              defaultColor={isPlaceSaved || savedListCount > 0 ? "white" : "#6B7280"}
+              savedListCount={savedListCount}
             />
             <Text
               numberOfLines={1}
-              className={`mt-1 text-center text-xs font-bold ${restaurant.userRestaurant?.wantToTry ? "text-white" : "text-black dark:text-white"}`}
+              className={`ml-2 text-center font-bold ${isPlaceSaved || savedListCount > 0 ? "text-white" : "text-black dark:text-white"}`}
             >
-              {t("restaurants:wantToTry")}
+              {!isPlaceSaved && savedListCount > 0
+                ? t("common:inList")
+                : t(`restaurants:${statusLabel}`)}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={toggleVisited}
-            className={`flex-1 items-center justify-center rounded-xl px-2 py-3 ${
-              restaurant.userRestaurant?.visited
-                ? "bg-green-600"
-                : "bg-gray-100 dark:bg-gray-800"
-            }`}
-          >
-            <CheckCircleIcon
-              size={19}
-              color={restaurant.userRestaurant?.visited ? "white" : "#6B7280"}
-              weight={restaurant.userRestaurant?.visited ? "fill" : "regular"}
-            />
-            <Text
-              numberOfLines={1}
-              className={`mt-1 text-center text-xs font-bold ${
-                restaurant.userRestaurant?.visited
-                  ? "text-white"
-                  : "text-black dark:text-white"
-              }`}
-            >
-              {t("restaurants:visited")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={toggleFavorite}
-            disabled={!restaurant.userRestaurant?.visited}
-            className={`flex-1 items-center justify-center rounded-xl px-2 py-3 ${
-              restaurant.userRestaurant?.favorite
+            onPress={openSavedPlaceManager}
+            disabled={!placeStatus?.visited}
+            className={`w-20 items-center justify-center rounded-xl px-2 py-3 ${
+              placeStatus?.favorite
                 ? "bg-red-500"
-                : restaurant.userRestaurant?.visited
+                : placeStatus?.visited
                   ? "bg-gray-100 dark:bg-gray-800"
                   : "bg-gray-100 opacity-40 dark:bg-gray-800"
             }`}
           >
             <HeartIcon
               size={19}
-              color={restaurant.userRestaurant?.favorite ? "white" : "#6B7280"}
-              weight={restaurant.userRestaurant?.favorite ? "fill" : "regular"}
+              color={placeStatus?.favorite ? "white" : "#6B7280"}
+              weight={placeStatus?.favorite ? "fill" : "regular"}
             />
             <Text
               numberOfLines={1}
               className={`mt-1 text-center text-xs font-bold ${
-                restaurant.userRestaurant?.favorite
+                placeStatus?.favorite
                   ? "text-white"
                   : "text-black dark:text-white"
               }`}
@@ -400,7 +262,7 @@ export default function RestaurantScreen() {
             </Text>
           </TouchableOpacity>
         </View>
-        {!restaurant.userRestaurant?.visited && (
+        {!placeStatus?.visited && (
           <Text className="mt-2 text-center text-xs text-gray-500">
             {t("restaurants:favoriteAfterVisit")}
           </Text>

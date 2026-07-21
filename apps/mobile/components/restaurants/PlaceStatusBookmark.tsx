@@ -1,6 +1,7 @@
 import {
   BookmarkSimpleIcon,
   CheckIcon,
+  FolderSimpleIcon,
   HeartIcon,
 } from "phosphor-react-native";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
@@ -11,6 +12,7 @@ type Props = {
   favorite: boolean;
   size: number;
   defaultColor: string;
+  savedListCount?: number;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -31,6 +33,7 @@ export default function PlaceStatusBookmark({
   favorite,
   size,
   defaultColor,
+  savedListCount = 0,
   style,
 }: Props) {
   const color = favorite
@@ -72,6 +75,38 @@ export default function PlaceStatusBookmark({
           )}
         </View>
       )}
+      {savedListCount > 0 && (
+        <View
+          pointerEvents="none"
+          style={[
+            styles.listBadge,
+            {
+              width: Math.max(14, Math.round(size * 0.46)),
+              height: Math.max(14, Math.round(size * 0.46)),
+              borderRadius: Math.max(7, Math.round(size * 0.23)),
+              right: -Math.round(size * 0.08),
+              top: -Math.round(size * 0.18),
+            },
+          ]}
+        >
+          <FolderSimpleIcon
+            size={Math.max(9, Math.round(size * 0.29))}
+            color="#FFFFFF"
+            weight="fill"
+          />
+        </View>
+      )}
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  listBadge: {
+    position: "absolute",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#8B5CF6",
+    borderColor: "#FFFFFF",
+    borderWidth: 1.5,
+  },
+});

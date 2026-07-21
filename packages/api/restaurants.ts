@@ -11,6 +11,8 @@ import type {
   FeedPage,
   RestaurantOpeningHours,
   SavedPostAttribution,
+  SavedRestaurant,
+  PlaceSaveStatus,
 } from "@findeat/types";
 import type { AxiosInstance } from "axios";
 
@@ -65,7 +67,7 @@ export function createRestaurantsApi(api: AxiosInstance) {
     },
 
     async savedMine() {
-      const { data } = await api.get("/restaurants/saved/me");
+      const { data } = await api.get<SavedRestaurant[]>("/restaurants/saved/me");
       return data;
     },
 
@@ -189,6 +191,19 @@ export function createRestaurantsApi(api: AxiosInstance) {
         savedFromPostId,
       });
 
+      return data;
+    },
+
+    async setSaveStatus(
+      id: string,
+      status: PlaceSaveStatus,
+      savedFromPostId?: string,
+      clearAttribution = false,
+    ) {
+      const { data } = await api.patch<UserRestaurant>(
+        `/restaurants/${id}/save-status`,
+        { status, savedFromPostId, clearAttribution },
+      );
       return data;
     },
 

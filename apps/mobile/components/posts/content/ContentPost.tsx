@@ -55,7 +55,6 @@ export default function ContentPost({
   contentTopInset = 0,
   onToggleLike,
   onOpenComments,
-  onToggleWantToTry,
   onOpenSharePost,
   onOpenPostOptions,
   onPinchStart,
@@ -63,12 +62,22 @@ export default function ContentPost({
 }: Props) {
   const { t } = useTranslation("restaurants");
   const { t: tCommon, i18n } = useTranslation("common");
-  const { openSaveToLists } = useSaveToLists();
+  const {
+    openManageSavedPlace,
+    quickSavePlace,
+    savedListCounts,
+    statusOverrides,
+  } = useSaveToLists();
   const isRtl = i18n.language.startsWith("he");
-  const userRestaurant = post.restaurant?.userSaves?.[0];
+  const userRestaurant = post.restaurant?.id
+    ? (statusOverrides[post.restaurant.id] ?? post.restaurant.userSaves?.[0])
+    : undefined;
   const isWantToTry = !!userRestaurant?.wantToTry;
   const isVisited = !!userRestaurant?.visited;
   const isFavorite = !!userRestaurant?.favorite;
+  const savedListCount = post.restaurant
+    ? (savedListCounts[post.restaurant.id] ?? post.restaurantSavedListCount ?? 0)
+    : 0;
   const content = post.contentPost;
   const isRestaurantPost = !!post.authorRestaurantId && !!post.authorRestaurant;
   const isOfficialPost = isRestaurantPost && !!post.restaurant;
@@ -169,11 +178,16 @@ export default function ContentPost({
   function handleWantToTry() {
     if (!post.restaurant?.id) return;
 
-    if (!isWantToTry && !isVisited && !isFavorite) {
-      onToggleWantToTry(post.id, post.restaurant.id, false);
+    if (!isWantToTry && !isVisited && !isFavorite && savedListCount === 0) {
+      void quickSavePlace(post.restaurant.id, post.id);
+      return;
     }
 
-    openSaveToLists(post.restaurant.id);
+    openManageSavedPlace({
+      restaurantId: post.restaurant.id,
+      currentStatus: userRestaurant,
+      savedFromPostId: post.id,
+    });
   }
 
   function handleCaptionExpansion(
@@ -442,6 +456,7 @@ export default function ContentPost({
               favorite={isFavorite}
               size={35}
               defaultColor="#FFFFFFCC"
+              savedListCount={savedListCount}
               style={iconShadow}
             />
 
@@ -450,7 +465,9 @@ export default function ContentPost({
               style={textShadow}
               className="mt-1 w-16 text-center text-xs font-bold text-white"
             >
-              {t(bookmarkLabelKey)}
+              {!isWantToTry && !isVisited && !isFavorite && savedListCount > 0
+                ? tCommon("inList")
+                : t(bookmarkLabelKey)}
             </Text>
           </TouchableOpacity>
         </View>

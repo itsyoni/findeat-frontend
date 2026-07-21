@@ -118,6 +118,12 @@ export const RESTAURANT_CATEGORY_OPTIONS = [
 
 export type RestaurantPostSection = "OFFICIAL" | "COMMUNITY" | "REVIEWS";
 
+export type PlaceSaveStatus =
+  | "NONE"
+  | "WANT_TO_TRY"
+  | "VISITED"
+  | "FAVORITE";
+
 export type RestaurantPostsPage = {
   items: RestaurantPostPreview[];
   nextCursor: string | null;
@@ -158,6 +164,7 @@ export type Restaurant = {
   averageRating?: number | null;
   reviewsCount?: number;
   distanceKm?: number;
+  savedListCount?: number;
   compatibility?: {
     allergenWarnings: Array<{ tag: string; dishCount: number }>;
     dietaryMatches: Array<{ tag: string; dishCount: number }>;
@@ -172,6 +179,13 @@ export type SavedPostAttribution = {
   favorite: boolean;
   restaurant: Pick<Restaurant, "id" | "name" | "logoUrl" | "city">;
   post: Post;
+};
+
+export type SavedRestaurant = UserRestaurant & {
+  restaurant: Pick<
+    Restaurant,
+    "id" | "name" | "logoUrl" | "coverUrl" | "city" | "address" | "status"
+  >;
 };
 
 export type RestaurantMapFilter =

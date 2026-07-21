@@ -9,7 +9,7 @@ import ProfileManagedRestaurants from "./ProfileManagedRestaurants";
 import ProfileDetails from "./ProfileDetails";
 import { useTranslation } from "react-i18next";
 import {
-  FolderSimpleIcon,
+  BookmarkSimpleIcon,
   GearSixIcon,
   PencilSimpleIcon,
 } from "phosphor-react-native";
@@ -181,11 +181,11 @@ export default function PersonalProfileHeader({ profile, loading = false, scroll
           </TouchableOpacity>
           <TouchableOpacity
             className="flex-1 flex-row items-center justify-center rounded-xl bg-amber-100 py-2.5 dark:bg-amber-950"
-            onPress={() => router.push("/saved-lists")}
+            onPress={() => router.push("/saved")}
           >
-            <FolderSimpleIcon size={18} color="#D97706" weight="fill" />
+            <BookmarkSimpleIcon size={18} color="#D97706" weight="fill" />
             <Text className="ml-2 text-center font-bold text-amber-800 dark:text-amber-200">
-              {t("common:myLists")}
+              {t("common:saved")}
             </Text>
           </TouchableOpacity>
         </View>

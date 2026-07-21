@@ -6,11 +6,12 @@ import useSettingsDirection from "@/components/settings/useSettingsDirection";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { api } from "@/lib/api";
 import type { Post, SavedPostAttribution } from "@findeat/types";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { BookmarkSimpleIcon, MapPinIcon } from "phosphor-react-native";
 import { useTranslation } from "react-i18next";
+import { useCallback } from "react";
 import { FlatList, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -52,7 +53,7 @@ function SavedPostsSkeleton() {
   );
 }
 
-function SavedPostCard({ item }: { item: SavedPostAttribution }) {
+export function SavedPostCard({ item }: { item: SavedPostAttribution }) {
   const { t } = useTranslation("settings");
   const { rowStyle, textStyle } = useSettingsDirection();
   const image = postImage(item.post);
@@ -131,10 +132,17 @@ export default function SavedPostsScreen() {
   const { t } = useTranslation("settings");
   const { isDark } = useAppTheme();
   const { textStyle } = useSettingsDirection();
+  const queryClient = useQueryClient();
   const savedPosts = useQuery({
     queryKey: ["saved-post-attributions"],
     queryFn: () => api.restaurants.savedPostsMine(),
   });
+
+  useFocusEffect(
+    useCallback(() => {
+      void queryClient.invalidateQueries({ queryKey: ["saved-post-attributions"] });
+    }, [queryClient]),
+  );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? "#000" : "#FBFAF8" }}>

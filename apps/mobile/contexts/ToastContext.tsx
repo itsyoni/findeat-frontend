@@ -17,6 +17,8 @@ import { AccessibilityInfo } from "react-native";
 type ToastOptions = {
   kind?: ActionToastKind;
   duration?: number;
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
 type ToastContextValue = {
@@ -29,6 +31,8 @@ type ToastState = {
   message: string;
   kind: ActionToastKind;
   duration: number;
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
 const ToastContext = createContext<ToastContextValue | null>(null);
@@ -48,6 +52,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       message: trimmedMessage,
       kind: options.kind ?? "success",
       duration: options.duration ?? 2600,
+      actionLabel: options.actionLabel,
+      onAction: options.onAction,
     });
     AccessibilityInfo.announceForAccessibility(trimmedMessage);
     void Haptics.notificationAsync(
@@ -72,7 +78,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       {toast ? (
-        <ActionToast key={toast.id} message={toast.message} kind={toast.kind} />
+        <ActionToast
+          key={toast.id}
+          message={toast.message}
+          kind={toast.kind}
+          actionLabel={toast.actionLabel}
+          onAction={
+            toast.onAction
+              ? () => {
+                  hideToast();
+                  toast.onAction?.();
+                }
+              : undefined
+          }
+        />
       ) : null}
     </ToastContext.Provider>
   );

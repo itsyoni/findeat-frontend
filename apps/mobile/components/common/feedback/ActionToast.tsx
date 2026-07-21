@@ -1,7 +1,7 @@
 import Text from "@/components/common/AppText";
 import { useAppTheme } from "@/contexts/ThemeContext";
 import { CheckCircleIcon, InfoIcon, WarningCircleIcon } from "phosphor-react-native";
-import { View } from "react-native";
+import { TouchableOpacity, View } from "react-native";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -10,9 +10,11 @@ export type ActionToastKind = "success" | "error" | "info";
 type Props = {
   message: string;
   kind: ActionToastKind;
+  actionLabel?: string;
+  onAction?: () => void;
 };
 
-export default function ActionToast({ message, kind }: Props) {
+export default function ActionToast({ message, kind, actionLabel, onAction }: Props) {
   const { isDark } = useAppTheme();
   const insets = useSafeAreaInsets();
   const color = kind === "error" ? "#EF4444" : kind === "info" ? "#3B82F6" : "#1F8A58";
@@ -20,7 +22,7 @@ export default function ActionToast({ message, kind }: Props) {
 
   return (
     <View
-      pointerEvents="none"
+      pointerEvents="box-none"
       style={{
         position: "absolute",
         left: 16,
@@ -59,6 +61,18 @@ export default function ActionToast({ message, kind }: Props) {
         >
           {message}
         </Text>
+        {actionLabel && onAction ? (
+          <TouchableOpacity
+            accessibilityRole="button"
+            onPress={onAction}
+            hitSlop={10}
+            style={{ marginLeft: 10, paddingVertical: 7, paddingHorizontal: 4 }}
+          >
+            <Text style={{ color, fontSize: 14, fontWeight: "800" }}>
+              {actionLabel}
+            </Text>
+          </TouchableOpacity>
+        ) : null}
       </Animated.View>
     </View>
   );

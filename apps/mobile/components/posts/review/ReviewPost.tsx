@@ -106,11 +106,15 @@ export default function ReviewPost({
   post,
   onToggleLike,
   onOpenComments,
-  onToggleWantToTry,
   onOpenSharePost,
   onOpenPostOptions,
 }: Props) {
-  const { openSaveToLists } = useSaveToLists();
+  const {
+    openManageSavedPlace,
+    quickSavePlace,
+    savedListCounts,
+    statusOverrides,
+  } = useSaveToLists();
   const { isDark } = useAppTheme();
   const { t } = useTranslation("restaurants");
   const { t: tCommon, i18n } = useTranslation("common");
@@ -172,10 +176,15 @@ export default function ReviewPost({
     ? post.authorRestaurant?.name
     : post.author?.username;
 
-  const userRestaurant = post.restaurant?.userSaves?.[0];
+  const userRestaurant = post.restaurant?.id
+    ? (statusOverrides[post.restaurant.id] ?? post.restaurant.userSaves?.[0])
+    : undefined;
   const isWantToTry = !!userRestaurant?.wantToTry;
   const isVisited = !!userRestaurant?.visited;
   const isFavorite = !!userRestaurant?.favorite;
+  const savedListCount = post.restaurant
+    ? (savedListCounts[post.restaurant.id] ?? post.restaurantSavedListCount ?? 0)
+    : 0;
 
   const heartOverlayScale = useSharedValue(0);
   const heartOverlayOpacity = useSharedValue(0);
@@ -233,11 +242,16 @@ export default function ReviewPost({
   function handleWantToTry() {
     if (!post.restaurant?.id) return;
 
-    if (!isWantToTry && !isVisited && !isFavorite) {
-      onToggleWantToTry(post.id, post.restaurant.id, false);
+    if (!isWantToTry && !isVisited && !isFavorite && savedListCount === 0) {
+      void quickSavePlace(post.restaurant.id, post.id);
+      return;
     }
 
-    openSaveToLists(post.restaurant.id);
+    openManageSavedPlace({
+      restaurantId: post.restaurant.id,
+      currentStatus: userRestaurant,
+      savedFromPostId: post.id,
+    });
   }
 
   const bookmarkLabelKey = getPlaceStatusLabelKey(
@@ -544,10 +558,13 @@ export default function ReviewPost({
               favorite={isFavorite}
               size={28}
               defaultColor={actionColor}
+              savedListCount={savedListCount}
             />
 
             <Text className="mt-1 text-center text-xs font-bold text-black dark:text-white">
-              {t(bookmarkLabelKey)}
+              {!isWantToTry && !isVisited && !isFavorite && savedListCount > 0
+                ? tCommon("inList")
+                : t(bookmarkLabelKey)}
             </Text>
           </TouchableOpacity>
         </View>

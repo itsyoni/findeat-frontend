@@ -7,7 +7,7 @@ import { useAppTheme } from "@/contexts/ThemeContext";
 import { useToast } from "@/contexts/ToastContext";
 import { api } from "@/lib/api";
 import type { PlaceListInvitation, PlaceListSummary } from "@findeat/types";
-import { router, useFocusEffect } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { FolderSimpleIcon, PlusIcon, UserPlusIcon } from "phosphor-react-native";
 import { useCallback, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -21,6 +21,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SavedListsScreen() {
+  const { create } = useLocalSearchParams<{ create?: string }>();
   const { t } = useTranslation("common");
   const { isDark } = useAppTheme();
   const { showToast } = useToast();
@@ -28,7 +29,7 @@ export default function SavedListsScreen() {
   const [invitations, setInvitations] = useState<PlaceListInvitation[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
-  const [showCreate, setShowCreate] = useState(false);
+  const [showCreate, setShowCreate] = useState(create === "1");
   const [name, setName] = useState("");
 
   const load = useCallback(async () => {

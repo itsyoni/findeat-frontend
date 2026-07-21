@@ -121,6 +121,7 @@ export type Post = {
 
   likesCount: number;
   restaurantSavesCount: number;
+  restaurantSavedListCount?: number;
   commentsCount: number;
   sharesCount: number;
   isLiked: boolean;

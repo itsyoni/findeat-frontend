@@ -108,6 +108,8 @@
   "confirmStatusChange": "כן, לשנות",
   "confirmWantToTryTitle": "לשנות לרוצה לנסות?",
   "confirmWantToTryBody": "המקום מסומן כרגע כמקום שביקרת בו. לשנות אותו בחזרה לרוצה לנסות?",
+  "confirmRemoveWantToTryTitle": "להסיר מרוצה לנסות?",
+  "confirmRemoveWantToTryBody": "המקום לא יופיע יותר ברשימת המקומות שתרצו לנסות.",
   "confirmRemoveVisitedTitle": "להסיר את סטטוס הביקור?",
   "confirmRemoveVisitedBody": "להסיר את סטטוס הביקור מהמקום הזה?",
   "confirmRemoveVisitedFavoriteBody": "הפעולה תסיר גם את סטטוס הביקור וגם את המועדף. להמשיך?",

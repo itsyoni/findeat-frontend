@@ -41,6 +41,7 @@ import RestaurantBadge from "@/components/restaurants/RestaurantBadge";
 import RestaurantStats from "@/components/restaurants/RestaurantStats";
 import MapRestaurantListCard from "@/components/restaurants/MapRestaurantListCard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSaveToLists } from "@/contexts/SaveToListsContext";
 
 Mapbox.setAccessToken(process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN ?? "");
 
@@ -73,6 +74,7 @@ export default function MapScreen() {
   const { t } = useTranslation(["common", "map", "restaurants"]);
   const { isDark } = useAppTheme();
   const { user } = useAuth();
+  const { statusOverrides } = useSaveToLists();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<MapViewMode>("MAP");
@@ -100,8 +102,15 @@ export default function MapScreen() {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const temporaryRestaurantIdRef = useRef<string | null>(null);
   const handledRestaurantIdRef = useRef<string | null>(null);
-  const [selectedRestaurant, setSelectedRestaurant] =
+  const [selectedRestaurantState, setSelectedRestaurant] =
     useState<Restaurant | null>(null);
+  const selectedRestaurant = useMemo(() => {
+    if (!selectedRestaurantState) return null;
+    const status = statusOverrides[selectedRestaurantState.id];
+    return status
+      ? { ...selectedRestaurantState, userRestaurant: status }
+      : selectedRestaurantState;
+  }, [selectedRestaurantState, statusOverrides]);
 
   const cameraRef = useRef<Mapbox.Camera>(null);
 
@@ -156,7 +165,14 @@ export default function MapScreen() {
     user?.id,
   ]);
 
-  const mapRestaurants = restaurants;
+  const mapRestaurants = useMemo(
+    () =>
+      restaurants.map((restaurant) => {
+        const status = statusOverrides[restaurant.id];
+        return status ? { ...restaurant, userRestaurant: status } : restaurant;
+      }),
+    [restaurants, statusOverrides],
+  );
 
   const restaurantsWithLocation = mapRestaurants.filter(
     (restaurant) =>

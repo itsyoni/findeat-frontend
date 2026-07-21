@@ -108,6 +108,8 @@
   "confirmStatusChange": "Yes, change it",
   "confirmWantToTryTitle": "Change to Want to Try?",
   "confirmWantToTryBody": "This place is currently marked as Visited. Are you sure you want to move it back to Want to Try?",
+  "confirmRemoveWantToTryTitle": "Remove from Want to Try?",
+  "confirmRemoveWantToTryBody": "This place will no longer appear in your Want to Try places.",
   "confirmRemoveVisitedTitle": "Remove Visited?",
   "confirmRemoveVisitedBody": "Are you sure you want to remove the Visited status from this place?",
   "confirmRemoveVisitedFavoriteBody": "This will remove both Visited and Favorite from this place. Are you sure?",
