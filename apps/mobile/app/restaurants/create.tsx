@@ -4,7 +4,7 @@ import Text from "@/components/common/AppText";
 import AddressAutocomplete from "@/components/forms/AddressAutocomplete";
 import { api } from "@/lib/api";
 import type { SelectedAddress } from "@findeat/types";
-import { uploadImage } from "@findeat/utils";
+import { uploadImage } from "@/lib/uploadImage";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { useState } from "react";
@@ -57,11 +57,11 @@ export default function CreateRestaurantScreen() {
       let coverUrl: string | undefined;
 
       if (avatarUri) {
-        avatarUrl = await uploadImage(avatarUri);
+        avatarUrl = await uploadImage(avatarUri, "restaurant");
       }
 
       if (coverUri) {
-        coverUrl = await uploadImage(coverUri);
+        coverUrl = await uploadImage(coverUri, "restaurant");
       }
 
       await api.restaurants.create({

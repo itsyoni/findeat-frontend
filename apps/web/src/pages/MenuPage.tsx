@@ -131,7 +131,7 @@ export function MenuPage({
     event.preventDefault();
     if (!dishMenu || !dishName.trim()) return;
     try {
-      const imageUrl = dishImage ? await uploadImage(dishImage) : undefined;
+      const imageUrl = dishImage ? await uploadImage(dishImage, "dish") : undefined;
       await request(`/business/menus/${dishMenu}/dishes`, {
         method: "POST",
         body: JSON.stringify({

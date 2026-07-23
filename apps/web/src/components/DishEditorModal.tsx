@@ -61,7 +61,7 @@ export function DishEditorModal({ dish, onClose, onSaved }: DishEditorModalProps
     setSaving(true);
     setError("");
     try {
-      const uploadedImage = imageFile ? await uploadImage(imageFile) : undefined;
+      const uploadedImage = imageFile ? await uploadImage(imageFile, "dish") : undefined;
       await request(`/business/menus/dishes/${dish.id}`, {
         method: "PATCH",
         body: JSON.stringify({

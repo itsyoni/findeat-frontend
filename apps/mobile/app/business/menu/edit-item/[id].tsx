@@ -2,7 +2,8 @@ import { AppAlert as Alert } from "@/lib/appAlert";
 import { AppButton, TextInput , ThemedSafeAreaView } from "@/components/common";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
-import { getErrorMessage, uploadImage } from "@findeat/utils";
+import { getErrorMessage } from "@findeat/utils";
+import { uploadImage } from "@/lib/uploadImage";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
@@ -65,7 +66,7 @@ export default function EditMenuItemScreen() {
       let finalImageUrl = imageUrl;
 
       if (newImageUri) {
-        finalImageUrl = await uploadImage(newImageUri);
+        finalImageUrl = await uploadImage(newImageUri, "dish");
       }
 
       await api.menu.updateDish(params.id, {

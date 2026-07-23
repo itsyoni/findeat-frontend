@@ -71,8 +71,8 @@ export function ProfilePage({
     setStatus(logoFile || coverFile ? "Uploading photos…" : "Saving…");
     try {
       const [logoUrl, coverUrl] = await Promise.all([
-        logoFile ? uploadImage(logoFile) : Promise.resolve(undefined),
-        coverFile ? uploadImage(coverFile) : Promise.resolve(undefined),
+        logoFile ? uploadImage(logoFile, 'restaurant') : Promise.resolve(undefined),
+        coverFile ? uploadImage(coverFile, 'restaurant') : Promise.resolve(undefined),
       ]);
       await request(`/restaurants/me/${restaurant.id}`, {
         method: "PATCH",

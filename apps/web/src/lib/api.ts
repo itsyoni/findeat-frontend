@@ -4,6 +4,8 @@ import type {
   RestaurantMessage,
   RestaurantNotificationsPage,
   RestaurantReview,
+  MediaPurpose,
+  MediaUploadTicket,
 } from '@findeat/types'
 
 export const API_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/$/, '')
@@ -27,21 +29,34 @@ export async function request<T = unknown>(path: string, init?: RequestInit): Pr
   return body as T
 }
 
-export async function uploadImage(file: File): Promise<string> {
-  const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-  const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET
-  if (!cloudName || !uploadPreset) throw new Error('Cloudinary is not configured for the web dashboard')
+export async function uploadImage(
+  file: File,
+  purpose: MediaPurpose = 'other',
+): Promise<string> {
+  const contentType = file.type === 'image/jpg' ? 'image/jpeg' : file.type
+  if (!['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'].includes(contentType)) {
+    throw new Error('Please choose a JPG, PNG, WebP, HEIC, or HEIF image')
+  }
+  if (file.size <= 0 || file.size > 20 * 1024 * 1024) {
+    throw new Error('Image must be smaller than 20 MB')
+  }
 
-  const formData = new FormData()
-  formData.append('file', file)
-  formData.append('upload_preset', uploadPreset)
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+  const ticket = await request<MediaUploadTicket>('/media/upload-url', {
     method: 'POST',
-    body: formData,
+    body: JSON.stringify({
+      contentType,
+      size: file.size,
+      fileName: file.name,
+      purpose,
+    }),
   })
-  const body = await response.json()
-  if (!response.ok || !body.secure_url) throw new Error(body.error?.message || 'Could not upload image')
-  return body.secure_url as string
+  const response = await fetch(ticket.uploadUrl, {
+    method: 'PUT',
+    headers: ticket.headers,
+    body: file,
+  })
+  if (!response.ok) throw new Error('Could not upload image. Please try again.')
+  return ticket.imageUrl
 }
 
 export async function loadRestaurantReviews(restaurantId: string): Promise<RestaurantReview[]> {

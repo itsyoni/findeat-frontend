@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/contexts/ToastContext";
 import { prependPostToFeedCache } from "@/hooks/useFeed";
 import { api } from "@/lib/api";
+import { uploadImage } from "@/lib/uploadImage";
 import {
   clearPostDraft,
   type ContentPostDraft,
@@ -19,7 +20,7 @@ import {
   saveContentPostDraft,
 } from "@/lib/postDrafts";
 import type { PostVisibility, SelectedRestaurant } from "@findeat/types";
-import { getErrorMessage, uploadImage } from "@findeat/utils";
+import { getErrorMessage } from "@findeat/utils";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import ImageCropPicker from "react-native-image-crop-picker";
 import { router, Stack, useLocalSearchParams } from "expo-router";
@@ -301,7 +302,7 @@ export default function CreateContentScreen() {
       setPublishing(true);
       const restaurantId = await getRestaurantId();
       if (!restaurantId) return;
-      const imageUrl = await uploadImage(imageUri);
+      const imageUrl = await uploadImage(imageUri, "post");
       const createdPost = await api.posts.createContent({
         imageUrl,
         restaurantId,

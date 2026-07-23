@@ -6,6 +6,7 @@
     "allowSyntheticDefaultImports": true,
     "paths": {
       "@/*": ["./*"],
+      "@findeat/legal": ["../../packages/legal/index.ts"],
       "@findeat/types": ["../../packages/types/index.ts"],
       "@findeat/types/*": ["../../packages/types/*"],
       "@findeat/utils/*": ["../../packages/utils/*"],

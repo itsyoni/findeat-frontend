@@ -1,7 +1,8 @@
 import { AppAlert as Alert } from "@/lib/appAlert";
 import Text from "@/components/common/AppText";
 import { api } from "@/lib/api";
-import { getErrorMessage, uploadImage } from "@findeat/utils";
+import { getErrorMessage } from "@findeat/utils";
+import { uploadImage } from "@/lib/uploadImage";
 import { Menu } from "@findeat/types";
 import * as ImagePicker from "expo-image-picker";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
@@ -48,7 +49,9 @@ export default function ManageMenuScreen() {
       return;
     }
 
-    const imageUrl = dishImageUri ? await uploadImage(dishImageUri) : undefined;
+    const imageUrl = dishImageUri
+      ? await uploadImage(dishImageUri, "dish")
+      : undefined;
 
     try {
       setCreating(true);

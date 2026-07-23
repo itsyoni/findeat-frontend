@@ -1,6 +1,7 @@
 import { AppAlert as Alert } from "@/lib/appAlert";
 import { api } from "@/lib/api";
-import { getErrorMessage, uploadImage } from "@findeat/utils";
+import { getErrorMessage } from "@findeat/utils";
+import { uploadImage } from "@/lib/uploadImage";
 import { Dish } from "@findeat/types";
 import {
   CreateReviewDraft,
@@ -247,7 +248,7 @@ export default function ReviewCreator({
       }
 
       const coverImageUrl = draft.coverImageUri
-        ? await uploadImage(draft.coverImageUri)
+        ? await uploadImage(draft.coverImageUri, "review")
         : undefined;
 
       const uploadedItems = await Promise.all(
@@ -256,7 +257,7 @@ export default function ReviewCreator({
           customDishName: item.customDishName?.trim() || undefined,
           customPrice: item.customPrice,
           imageUrl: item.imageUri
-            ? await uploadImage(item.imageUri)
+            ? await uploadImage(item.imageUri, "dish")
             : undefined,
           rating: item.rating,
           text: item.text.trim(),

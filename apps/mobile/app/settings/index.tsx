@@ -60,7 +60,8 @@ export default function SettingsScreen() {
         <SettingsSection title={t('settings:helpSupportSection')}>
           <SettingsRow icon={<HeadsetIcon size={23} color={color} />} title={t('settings:helpSupport')} subtitle={t('settings:helpSupportSubtitle')} onPress={() => router.push('/settings/help-support')} />
           <SettingsRow icon={<SparkleIcon size={23} color={color} />} title={t('settings:whatsNew')} subtitle={t('settings:whatsNewSubtitle')} onPress={() => router.push('/settings/whats-new')} />
-          <SettingsRow icon={<FileTextIcon size={23} color={color} />} title={t('settings:termsOfUse')} subtitle={t('settings:termsOfUseSubtitle')} onPress={() => router.push('/settings/terms-of-use')} />
+          <SettingsRow icon={<FileTextIcon size={23} color={color} />} title={t('settings:termsOfService')} subtitle={t('settings:termsOfServiceSubtitle')} onPress={() => router.push('/settings/terms-of-service')} />
+          <SettingsRow icon={<ShieldCheckIcon size={23} color={color} weight="fill" />} title={t('settings:privacyPolicy')} subtitle={t('settings:privacyPolicySubtitle')} onPress={() => router.push('/settings/privacy-policy')} />
         </SettingsSection>
         <SettingsSection title={t('settings:login')}>
           <SettingsRow destructive icon={<SignOutIcon size={23} color="#EF4444" />} title={t('common:logout')} onPress={confirmLogout} />

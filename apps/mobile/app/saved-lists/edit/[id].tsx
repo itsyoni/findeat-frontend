@@ -8,7 +8,7 @@ import type {
   PlaceListDetail,
   PlaceListEventType,
 } from "@findeat/types";
-import { uploadImage } from "@findeat/utils";
+import { uploadImage } from "@/lib/uploadImage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Image } from "expo-image";
 import * as ImagePicker from "expo-image-picker";
@@ -110,7 +110,7 @@ export default function EditSavedListScreen() {
     setSaving(true);
     try {
       const nextCoverUrl = newCoverUri
-        ? await uploadImage(newCoverUri)
+        ? await uploadImage(newCoverUri, "list")
         : coverUrl;
       await api.placeLists.update(list.id, {
         name: name.trim(),

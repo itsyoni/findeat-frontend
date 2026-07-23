@@ -98,7 +98,9 @@ export function ProductUpdatesAdmin() {
     setSaving(true);
     setError("");
     try {
-      const imageUrl = imageFile ? await uploadImage(imageFile) : draft.imageUrl || null;
+      const imageUrl = imageFile
+        ? await uploadImage(imageFile, "product-update")
+        : draft.imageUrl || null;
       const payload = {
         title: draft.title.trim(),
         body: draft.body.trim(),

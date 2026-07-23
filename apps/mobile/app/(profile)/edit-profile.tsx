@@ -9,7 +9,8 @@ import ProfileDetailsEditor, {
 } from "@/components/profile/ProfileDetailsEditor";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { getErrorMessage, uploadImage } from "@findeat/utils";
+import { getErrorMessage } from "@findeat/utils";
+import { uploadImage } from "@/lib/uploadImage";
 import ImageCropPicker from "react-native-image-crop-picker";
 import { router } from "expo-router";
 import { DirectionalBackIcon } from "@/components/common/icons/DirectionalIcon";
@@ -136,10 +137,10 @@ export default function EditProfileScreen() {
       setLoading(true);
 
       const finalCoverUrl = newCoverUri
-        ? await uploadImage(newCoverUri)
+        ? await uploadImage(newCoverUri, "cover")
         : coverUrl;
       const finalAvatarUrl = newAvatarUri
-        ? await uploadImage(newAvatarUri)
+        ? await uploadImage(newAvatarUri, "avatar")
         : avatarUrl;
 
       await api.users.updateMe({

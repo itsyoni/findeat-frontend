@@ -50,20 +50,16 @@ const MAP_STATUS_IMAGES = {
   "map-status-visited": require("@/assets/images/map-status-check.png"),
 };
 
-const MAP_LOGO_TRANSFORMATION =
-  "c_fill,g_auto,h_128,w_128,r_max,b_transparent,f_png,q_auto";
+const MEDIA_BASE_URL = (
+  process.env.EXPO_PUBLIC_MEDIA_URL ?? "https://media.findeat.space"
+).replace(/\/$/, "");
+const IMAGE_TRANSFORM_BASE_URL = (
+  process.env.EXPO_PUBLIC_IMAGE_TRANSFORM_URL ?? "https://media.findeat.space"
+).replace(/\/$/, "");
 
 function getCircularMapLogoUrl(url: string) {
-  if (url.includes("/image/upload/")) {
-    return url.replace(
-      "/image/upload/",
-      `/image/upload/${MAP_LOGO_TRANSFORMATION}/`,
-    );
-  }
-
-  const cloudName = process.env.EXPO_PUBLIC_CLOUDINARY_CLOUD_NAME;
-  if (cloudName && /^https?:\/\//i.test(url)) {
-    return `https://res.cloudinary.com/${cloudName}/image/fetch/${MAP_LOGO_TRANSFORMATION}/${encodeURIComponent(url)}`;
+  if (url.startsWith(`${MEDIA_BASE_URL}/`)) {
+    return `${IMAGE_TRANSFORM_BASE_URL}/cdn-cgi/image/width=128,height=128,fit=cover,format=png,quality=85/${url}`;
   }
 
   return url;

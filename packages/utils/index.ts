@@ -5,5 +5,4 @@ export * from "./strings/initials";
 export * from "./users/relationship";
 export * from "./errors/getErrorMessage";
 export * from "./arrays";
-export * from "./cloudinary";
 export * from "./search";

@@ -21,6 +21,60 @@ input:focus,textarea:focus { border-color:var(--ink); box-shadow:0 0 0 3px #1717
 .secondary { background:var(--soft); color:var(--ink); border:1px solid var(--line); }
 .error { color:#b32727; font-size:13px; }
 .banner { padding:12px 16px; border-radius:12px; background:#fff0f0; }
+.legal-site { min-height:100vh; background:radial-gradient(circle at 8% 2%,#fff0e9 0,transparent 28%),#fbfaf8; color:var(--ink); }
+.legal-header { position:sticky; z-index:40; top:0; display:grid; grid-template-columns:1fr auto 1fr; align-items:center; width:100%; height:76px; padding:0 44px; border-bottom:1px solid #e7e2db; background:#fffdfaf2; backdrop-filter:blur(18px); }
+.legal-brand { display:inline-flex; align-items:center; justify-self:start; gap:10px; color:var(--ink); text-decoration:none; }
+.legal-brand span { display:grid; place-items:center; width:36px; height:36px; border-radius:12px; background:var(--ink); color:#fff; font-size:19px; font-weight:900; }
+.legal-brand strong { font-size:18px; letter-spacing:-.02em; }
+.legal-header nav { display:flex; align-items:center; gap:4px; margin:0; }
+.legal-header nav a { display:block; width:auto; padding:9px 13px; border-radius:999px; color:#69645d; text-decoration:none; font-size:12px; font-weight:800; transition:background-color .16s ease,color .16s ease; }
+.legal-header nav a:hover { background:#f3efe9; color:var(--ink); transform:none; }
+.legal-header nav a.active { background:#171717; color:#fff; }
+.legal-login-link { justify-self:end; padding:10px 14px; border:1px solid var(--line); border-radius:11px; background:#fff; color:var(--ink); text-decoration:none; font-size:12px; font-weight:800; }
+.legal-login-link:hover { border-color:#cfc8bf; background:#f8f5f1; }
+.legal-layout { display:grid; grid-template-columns:220px minmax(0,760px); justify-content:center; align-items:start; gap:64px; width:min(1180px,100%); margin:0 auto; padding:70px 34px 100px; }
+.legal-toc { position:sticky; top:112px; display:block; width:auto; height:auto; max-height:calc(100vh - 144px); overflow-y:auto; padding:0 20px 0 0; border:0; border-right:1px solid var(--line); background:transparent; }
+.legal-toc>span { display:block; margin-bottom:14px; color:#b46745; font-size:10px; font-weight:900; letter-spacing:.12em; }
+.legal-toc a { display:block; padding:6px 0; color:#78726a; text-decoration:none; font-size:11px; font-weight:650; line-height:1.35; }
+.legal-toc a:hover { color:var(--ink); }
+.legal-document { min-width:0; }
+.legal-hero { margin-bottom:48px; padding:38px 42px; border:1px solid #e4ded5; border-radius:30px; background:#fff; box-shadow:0 24px 70px #44351d0a; }
+.legal-hero .eyebrow { margin-top:0; }
+.legal-hero h1 { max-width:680px; margin-bottom:10px; font-size:clamp(40px,6vw,66px); line-height:.98; letter-spacing:-.055em; }
+.legal-effective { margin:0 0 26px; color:#b46745; font-size:12px; font-weight:850; }
+.legal-hero>p:not(.eyebrow):not(.legal-effective) { color:#625d56; font-size:16px; line-height:1.75; }
+.legal-document>section { scroll-margin-top:104px; padding:0 8px 34px; margin-bottom:34px; border-bottom:1px solid var(--line); }
+.legal-document>section:last-child { border-bottom:0; }
+.legal-document h2,.deletion-details h2,.deletion-card h2 { margin-bottom:14px; color:var(--ink); font-size:24px; line-height:1.2; letter-spacing:-.025em; }
+.legal-document section p,.legal-document li,.deletion-page p,.deletion-page li { color:#5f5a53; font-size:14px; line-height:1.75; }
+.legal-document section p { margin-bottom:13px; }
+.legal-document ul,.deletion-page ul,.deletion-page ol { padding-left:22px; }
+.legal-document li,.deletion-page li { padding-left:5px; margin-bottom:7px; }
+.legal-document a,.deletion-page a { color:#aa4f31; font-weight:750; }
+.legal-footer { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:16px; min-height:100px; padding:24px 44px; border-top:1px solid var(--line); background:#171717; color:#fff; }
+.legal-footer>span { color:#aaa39b; font-size:12px; }
+.legal-footer nav { display:flex; gap:5px; margin:0; }
+.legal-footer nav a { display:block; width:auto; padding:8px 10px; color:#d8d2cb; text-decoration:none; font-size:11px; font-weight:700; }
+.legal-footer nav a:hover { color:#fff; background:#ffffff10; transform:none; }
+.deletion-page { width:min(1040px,100%); margin:0 auto; padding:78px 34px 100px; }
+.deletion-hero { max-width:740px; margin-bottom:42px; }
+.deletion-hero .eyebrow { margin-top:0; }
+.deletion-hero h1 { margin-bottom:17px; font-size:clamp(43px,7vw,72px); line-height:.96; letter-spacing:-.055em; }
+.deletion-hero>p:last-child { max-width:670px; font-size:17px; line-height:1.7; }
+.deletion-grid { display:grid; grid-template-columns:1fr 1fr; gap:18px; }
+.deletion-card,.deletion-details { border:1px solid #e4ded5; border-radius:24px; background:#fff; box-shadow:0 18px 55px #44351d08; }
+.deletion-card { padding:28px; }
+.deletion-step { display:inline-flex; margin-bottom:18px; padding:5px 9px; border-radius:999px; background:#fff0e9; color:#b34f31; font-size:10px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+.deletion-card p:last-child { margin-bottom:0; }
+.deletion-email { display:inline-flex; margin:3px 0 17px; padding:10px 13px; border-radius:11px; background:#f5f1eb; text-decoration:none; }
+.deletion-details { margin-top:18px; padding:30px; }
+.deletion-details p:last-child { margin-bottom:0; }
+@media(max-width:820px){
+  .legal-header{grid-template-columns:1fr auto;padding:0 20px}.legal-header nav{display:none}.legal-login-link{font-size:11px}
+  .legal-layout{display:block;padding:40px 18px 70px}.legal-toc{display:none}.legal-hero{padding:28px 24px;border-radius:24px}.legal-document>section{padding-inline:5px}
+  .legal-footer{grid-template-columns:1fr;padding:25px 22px}.legal-footer nav{flex-wrap:wrap}.legal-footer nav a{padding-left:0;padding-right:14px}
+  .deletion-page{padding:48px 18px 70px}.deletion-grid{grid-template-columns:1fr}.deletion-card,.deletion-details{padding:24px}
+}
 .dashboard { height:100vh; min-height:0; display:grid; grid-template-columns:260px minmax(0,1fr); overflow:hidden; background:#fbfaf8; color:var(--ink); }
 aside { position:sticky; top:0; height:100vh; display:flex; flex-direction:column; padding:25px 18px; border-right:1px solid var(--line); background:#fff; }
 .brand { display:flex; align-items:center; gap:12px; padding:0 8px 25px; }

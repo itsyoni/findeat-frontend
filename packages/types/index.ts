@@ -8,6 +8,7 @@ export * from "./connection";
 export * from "./legal";
 export * from "./location";
 export * from "./map";
+export * from "./media";
 export * from "./menu";
 export * from "./moderation";
 export * from "./notification";
