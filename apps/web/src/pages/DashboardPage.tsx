@@ -8,6 +8,7 @@ import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { StarIcon } from "@phosphor-icons/react/dist/csr/Star";
 import { StorefrontIcon } from "@phosphor-icons/react/dist/csr/Storefront";
 import { HeadsetIcon } from "@phosphor-icons/react/dist/csr/Headset";
+import { GearSixIcon } from "@phosphor-icons/react/dist/csr/GearSix";
 import type {
   AdminUser,
   AppNotification,
@@ -38,6 +39,7 @@ import { OverviewPage } from "./OverviewPage";
 import { ProfilePage } from "./ProfilePage";
 import { ReviewsPage } from "./ReviewsPage";
 import { OwnerSupportPage } from "./OwnerSupportPage";
+import { SettingsPage } from "./SettingsPage";
 import {
   adminPaths,
   adminSectionFromPath,
@@ -527,6 +529,12 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
           >
             <HeadsetIcon className="nav-icon" weight="duotone" /> Help and support
           </AppLink>
+          <AppLink
+            to={businessPaths.settings}
+            className={section === "settings" ? "active" : ""}
+          >
+            <GearSixIcon className="nav-icon" weight="duotone" /> Settings
+          </AppLink>
           {isAdmin && (
             <AppLink
               to={adminPaths.claims}
@@ -632,6 +640,7 @@ export function DashboardPage({ onLogout }: { onLogout: () => void }) {
         {section === "support" && (
           <OwnerSupportPage key={restaurant.id} restaurant={restaurant} />
         )}
+        {section === "settings" && <SettingsPage />}
       </main>
     </div>
   );

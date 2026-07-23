@@ -16,6 +16,7 @@ export type BusinessDashboardSection =
   | "notifications"
   | "profile"
   | "support"
+  | "settings"
   | "admin";
 
 export type AdminDashboardSection =
@@ -25,4 +26,5 @@ export type AdminDashboardSection =
   | "ownership"
   | "support"
   | "updates"
-  | "admins";
+  | "admins"
+  | "settings";

@@ -13,6 +13,7 @@ export const businessPaths: Record<BusinessDashboardSection, string> = {
   notifications: "/home",
   profile: "/restaurant-profile",
   support: "/support",
+  settings: "/settings",
   admin: "/admin/claims",
 };
 
@@ -24,6 +25,7 @@ export const adminPaths: Record<AdminDashboardSection, string> = {
   support: "/admin/support",
   updates: "/admin/whats-new",
   admins: "/admin/admins",
+  settings: "/admin/settings",
 };
 
 function normalizedPath(pathname: string) {

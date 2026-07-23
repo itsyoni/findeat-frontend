@@ -7,6 +7,7 @@ import { ShieldCheckIcon } from "@phosphor-icons/react/dist/csr/ShieldCheck";
 import { StorefrontIcon } from "@phosphor-icons/react/dist/csr/Storefront";
 import { UsersThreeIcon } from "@phosphor-icons/react/dist/csr/UsersThree";
 import { HeadsetIcon } from "@phosphor-icons/react/dist/csr/Headset";
+import { GearSixIcon } from "@phosphor-icons/react/dist/csr/GearSix";
 import { SparkleIcon } from "@phosphor-icons/react/dist/csr/Sparkle";
 import { FlagIcon } from "@phosphor-icons/react/dist/csr/Flag";
 import { MapPinLineIcon } from "@phosphor-icons/react/dist/csr/MapPinLine";
@@ -20,6 +21,7 @@ import { AccountAvatar } from "../components/AccountAvatar";
 import { RestaurantOwnershipManager } from "../components/RestaurantOwnershipManager";
 import { SupportTicketsPanel } from "../components/SupportTicketsPanel";
 import { ProductUpdatesAdmin } from "../components/ProductUpdatesAdmin";
+import { SettingsPage } from "./SettingsPage";
 import { UserIdentity } from "../components/UserIdentity";
 import { ModerationPanel } from "../components/ModerationPanel";
 import { AddressChangeRequestsPanel } from "../components/AddressChangeRequestsPanel";
@@ -241,6 +243,15 @@ export function AdminPage({
             <UsersThreeIcon className="nav-icon" weight="duotone" /> Admins{" "}
             <small className="nav-count neutral">{admins.length}</small>
           </button>
+          <button
+            className={section === "settings" ? "active" : ""}
+            onClick={() => {
+              onNavigate("settings");
+              setError("");
+            }}
+          >
+            <GearSixIcon className="nav-icon" weight="duotone" /> Settings
+          </button>
         </nav>
         <div className="aside-footer">
           <p>Admin access</p>
@@ -353,6 +364,8 @@ export function AdminPage({
             <SupportTicketsPanel />
           ) : section === "updates" ? (
             <ProductUpdatesAdmin />
+          ) : section === "settings" ? (
+            <SettingsPage />
           ) : (
             <>
               <div className="page-heading">
