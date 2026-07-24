@@ -29,9 +29,6 @@
   },
   "submit": {
     "production": {
-      "env": {
-        "APP_VARIANT": "production"
-      },
       "android": {
         "track": "internal"
       },
