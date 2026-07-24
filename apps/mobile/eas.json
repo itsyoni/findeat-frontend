@@ -29,6 +29,12 @@
   },
   "submit": {
     "production": {
+      "env": {
+        "APP_VARIANT": "production"
+      },
+      "android": {
+        "track": "internal"
+      },
       "ios": {
         "ascAppId": "6788500837"
       }
